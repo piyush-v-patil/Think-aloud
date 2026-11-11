@@ -3,6 +3,9 @@
  * local servers such as Ollama or LM Studio. Structured output support
  * varies, so JSON calls fall back from a JSON schema to JSON mode to a
  * plain instruction, and every answer is validated in code either way.
+ *
+ * Also used for Claude Code on this computer, through the local bridge
+ * (scripts/claude-bridge.mjs), which speaks the same format.
  */
 import type { AIProvider, ChatRequest, ChatResult, JsonRequest, JsonResult } from './types';
 import { ProviderError } from './errors';
@@ -22,13 +25,14 @@ export function chatUsage(u: ChatUsage | undefined): TokenUsage {
 }
 
 export class CompatibleProvider implements AIProvider {
-  readonly id = 'custom' as const;
+  readonly id: 'custom' | 'claude-code';
   readonly capabilities = { streaming: true, structuredOutput: false, promptCaching: 'automatic' as const };
   private base: string;
   private key: string | undefined;
   private f: typeof fetch;
 
-  constructor(baseUrl: string, key: string | undefined, f: typeof fetch = fetch.bind(globalThis)) {
+  constructor(baseUrl: string, key: string | undefined, f: typeof fetch = fetch.bind(globalThis), id: 'custom' | 'claude-code' = 'custom') {
+    this.id = id;
     this.base = baseUrl.replace(/\/+$/, '');
     this.key = key || undefined;
     this.f = f;
@@ -49,6 +53,8 @@ export class CompatibleProvider implements AIProvider {
       stream: true,
       stream_options: { include_usage: true },
       ...(responseFormat ? { response_format: responseFormat } : {}),
+      // The bridge passes this to `claude --effort`; other servers may reject unknown fields.
+      ...(this.id === 'claude-code' && req.effort ? { reasoning_effort: req.effort } : {}),
     };
     const res = await post(this.f, `${this.base}/chat/completions`, { method: 'POST', headers: this.headers(), body: JSON.stringify(body), signal: req.signal }, this.key);
     let text = '';

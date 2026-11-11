@@ -3,6 +3,7 @@ import type { CustomEndpointSettings } from '../../state/settings';
 import { anthropic } from './anthropic';
 import { openai } from './openai';
 import { gemini } from './gemini';
+import { claudeCode } from './claudeCode';
 import type { ModelInfo, PriceSchedule, ProviderConfig, RoleModels } from './types';
 
 export type { ModelInfo, ProviderConfig, RoleModels, PriceSchedule } from './types';
@@ -48,10 +49,12 @@ export function providerConfig(id: ProviderId, custom: CustomEndpointSettings): 
       return gemini;
     case 'custom':
       return customProvider(custom);
+    case 'claude-code':
+      return claudeCode;
   }
 }
 
-export const BUILT_IN_PROVIDERS: ProviderId[] = ['anthropic', 'openai', 'gemini', 'custom'];
+export const BUILT_IN_PROVIDERS: ProviderId[] = ['anthropic', 'claude-code', 'openai', 'gemini', 'custom'];
 
 /** Resolves the model for each role from a preset, or the user's per-role choice for Advanced. */
 export function modelsFor(

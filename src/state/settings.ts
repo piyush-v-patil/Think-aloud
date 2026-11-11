@@ -2,6 +2,7 @@ import type { FeedbackMode, Language, ModelRole, Persona, PresetId, ProviderId }
 import { DEFAULT_SESSION_MINUTES } from '../config/app';
 import { readLocal, writeLocal } from '../lib/storage/local';
 import { createStore, useStore } from './store';
+import { CLAUDE_CODE_DEFAULT_URL } from '../config/providers/claudeCode';
 
 export type ThemeSetting = 'light' | 'dark' | 'system';
 export type LiveSpeechChoice = 'browser' | 'text';
@@ -39,6 +40,8 @@ export interface Settings {
     onDevice: boolean;
   };
   custom: CustomEndpointSettings;
+  /** Address of the local Claude Code bridge (npm run claude-bridge). */
+  claudeCodeUrl: string;
   monthlyLimitUsd: number | null;
   onboarded: boolean;
 }
@@ -54,6 +57,7 @@ export const DEFAULT_SETTINGS: Settings = {
   sessionMinutes: DEFAULT_SESSION_MINUTES,
   speech: { liveEngine: 'browser', paidEngine: null, accuratePass: true, paidLive: false, reuseOpenAIKey: false, onDevice: false },
   custom: { baseUrl: 'http://localhost:11434/v1', models: { small: '', mid: '', top: '' } },
+  claudeCodeUrl: CLAUDE_CODE_DEFAULT_URL,
   monthlyLimitUsd: null,
   onboarded: false,
 };

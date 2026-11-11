@@ -26,7 +26,7 @@ export function PrivacySection() {
       <p className="text-sm">{copy.intro}</p>
       <h3 className="text-sm font-semibold">{copy.leavesHeading}</h3>
       <ul className="m-0 flex list-disc flex-col gap-1 pl-5 text-sm">
-        <li>{copy.ai(providerName)}</li>
+        <li>{settings.provider === 'claude-code' ? copy.aiClaudeCode : copy.ai(providerName)}</li>
         <li>{liveLine}</li>
         {accurate && accurate !== 'whisper-local' && <li>{copy.accurate(SPEECH_ENGINES[accurate].audioGoesTo)}</li>}
         {accurate === 'whisper-local' && <li>{copy.onDevice}</li>}

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import { ai as copy } from '../../copy/strings';
 import { providerConfig, BUILT_IN_PROVIDERS } from '../../config/providers';
 import { updateSettings, useSettings } from '../../state/settings';
@@ -11,9 +11,10 @@ import { TextField } from '../../ui/Field';
 import { Button } from '../../ui/Button';
 import { ExternalLink } from '../../ui/ExternalLink';
 import { CompatibleProvider } from '../../lib/ai/compatible';
+import { claudeCode } from '../../config/providers/claudeCode';
 
 /** Providers whose adapters are built. The rest appear as they are added. */
-export const AVAILABLE_PROVIDERS: ProviderId[] = ['anthropic', 'openai', 'gemini', 'custom'];
+export const AVAILABLE_PROVIDERS: ProviderId[] = ['anthropic', 'claude-code', 'openai', 'gemini', 'custom'];
 
 export function AiSection() {
   const settings = useSettings();
@@ -35,6 +36,8 @@ export function AiSection() {
       />
       {settings.provider === 'custom' ? (
         <CustomEndpoint />
+      ) : settings.provider === 'claude-code' ? (
+        <ClaudeCodeBridge />
       ) : (
         <KeyEditor name={settings.provider} label={copy.keyLabel(provider.label)} getKeyUrl={provider.keyUrl} checkModel={provider.keyCheckModel} />
       )}
@@ -50,6 +53,9 @@ export function KeyEditor({
   getKeyUrl,
   checkModel,
   check,
+  help,
+  checkNote = copy.checkCost,
+  describeError,
 }: {
   name: KeyName;
   label: string;
@@ -57,6 +63,11 @@ export function KeyEditor({
   checkModel?: string;
   /** Custom check for non-AI keys (speech engines). */
   check?: (key: string) => Promise<void>;
+  /** Replaces the default help under the field. */
+  help?: ReactNode;
+  checkNote?: string;
+  /** A more specific message for a failed check; return undefined for the default. */
+  describeError?: (err: unknown) => string | undefined;
 }) {
   const settings = useSettings();
   const keys = useKeys();
@@ -87,7 +98,7 @@ export function KeyEditor({
       // rate limit, network) mean the key itself may be fine.
       if (kind === 'invalid-key') clearKey(name);
       else setKeyStatus(name, 'error');
-      setMessage({ text: copy.errors[kind] ?? copy.errors.unknown, error: true });
+      setMessage({ text: describeError?.(err) ?? copy.errors[kind] ?? copy.errors.unknown, error: true });
     } finally {
       setBusy(false);
     }
@@ -104,10 +115,12 @@ export function KeyEditor({
         placeholder={entry ? maskKey(entry.value) : ''}
         onChange={(e) => setDraft(e.target.value)}
         help={
-          <>
-            {copy.keyHelp}{' '}
-            {getKeyUrl && <ExternalLink href={getKeyUrl}>{copy.getKey}</ExternalLink>}
-          </>
+          help ?? (
+            <>
+              {copy.keyHelp}{' '}
+              {getKeyUrl && <ExternalLink href={getKeyUrl}>{copy.getKey}</ExternalLink>}
+            </>
+          )
         }
       />
       <Segmented<'device' | 'session'>
@@ -143,7 +156,7 @@ export function KeyEditor({
       </div>
       <div className="text-sm text-ink-soft">
         <p>{entry ? copy.keyStored(maskKey(entry.value)) : copy.noKey}</p>
-        <p>{copy.checkCost}</p>
+        <p>{checkNote}</p>
       </div>
       {message && (
         <p role={message.error ? 'alert' : 'status'} className={`text-sm ${message.error ? 'text-red' : 'text-green'}`}>
@@ -205,6 +218,50 @@ function CustomEndpoint() {
           await new CompatibleProvider(c.baseUrl, value).checkKey();
         }}
       />
+    </div>
+  );
+}
+
+/** Claude Code on this computer, through the local bridge (scripts/claude-bridge.mjs). */
+function ClaudeCodeBridge() {
+  const settings = useSettings();
+  const c = copy.claudeCode;
+  return (
+    <div className="flex max-w-[560px] flex-col gap-4">
+      <p className="text-sm text-ink-soft">{c.intro}</p>
+      <div className="flex flex-col gap-2">
+        <h3 className="text-sm font-semibold">{c.stepsHeading}</h3>
+        <ol className="m-0 flex list-decimal flex-col gap-1 pl-5 text-sm">
+          <li>
+            {c.steps[0]} <ExternalLink href={claudeCode.keyUrl}>{c.install}</ExternalLink>
+          </li>
+          <li>
+            {c.steps[1]}
+            <pre className="mt-1 mb-0 w-fit rounded-[3px] bg-paper px-2 py-1 font-mono text-xs">{c.command}</pre>
+          </li>
+          <li>{c.steps[2]}</li>
+        </ol>
+      </div>
+      <TextField label={c.url} help={c.urlHelp} value={settings.claudeCodeUrl} onChange={(e) => updateSettings({ claudeCodeUrl: e.target.value.trim() })} />
+      <KeyEditor
+        name="claude-code"
+        label={c.token}
+        help={c.tokenHelp}
+        checkNote={c.checkCost}
+        check={async (value) => {
+          const p = new CompatibleProvider(settings.claudeCodeUrl, value, undefined, 'claude-code');
+          await p.checkKey();
+          await p.chat({ model: claudeCode.keyCheckModel, system: [{ text: 'Reply with the single word OK.' }], turns: [{ role: 'user', text: 'OK?' }], maxTokens: 8, effort: 'low' });
+        }}
+        describeError={(err) => {
+          if (!(err instanceof ProviderError)) return undefined;
+          if (err.kind === 'network') return c.notRunning;
+          // The bridge writes its own plain-English errors; they never contain the token.
+          const m = /"message":"([^"]+)"/.exec(err.message);
+          return m ? m[1] : undefined;
+        }}
+      />
+      <p className="text-sm text-ink-soft">{c.slower}</p>
     </div>
   );
 }

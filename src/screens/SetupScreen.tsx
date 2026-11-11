@@ -7,7 +7,7 @@ import { TOPICS, PERSONAS, FEEDBACK_MODES, LANGUAGES, MODEL_ROLES, type Difficul
 import { providerConfig, modelsFor, strongestModel } from '../config/providers';
 import { createProvider, providerReady } from '../lib/ai/factory';
 import { ProviderError } from '../lib/ai/errors';
-import { ai as aiCopy } from '../copy/strings';
+import { ai as aiCopy, cost as costCopy } from '../copy/strings';
 import { usageRecord } from '../lib/ai/usage';
 import { preparePasted, prepareVariation, type PrepareStage } from '../lib/problems/prepare';
 import { CodeRunner } from '../lib/runner/runner';
@@ -334,7 +334,7 @@ export function SetupScreen() {
 
       <aside aria-label={copy.costHeading} className="flex flex-col gap-10 lg:border-l lg:border-smudge lg:pl-8">
         <div className="lg:sticky lg:top-8">
-          <CostEstimate estimate={estimate} />
+          <CostEstimate estimate={estimate} unpricedNote={settings.provider === 'claude-code' ? costCopy.subscription : undefined} />
         </div>
       </aside>
     </div>

@@ -19,6 +19,8 @@ export function createProvider(id: ProviderId, settings: Settings, key = getKey(
       return key ? new OpenAIProvider(key) : null;
     case 'gemini':
       return key ? new GeminiProvider(key) : null;
+    case 'claude-code':
+      return key ? new CompatibleProvider(settings.claudeCodeUrl, key, undefined, 'claude-code') : null;
     case 'custom': {
       const c = settings.custom;
       const hasModel = c.models.small || c.models.mid || c.models.top;

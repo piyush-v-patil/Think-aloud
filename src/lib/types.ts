@@ -187,7 +187,7 @@ export const FEEDBACK_MODES: FeedbackMode[] = ['training', 'delayed', 'realistic
 export type ModelRole = 'interviewer' | 'reactions' | 'debrief';
 export const MODEL_ROLES: ModelRole[] = ['interviewer', 'reactions', 'debrief'];
 
-export type ProviderId = 'anthropic' | 'openai' | 'gemini' | 'custom';
+export type ProviderId = 'anthropic' | 'openai' | 'gemini' | 'custom' | 'claude-code';
 export type PresetId = 'economy' | 'balanced' | 'best' | 'advanced';
 
 export type SpeechEngineId = 'browser' | 'whisper-local' | 'deepgram' | 'assemblyai' | 'openai' | 'text';

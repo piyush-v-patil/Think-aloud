@@ -407,9 +407,27 @@ export const variation = {
 export const ai = {
   heading: 'AI provider',
   intro:
-    'The interviewer and your feedback are written by an AI model you choose, using your own key. Requests go straight from this browser to the provider.',
+    'The interviewer and your feedback are written by an AI model you choose, using your own key or Claude account. Requests go straight from this browser to the provider, or to Claude Code on this computer.',
   provider: 'Provider',
-  providerName: { anthropic: 'Anthropic', openai: 'OpenAI', gemini: 'Google Gemini', custom: 'Custom endpoint' } as Record<string, string>,
+  providerName: { anthropic: 'Anthropic', 'claude-code': 'Claude Code', openai: 'OpenAI', gemini: 'Google Gemini', custom: 'Custom endpoint' } as Record<string, string>,
+  claudeCode: {
+    intro: 'Use Claude Code on this computer, signed in to your own Claude account, instead of an API key. Usage counts against your Claude plan.',
+    stepsHeading: 'Set it up once',
+    steps: [
+      'Install Claude Code and sign in.',
+      'In a terminal, in this project’s folder, run this and leave it open while you practice:',
+      'Paste the bridge token it shows, then save.',
+    ],
+    command: 'npm run claude-bridge',
+    install: 'How to install Claude Code',
+    url: 'Bridge address',
+    urlHelp: 'Change this only if you started the bridge on another port.',
+    token: 'Bridge token',
+    tokenHelp: 'Shown in the terminal running the bridge. Only this site and that terminal know it.',
+    checkCost: 'Checking sends one tiny request through Claude Code.',
+    notRunning: 'Couldn’t reach the bridge. Check that npm run claude-bridge is running, then try again.',
+    slower: 'Each reply starts Claude Code afresh, so the interviewer answers a second or two slower than with an API key.',
+  },
   keyLabel: (provider: string) => `${provider} API key`,
   keyHelp: 'Paste the whole key. It is stored only in this browser.',
   getKey: 'Get a key',
@@ -486,6 +504,8 @@ export const privacy = {
   heading: 'Privacy',
   intro: 'There is no server of ours. Nothing you do here is sent to the people who made this app: no keys, recordings, transcripts or usage data, and there is no analytics or tracking.',
   leavesHeading: 'What leaves this device, with your current settings',
+  aiClaudeCode:
+    'Text sent to Anthropic through Claude Code on this computer: the problem, your transcript, your code, test results and timing, so the interviewer can reply and your feedback can be written. The bridge token is sent only to the bridge on this computer.',
   ai: (provider: string) =>
     `Text sent to ${provider}: the problem, your transcript, your code, test results and timing, so the interviewer can reply and your feedback can be written. Your ${provider} key is sent only to ${provider}.`,
   audioBrowser: (vendor: string) => `Your voice during the interview goes to ${vendor}, which turns it into text.`,
@@ -516,6 +536,7 @@ export const cost = {
   actual: 'actual',
   about: (amount: string) => `About ${amount}`,
   tokensOnly: 'Prices for this endpoint are unknown, so this shows tokens instead.',
+  subscription: 'This uses your Claude plan through Claude Code, so there’s no charge per session. The table shows tokens.',
   basisModel: 'Based on a typical session of this length.',
   basisHistory: (n: number) => `Based on your last ${n} sessions.`,
   speechLine: 'Speech recognition',

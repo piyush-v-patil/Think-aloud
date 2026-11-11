@@ -3,7 +3,7 @@ import type { Estimate } from '../lib/cost/estimate';
 import { formatTokens, formatUsd } from '../lib/cost/pricing';
 
 /** The setup screen's cost panel: total, breakdown and where the number comes from. */
-export function CostEstimate({ estimate }: { estimate: Estimate }) {
+export function CostEstimate({ estimate, unpricedNote = copy.tokensOnly }: { estimate: Estimate; unpricedNote?: string }) {
   const rows = (['interviewer', 'reactions', 'debrief', 'analysis'] as const).filter((r) => {
     const u = estimate.byRole[r].usage;
     return u.inputTokens + u.outputTokens + u.cacheReadTokens + u.cacheWriteTokens > 0;
@@ -17,7 +17,7 @@ export function CostEstimate({ estimate }: { estimate: Estimate }) {
           <span className="text-ink-soft">, {copy.estimate}</span>
         </p>
       ) : (
-        <p className="text-sm text-ink-soft">{copy.tokensOnly}</p>
+        <p className="text-sm text-ink-soft">{unpricedNote}</p>
       )}
       <table className="w-full border-collapse text-sm">
         <tbody>

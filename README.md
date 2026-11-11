@@ -148,6 +148,8 @@ The scoring is built to be trusted:
   OpenAI-compatible endpoint (OpenRouter, Ollama, LM Studio).
 - **Quality presets**: Economy, Balanced and Best, or pick each model
   yourself.
+- **Or use your Claude subscription** through Claude Code on your own
+  computer, with no API key. See [below](#use-your-claude-subscription-instead-of-a-key).
 - **A live cost estimate** on the setup screen, and the **actual cost** after
   every session, computed from the usage the API reported, cached tokens
   included.
@@ -209,6 +211,41 @@ won't hear its own voice.
    device or for this session only. **Save and check key** sends one tiny
    request to confirm it works and has credit.
 
+### Use your Claude subscription instead of a key
+
+If you have [Claude Code](https://code.claude.com/docs/en/setup) installed
+and signed in, Think Aloud can use it instead of an API key. Usage counts
+against your Claude plan's limits. This is meant for your own practice with
+your own account.
+
+```bash
+npm run claude-bridge
+```
+
+That starts a small bridge on `http://localhost:8787` and prints a bridge
+token. In **Settings → AI provider**, choose **Claude Code**, paste the
+token, and press **Save and check key**. Keep the terminal open while you
+practice. Running the app with `npm run dev` is the most reliable way. Your
+GitHub Pages site can reach the bridge too, though your browser may ask for
+permission to connect to devices on your local network.
+
+<img src="docs/screenshots/claude-code.png" alt="Settings with Claude Code chosen as the AI provider: three setup steps, the npm run claude-bridge command, the bridge address and the bridge token, with 'Key saved. It works.'" width="560">
+
+How the bridge stays safe and private:
+
+- It listens on `127.0.0.1` only, needs the token on every request, and
+  refuses web pages from sites other than this app's.
+- Each request runs `claude -p` with no tools, no MCP servers, no slash
+  commands, no `CLAUDE.md` files and no saved session, in an empty
+  temporary folder. Prompts and replies are never logged.
+- The token is saved in `~/.config/think-aloud/bridge-token`.
+  `npm run claude-bridge -- --new-token` replaces it, `--port` changes the
+  port, and `--origin` allows another site.
+
+Each reply starts Claude Code afresh, so the interviewer answers a second or
+two slower than with an API key. The cost panel shows tokens instead of
+dollars.
+
 ## What a session costs
 
 You pay your AI provider directly. Estimates for a 45 minute interview in
@@ -246,7 +283,8 @@ What leaves your device:
   transcript, your code, test results and timing, so the interviewer can
   reply and your feedback can be written. Your key is sent only to that
   provider. (On Google's free tier, Google may use prompts to improve its
-  products; on its paid tier it does not.)
+  products; on its paid tier it does not.) With Claude Code, the text goes
+  to the bridge on your computer and from there to Anthropic.
 - **Audio, depending on the speech engine you choose:**
   - Browser speech recognition (the default): your voice goes to your
     browser's speech service (Google for Chrome and Edge, Apple for
@@ -308,7 +346,7 @@ flowchart LR
 prompts/              every prompt, as readable Markdown
 problems/             the built-in bank: one JSON file per problem
 schema/               generated JSON Schema for problem files
-scripts/              maintainer scripts (analysis generation, checks)
+scripts/              maintainer scripts, and the Claude Code bridge
 src/config/           app name, CSP, models and prices, speech engines, usage model
 src/copy/strings.ts   all interface text, in one place
 src/lib/ai/           provider interface and adapters (Anthropic, OpenAI, Gemini, compatible)
@@ -382,6 +420,8 @@ relative paths and hash routing, so no server configuration is needed.
 - OpenAI live transcription needs a WebRTC session, and AssemblyAI live
   transcription needs a server-issued token, so those two engines are used
   after the interview only. Deepgram works live.
+- With Claude Code, every call starts a new `claude` process, which adds
+  about 1.5 seconds before the interviewer starts to answer.
 - The replay's audio is your microphone; the interviewer's lines appear as
   text in the transcript but aren't in the recording.
 - The built-in bank's analyses were written by the maintainers. Run
