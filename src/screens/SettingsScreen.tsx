@@ -11,6 +11,7 @@ import { Dialog } from '../ui/Dialog';
 import { Rule } from '../ui/Rule';
 import { AiSection } from './settings/AiSection';
 import { SpeechSection } from './settings/SpeechSection';
+import { PrivacySection } from './settings/PrivacySection';
 
 export function SettingsScreen({ section }: { section?: string }) {
   void section;
@@ -75,6 +76,10 @@ export function SettingsScreen({ section }: { section?: string }) {
           ]}
         />
       </section>
+
+      <Rule />
+
+      <PrivacySection />
 
       <Rule />
 

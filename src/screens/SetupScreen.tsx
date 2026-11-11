@@ -5,7 +5,7 @@ import { draftFromPaste } from '../lib/problems/paste';
 import { newId } from '../lib/id';
 import { TOPICS, PERSONAS, FEEDBACK_MODES, LANGUAGES, MODEL_ROLES, type Difficulty, type Topic, type Problem, type PresetId, type Session } from '../lib/types';
 import { providerConfig, modelsFor, strongestModel } from '../config/providers';
-import { createProvider } from '../lib/ai/factory';
+import { createProvider, providerReady } from '../lib/ai/factory';
 import { ProviderError } from '../lib/ai/errors';
 import { ai as aiCopy } from '../copy/strings';
 import { usageRecord } from '../lib/ai/usage';
@@ -54,7 +54,8 @@ export function SetupScreen() {
   const current = picked && matches.includes(picked) ? picked : matches[0];
 
   const keys = useKeys();
-  const hasKey = !!keys[settings.provider]?.value || settings.provider === 'custom';
+  void keys;
+  const hasKey = providerReady(settings);
   const provider = providerConfig(settings.provider, settings.custom);
   const models = modelsFor(provider, settings.preset, settings.advancedModels);
   const [history, setHistory] = useState<Session[]>([]);

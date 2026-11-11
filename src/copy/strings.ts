@@ -426,6 +426,20 @@ export const ai = {
   noKey: 'No key saved.',
   keyCleared: 'Key cleared from this browser.',
   checkCost: 'Checking sends one tiny request, which costs a fraction of a cent.',
+  customIntro: 'Any server that speaks the OpenAI Chat Completions format: OpenRouter, or a local model in Ollama or LM Studio.',
+  baseUrl: 'Base URL',
+  baseUrlHelp: 'For example https://openrouter.ai/api/v1 or http://localhost:11434/v1. Hosts other than OpenRouter and localhost must be added to the site’s security policy (see the README).',
+  modelSmall: 'Fast model name',
+  modelMid: 'Main model name',
+  modelTop: 'Strongest model name',
+  modelsHelp: 'Use the exact model names your server expects. Leave a field empty to reuse another.',
+  pricesHeading: 'Prices (optional)',
+  pricesHelp: 'Without prices, sessions show token counts instead of dollars.',
+  priceInput: 'Input, US dollars per million tokens',
+  priceOutput: 'Output, US dollars per million tokens',
+  customKey: 'API key (optional for local servers)',
+  checkEndpoint: 'Check endpoint',
+  geminiFreeTier: 'On Google’s free tier, Google may use your prompts to improve its products. On the paid tier it does not.',
   errors: {
     'invalid-key': 'That key was rejected. Check that you copied the whole key.',
     'no-credit': 'That key works, but the account has no credit. Add credit in the provider’s billing settings, then check again.',
@@ -466,6 +480,21 @@ export const speech = {
   reuseKey: 'Use my OpenAI key from the AI provider',
   keyLabel: (engine: string) => `${engine} API key`,
   price: (perMinute: string, session: string) => `${perMinute} per minute of audio, about ${session} for a 45 minute interview, estimate.`,
+};
+
+export const privacy = {
+  heading: 'Privacy',
+  intro: 'There is no server of ours. Nothing you do here is sent to the people who made this app: no keys, recordings, transcripts or usage data, and there is no analytics or tracking.',
+  leavesHeading: 'What leaves this device, with your current settings',
+  ai: (provider: string) =>
+    `Text sent to ${provider}: the problem, your transcript, your code, test results and timing, so the interviewer can reply and your feedback can be written. Your ${provider} key is sent only to ${provider}.`,
+  audioBrowser: (vendor: string) => `Your voice during the interview goes to ${vendor}, which turns it into text.`,
+  audioText: 'No audio during the interview: you are typing instead of speaking.',
+  audioPaid: (engine: string) => `Your voice during the interview goes to ${engine}, which turns it into text.`,
+  accurate: (engine: string) => `After the interview, your recording is sent to ${engine} for a more accurate transcript.`,
+  onDevice: 'After the interview, your recording is transcribed on this device. It is not sent anywhere. The speech model is downloaded from Hugging Face the first time; no data of yours is sent with that download.',
+  stays: 'Everything else stays in this browser: recordings, sessions, your list, settings, and keys if you chose to remember them. Clearing this site’s data or using Delete all data removes them.',
+  browserVendor: 'your browser’s speech service (Google for Chrome and Edge, Apple for Safari)',
 };
 
 export const quality = {

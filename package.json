@@ -11,7 +11,7 @@
     "build": "tsc -b && vite build",
     "preview": "vite preview",
     "lint": "eslint .",
-    "typecheck": "tsc -b --noEmit",
+    "typecheck": "tsc -b",
     "test": "vitest run",
     "test:watch": "vitest",
     "problems:validate": "tsx scripts/validate-problems.ts",
@@ -54,5 +54,8 @@
   "overrides": {
     "dompurify": "3.4.17",
     "minimatch": "11.0.7"
+  },
+  "engines": {
+    "node": ">=22"
   }
 }

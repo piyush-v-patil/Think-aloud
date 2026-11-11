@@ -10,9 +10,10 @@ import { Segmented } from '../../ui/Segmented';
 import { TextField } from '../../ui/Field';
 import { Button } from '../../ui/Button';
 import { ExternalLink } from '../../ui/ExternalLink';
+import { CompatibleProvider } from '../../lib/ai/compatible';
 
 /** Providers whose adapters are built. The rest appear as they are added. */
-export const AVAILABLE_PROVIDERS: ProviderId[] = ['anthropic'];
+export const AVAILABLE_PROVIDERS: ProviderId[] = ['anthropic', 'openai', 'gemini', 'custom'];
 
 export function AiSection() {
   const settings = useSettings();
@@ -32,7 +33,12 @@ export function AiSection() {
         onChange={(p) => updateSettings({ provider: p, preset: settings.preset })}
         options={BUILT_IN_PROVIDERS.map((p) => ({ value: p, label: copy.providerName[p], disabled: !AVAILABLE_PROVIDERS.includes(p) }))}
       />
-      <KeyEditor name={settings.provider} label={copy.keyLabel(provider.label)} getKeyUrl={provider.keyUrl} checkModel={provider.keyCheckModel} />
+      {settings.provider === 'custom' ? (
+        <CustomEndpoint />
+      ) : (
+        <KeyEditor name={settings.provider} label={copy.keyLabel(provider.label)} getKeyUrl={provider.keyUrl} checkModel={provider.keyCheckModel} />
+      )}
+      {settings.provider === 'gemini' && <p className="text-sm text-ink-soft">{copy.geminiFreeTier}</p>}
     </section>
   );
 }
@@ -141,6 +147,61 @@ export function KeyEditor({
           {message.text}
         </p>
       )}
+    </div>
+  );
+}
+
+function CustomEndpoint() {
+  const settings = useSettings();
+  const c = settings.custom;
+  const set = (patch: Partial<typeof c>) => updateSettings({ custom: { ...c, ...patch } });
+  const num = (v: string) => (v.trim() === '' || !Number.isFinite(Number(v)) ? undefined : Number(v));
+  return (
+    <div className="flex max-w-[560px] flex-col gap-4">
+      <p className="text-sm text-ink-soft">{copy.customIntro}</p>
+      <TextField label={copy.baseUrl} help={copy.baseUrlHelp} value={c.baseUrl} onChange={(e) => set({ baseUrl: e.target.value.trim() })} />
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <TextField label={copy.modelSmall} value={c.models.small} onChange={(e) => set({ models: { ...c.models, small: e.target.value.trim() } })} />
+        <TextField label={copy.modelMid} value={c.models.mid} onChange={(e) => set({ models: { ...c.models, mid: e.target.value.trim() } })} />
+        <TextField label={copy.modelTop} value={c.models.top} onChange={(e) => set({ models: { ...c.models, top: e.target.value.trim() } })} />
+      </div>
+      <p className="text-sm text-ink-soft">{copy.modelsHelp}</p>
+      <fieldset className="m-0 flex flex-col gap-2 border-0 p-0">
+        <legend className="text-sm font-semibold">{copy.pricesHeading}</legend>
+        <p className="text-sm text-ink-soft">{copy.pricesHelp}</p>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <TextField
+            label={copy.priceInput}
+            type="number"
+            min={0}
+            step="0.01"
+            value={c.prices?.input ?? ''}
+            onChange={(e) => {
+              const input = num(e.target.value);
+              set({ prices: input === undefined ? undefined : { input, output: c.prices?.output ?? input } });
+            }}
+          />
+          <TextField
+            label={copy.priceOutput}
+            type="number"
+            min={0}
+            step="0.01"
+            value={c.prices?.output ?? ''}
+            disabled={!c.prices}
+            onChange={(e) => {
+              const output = num(e.target.value);
+              if (c.prices && output !== undefined) set({ prices: { ...c.prices, output } });
+            }}
+          />
+        </div>
+      </fieldset>
+      <KeyEditor
+        name="custom"
+        label={copy.customKey}
+        check={async (value) => {
+          await new CompatibleProvider(c.baseUrl, value).checkKey();
+        }}
+      />
     </div>
   );
 }
