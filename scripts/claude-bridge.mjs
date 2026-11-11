@@ -20,8 +20,8 @@
  *   localhost (protects against DNS rebinding).
  * - Every request needs the bridge token. Web pages from sites not on the
  *   allowed list are refused, so other sites you visit can't use it.
- * - Each call runs `claude -p` with no tools, no MCP servers, no slash
- *   commands, no CLAUDE.md files and no saved session, in an empty
+ * - Each call runs `claude -p` with no tools, no MCP servers, no hooks, no
+ *   slash commands, no CLAUDE.md files and no saved session, in an empty
  *   temporary folder, with no shell.
  * - Prompts and replies are never logged.
  */
@@ -204,6 +204,10 @@ export function createBridge({ port, token, origins, claudeBin, log = console.lo
       '--system-prompt-file', systemFile,
       '--tools', '',
       '--strict-mcp-config',
+      // Keep the user's sign-in and routing, but not their hooks, output style
+      // or memory files (settings env can override inherited env, so pin it).
+      '--setting-sources', 'user',
+      '--settings', JSON.stringify({ disableAllHooks: true, outputStyle: 'default', env: { CLAUDE_CODE_DISABLE_CLAUDE_MDS: '1' } }),
       '--disable-slash-commands',
       '--no-session-persistence',
     ];

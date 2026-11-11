@@ -235,8 +235,8 @@ How the bridge stays safe and private:
 
 - It listens on `127.0.0.1` only, needs the token on every request, and
   refuses web pages from sites other than this app's.
-- Each request runs `claude -p` with no tools, no MCP servers, no slash
-  commands, no `CLAUDE.md` files and no saved session, in an empty
+- Each request runs `claude -p` with no tools, no MCP servers, no hooks,
+  no slash commands, no `CLAUDE.md` files and no saved session, in an empty
   temporary folder. Prompts and replies are never logged.
 - The token is saved in `~/.config/think-aloud/bridge-token`.
   `npm run claude-bridge -- --new-token` replaces it, `--port` changes the

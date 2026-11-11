@@ -111,6 +111,8 @@ describe('claude bridge', () => {
     expect(log.args[log.args.indexOf('--tools') + 1]).toBe('');
     expect(log.args).toContain('--strict-mcp-config');
     expect(log.args).toContain('--no-session-persistence');
+    expect(log.args[log.args.indexOf('--setting-sources') + 1]).toBe('user');
+    expect(JSON.parse(log.args[log.args.indexOf('--settings') + 1])).toMatchObject({ disableAllHooks: true, env: { CLAUDE_CODE_DISABLE_CLAUDE_MDS: '1' } });
     expect(log.args[log.args.indexOf('--effort') + 1]).toBe('low');
     expect(log.mds).toBe('1');
     expect(log.system.startsWith('You are the interviewer.\n\nYou are not working in a coding environment')).toBe(true);
