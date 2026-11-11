@@ -116,7 +116,7 @@ describe('estimateSession', () => {
 describe('speech cost', () => {
   it('charges nothing for free engines and per minute for paid ones', () => {
     expect(speechCost(45, 'browser')).toBe(0);
-    expect(speechCost(45, 'browser', 'openai', false)).toBeCloseTo(45 * 0.0045, 9);
+    expect(speechCost(45, 'browser', 'openai', false)).toBeCloseTo(45 * 0.006, 9);
     expect(speechCost(10, 'deepgram', undefined, true)).toBeCloseTo(10 * (0.0077 + 0.0013), 9);
   });
 });
