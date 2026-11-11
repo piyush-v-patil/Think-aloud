@@ -214,6 +214,15 @@ export const interview = {
   retryInterviewer: 'Ask the interviewer again',
   ending: 'Saving your interview',
   phaseLabel: (p: string) => `Now: ${p}`,
+  impressionLabel: 'Interviewer impression so far',
+  impressionWord: { positive: 'leaning positive', neutral: 'neutral', negative: 'leaning negative' } as Record<string, string>,
+  recoveryHeading: 'Stuck? You could say:',
+  recoveryDismiss: 'Hide this',
+  feedbackWaiting: {
+    training: 'Feedback appears beside your words as you go.',
+    delayed: 'Feedback appears when each part of the interview ends.',
+    realistic: 'Feedback comes in the replay, like a real interview.',
+  } as Record<string, string>,
 };
 
 export const settings = {

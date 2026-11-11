@@ -53,3 +53,17 @@ describe('LiveReactor', () => {
     expect(p.calls[0].system[0].text).toContain('stuck.recoveryLine');
   });
 });
+
+describe('impression meter', () => {
+  it('is computed from points, saturates, and names its direction', async () => {
+    const { impression, impressionWord } = await import('../session/feedback');
+    expect(impression([])).toBe(0);
+    const up = impression([{ points: 2 }, { points: 1 }]);
+    expect(up).toBeGreaterThan(0);
+    expect(impression(Array(40).fill({ points: 2 }))).toBeLessThanOrEqual(1);
+    expect(impression([{ points: -1 }, { points: -1 }, { points: 2 }])).toBe(0);
+    expect(impressionWord(up)).toBe('positive');
+    expect(impressionWord(-0.5)).toBe('negative');
+    expect(impressionWord(0.05)).toBe('neutral');
+  });
+});

@@ -35,7 +35,7 @@ export async function buildSession(c: InterviewController): Promise<Session> {
     testRuns: c.runs,
     phases: c.phases,
     hintsGiven: c.hints,
-    reactions: [],
+    reactions: state.reactions,
     missed: [],
     rerecords: [],
     usage: [...(c.draft.prepUsage ?? []), ...c.usage],

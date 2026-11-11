@@ -54,6 +54,12 @@ export interface LiveState {
   problem: { kind: string; at: number } | null;
   notices: string[];
   ended: boolean;
+  /** Feedback shown during the interview (Training and Delayed modes). */
+  reactions: import('../types').Reaction[];
+  /** Reactions that just arrived, for the marker-stroke animation. */
+  freshIds: string[];
+  /** Training mode: a line the candidate could say to get unstuck. */
+  recovery: { text: string; t: number } | null;
 }
 
 /** Silence with no code change before the interviewer is asked whether to step in. */
@@ -139,6 +145,9 @@ export class InterviewController {
       problem: null,
       notices: [],
       ended: false,
+      reactions: [],
+      freshIds: [],
+      recovery: null,
     });
     this.interviewer = new Interviewer({
       provider: deps.provider,
@@ -162,7 +171,8 @@ export class InterviewController {
     for (const l of this.listeners) l(e);
   }
 
-  private patch(p: Partial<LiveState>) {
+  /** Public so feedback components can update their part of the state. */
+  patch(p: Partial<LiveState>) {
     this.store.set((s) => ({ ...s, ...p }));
   }
 
