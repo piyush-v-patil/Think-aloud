@@ -16,8 +16,7 @@
     "test:watch": "vitest",
     "problems:validate": "tsx scripts/validate-problems.ts",
     "problems:check-solutions": "tsx scripts/check-reference-solutions.ts",
-    "problems:analyze": "tsx scripts/generate-analysis.ts",
-    "demo:build": "tsx scripts/build-demo-session.ts"
+    "problems:analyze": "tsx scripts/generate-analysis.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "1.3.0",

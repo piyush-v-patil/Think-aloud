@@ -39,7 +39,7 @@ function Screen({ route }: { route: Route }) {
     case 'interview':
       return <InterviewScreen />;
     case 'replay':
-      return <ReplayScreen id={route.param!} />;
+      return <ReplayScreen key={route.param} id={route.param!} />;
     case 'history':
       return <HistoryScreen />;
     case 'settings':
