@@ -96,3 +96,17 @@ describe('preparePasted', () => {
     expect(res.problem.tests.length).toBe(3);
   }, 60_000);
 });
+
+describe('prepareVariation', () => {
+  it('writes a checked variation that records what changed', async () => {
+    const { prepareVariation } = await import('./prepare');
+    const provider = stubProvider([{ ...output({ title: 'Sum of odds' }), change: 'This time you sum the odd numbers.' } as PreparedOutput]);
+    const base = { id: 'crate-pair', title: 'Crate pair', statement: 's', signature: output().signature } as never;
+    const p = await prepareVariation(base, { provider, model: 'm', run: runTests, record: () => {} });
+    expect(p.source).toBe('variation');
+    expect(p.variationOf).toEqual({ problemId: 'crate-pair', change: 'This time you sum the odd numbers.' });
+    expect(p.id.startsWith('var-crate-pair-')).toBe(true);
+    expect(provider.calls[0].turns[0].text).toContain('<original_problem>');
+    expect(provider.calls[0].system[1].text).toContain('Writing a variation');
+  }, 60_000);
+});

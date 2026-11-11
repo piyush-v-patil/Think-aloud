@@ -12,6 +12,7 @@ import { sha256 } from '../id';
 import { cacheAnalysis, getCachedAnalysis } from '../storage/db';
 import { checkReference, decodeTests, preparedOutputSchema, starterFor, type PreparedOutput, type RunTests } from './analyze';
 import { TOPICS } from '../types';
+import { z } from 'zod';
 import { ProviderError } from '../ai/errors';
 
 export type PrepareStage = 'reading' | 'checking' | 'retrying';
@@ -48,10 +49,31 @@ export async function preparePasted(text: string, opts: PrepareOptions): Promise
   const hash = await sha256(text);
   const cached = await getCachedAnalysis(hash);
   if (cached) return { problem: cached, cached: true };
+  const problem = await generate(`<pasted_problem>\n${text}\n</pasted_problem>`, prompt('prepare-pasted'), `paste-${hash.slice(0, 12)}`, 'pasted', opts);
+  await cacheAnalysis(hash, problem);
+  return { problem, cached: false };
+}
 
+/** Writes a variation of a problem the candidate already practiced. */
+export async function prepareVariation(base: Problem, opts: PrepareOptions): Promise<Problem> {
+  const input = `<original_problem>\n${JSON.stringify({ title: base.title, statement: base.statement, signature: base.signature, optimal: base.analysis?.optimal })}\n</original_problem>`;
+  const schema = preparedOutputSchema.extend({ change: z.string() });
+  const id = `var-${base.id}-${Date.now().toString(36)}`;
+  return generate(input, `${prompt('prepare-pasted')}\n\n${prompt('variation')}`, id, 'variation', opts, schema, base.id);
+}
+
+async function generate(
+  input: string,
+  instructions: string,
+  id: string,
+  source: Problem['source'],
+  opts: PrepareOptions,
+  schema: z.ZodType<PreparedOutput & { change?: string }> = preparedOutputSchema,
+  variationOf?: string,
+): Promise<Problem> {
   const system = [
     { text: prompt('analysis') },
-    { text: prompt('prepare-pasted') + `\n\nAllowed topic ids: ${TOPICS.join(', ')}.\nAllowed value types: ${VALUE_TYPES}.`, cache: true },
+    { text: instructions + `\n\nAllowed topic ids: ${TOPICS.join(', ')}.\nAllowed value types: ${VALUE_TYPES}.`, cache: true },
   ];
   let feedback = '';
   for (let attempt = 1; attempt <= 2; attempt++) {
@@ -63,18 +85,19 @@ export async function preparePasted(text: string, opts: PrepareOptions): Promise
         {
           role: 'user',
           text:
-            `<pasted_problem>\n${text}\n</pasted_problem>` +
+            input +
             (feedback ? `\n\nYour previous answer failed these checks. Fix the reference solution or the tests:\n${feedback}` : ''),
         },
       ],
       maxTokens: 32000,
       effort: 'high',
-      schema: preparedOutputSchema,
+      schema,
       schemaName: 'prepared_problem',
       signal: opts.signal,
     });
     opts.record('analysis', res.model, res.usage);
-    const problem = preparedToProblem(res.data, `paste-${hash.slice(0, 12)}`);
+    const problem = preparedToProblem(res.data, id, source);
+    if (variationOf) problem.variationOf = { problemId: variationOf, change: (res.data as { change?: string }).change ?? '' };
     opts.onStage?.('checking');
     const check = await checkReference(problem, res.data.analysis, opts.run);
     // Keep only tests both reference solutions agree with. If too few
@@ -82,8 +105,7 @@ export async function preparePasted(text: string, opts: PrepareOptions): Promise
     if (check.agreed.length >= 3) {
       problem.tests = check.agreed;
       if (!problem.tests.some((t) => !t.hidden)) problem.tests[0] = { ...problem.tests[0], hidden: false };
-      await cacheAnalysis(hash, problem);
-      return { problem, cached: false };
+      return problem;
     }
     feedback = check.failures.slice(0, 12).join('\n');
   }

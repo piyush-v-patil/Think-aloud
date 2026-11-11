@@ -13,6 +13,8 @@ export interface BankEntry {
   title: string;
   difficulty: Difficulty;
   topics: Topic[];
+  /** Rubric categories of the analysis's expected mentions. */
+  mentions?: import('../types').RubricCategory[];
 }
 
 

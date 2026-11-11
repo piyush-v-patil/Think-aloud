@@ -13,7 +13,8 @@ import { CodeRunner } from '../runner/runner';
 import { saveSession } from '../storage/db';
 import { hasTests } from '../problems/paste';
 import { createStore } from '../../state/store';
-import { getAudio } from '../storage/db';
+import { getAudio, listEntries, saveListEntry } from '../storage/db';
+import { aggregate } from '../feedback/debrief';
 import { fileTranscriber, type FileTranscriber } from '../speech/files';
 import { WhisperLocal } from '../speech/whisper';
 import { alignTranscript } from '../speech/align';
@@ -90,6 +91,7 @@ export function processSession(session: Session, settings: Settings): Promise<Se
       });
       out.usage = session.usage;
       await saveSession(out);
+      await updateListEntry(out);
       return out;
     } finally {
       runner.dispose();
@@ -101,4 +103,19 @@ export function processSession(session: Session, settings: Settings): Promise<Se
     setStage(session.id, { stage: null, error: err instanceof Error ? (err as { kind?: string }).kind ?? err.message : 'unknown' });
   });
   return job;
+}
+
+/** Marks a list entry practiced and remembers its average score, so weak ones resurface. */
+export async function updateListEntry(s: Session): Promise<void> {
+  if (!s.listEntryId || !s.debrief) return;
+  const entry = (await listEntries()).find((e) => e.id === s.listEntryId);
+  if (!entry) return;
+  const { average } = aggregate(s.debrief.scores);
+  await saveListEntry({
+    ...entry,
+    problemId: s.problem.id,
+    completedAt: entry.completedAt ?? Date.now(),
+    lastScore: average ?? entry.lastScore,
+    sessions: [...new Set([...entry.sessions, s.id])],
+  });
 }

@@ -360,6 +360,8 @@ export interface Session {
   createdAt: number;
   endedAt?: number;
   demo?: boolean;
+  /** The custom-list entry this session practiced, if any. */
+  listEntryId?: string;
   problem: Problem;
   language: Language;
   persona: Persona;

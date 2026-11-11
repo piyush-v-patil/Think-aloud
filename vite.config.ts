@@ -44,7 +44,13 @@ function problemIndexPlugin(): Plugin {
         .map((f) => {
           this.addWatchFile(join(dir, f));
           const p = JSON.parse(readFileSync(join(dir, f), 'utf8'));
-          return { id: p.id, title: p.title, difficulty: p.difficulty, topics: p.topics };
+          return {
+            id: p.id,
+            title: p.title,
+            difficulty: p.difficulty,
+            topics: p.topics,
+            mentions: (p.analysis?.expectedMentions ?? []).map((m: { category: string }) => m.category),
+          };
         });
       return `export default ${JSON.stringify(entries)};`;
     },

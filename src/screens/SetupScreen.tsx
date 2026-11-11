@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { setup as copy, quality as qualityCopy, presetName, difficultyName, topicName, personaName, personaHelp, feedbackModeName, feedbackModeHelp, languageName } from '../copy/strings';
+import { variation as varCopy, list as listCopy, setup as copy, quality as qualityCopy, presetName, difficultyName, topicName, personaName, personaHelp, feedbackModeName, feedbackModeHelp, languageName } from '../copy/strings';
 import { BANK, filterBank, loadBankProblem, pickRandom, type BankEntry } from '../lib/problems/bank';
 import { draftFromPaste } from '../lib/problems/paste';
 import { newId } from '../lib/id';
@@ -9,11 +9,14 @@ import { createProvider } from '../lib/ai/factory';
 import { ProviderError } from '../lib/ai/errors';
 import { ai as aiCopy } from '../copy/strings';
 import { usageRecord } from '../lib/ai/usage';
-import { preparePasted, type PrepareStage } from '../lib/problems/prepare';
+import { preparePasted, prepareVariation, type PrepareStage } from '../lib/problems/prepare';
 import { CodeRunner } from '../lib/runner/runner';
-import type { UsageRecord } from '../lib/types';
+import type { Language, UsageRecord } from '../lib/types';
 import { estimateSession } from '../lib/cost/estimate';
-import { listSessions } from '../lib/storage/db';
+import { listEntries, listSessions, saveProblem, type ListEntry } from '../lib/storage/db';
+import { sortForPractice, isWeak } from './ListScreen';
+import { limitState, spend } from '../lib/history/stats';
+import { formatUsd } from '../lib/cost/pricing';
 import { useKeys } from '../state/keys';
 import { CostEstimate } from '../ui/CostEstimate';
 import { chooseAccurateEngine, chooseLiveEngine } from '../lib/speech/choose';
@@ -26,11 +29,23 @@ import { Select, TextArea, TextField } from '../ui/Field';
 import { Button, ButtonLink } from '../ui/Button';
 import { Rule } from '../ui/Rule';
 
-type Source = 'random' | 'paste';
+type Source = 'random' | 'paste' | 'list' | 'variation';
+
+function listFromHash(): string | null {
+  const q = window.location.hash.split('?')[1];
+  return q ? new URLSearchParams(q).get('list') : null;
+}
 
 export function SetupScreen() {
   const settings = useSettings();
-  const [source, setSource] = useState<Source>('random');
+  const [listId, setListId] = useState<string | null>(() => listFromHash());
+  const [source, setSource] = useState<Source>(() => (listFromHash() ? 'list' : 'random'));
+  const [entries, setEntries] = useState<ListEntry[]>([]);
+  useEffect(() => {
+    listEntries().then((e) => setEntries(sortForPractice(e)));
+  }, []);
+  const entry = entries.find((e) => e.id === listId) ?? entries[0];
+  const [baseId, setBaseId] = useState<string | null>(null);
   const [difficulty, setDifficulty] = useState<Difficulty | 'any'>('any');
   const [topic, setTopic] = useState<Topic | 'any'>('any');
   const [pasted, setPasted] = useState('');
@@ -53,20 +68,38 @@ export function SetupScreen() {
         models,
         feedbackMode: settings.feedbackMode,
         minutes: settings.sessionMinutes,
-        needsAnalysis: source === 'paste',
+        needsAnalysis: source !== 'random',
         speech: { liveEngine: chooseLiveEngine(settings), accurateEngine: chooseAccurateEngine(settings), keywordHints: true },
         history,
       }),
     [provider, models, settings, source, history],
   );
 
-  const canStart = hasKey && (source === 'random' ? !!current : pasted.trim().length > 20);
+  const pastProblems = useMemo(() => {
+    const seen = new Map<string, Problem>();
+    for (const sess of history) if (!sess.demo && sess.problem.analysis && !seen.has(sess.problem.id)) seen.set(sess.problem.id, sess.problem);
+    return [...seen.values()];
+  }, [history]);
+  const base = pastProblems.find((p) => p.id === baseId) ?? pastProblems[0];
+  const money = spend(history);
+  const limit = limitState(money.monthUsd, settings.monthlyLimitUsd);
+
+  const canStart =
+    hasKey &&
+    (source === 'random'
+      ? !!current
+      : source === 'paste'
+        ? pasted.trim().length > 20
+        : source === 'list'
+          ? !!entry?.text
+          : !!base);
 
   const [prep, setPrep] = useState<{ stage: PrepareStage; abort: AbortController } | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  function begin(problem: Problem, prepUsage: UsageRecord[] = []) {
+  function begin(problem: Problem, prepUsage: UsageRecord[] = [], listEntryId?: string) {
     draftStore.set({
+      listEntryId,
       problem,
       language: settings.language,
       persona: settings.persona,
@@ -84,22 +117,31 @@ export function SetupScreen() {
       if (problem) begin(problem);
       return;
     }
+    const text = source === 'list' ? (entry?.text ?? '') : pasted;
     const ai = createProvider(settings.provider, settings);
-    if (!ai) return begin(draftFromPaste(pasted, newId('paste-')));
+    if (!ai) return begin(draftFromPaste(text, newId('paste-')));
     const abort = new AbortController();
     setPrep({ stage: 'reading', abort });
     const runner = new CodeRunner();
     const usage: UsageRecord[] = [];
     try {
-      const { problem } = await preparePasted(pasted, {
+      const opts = {
         provider: ai,
         model: strongestModel(models),
-        run: (lang, code, p, tests) => runner.runTests(lang, code, p.signature, tests, 0),
-        record: (role, model, u) => usage.push(usageRecord(provider, role, model, u, 0)),
-        onStage: (stage) => setPrep({ stage, abort }),
+        run: (lang: Language, code: string, p: Problem, tests: Problem['tests']) =>
+          runner.runTests(lang, code, p.signature, tests, 0),
+        record: (role: UsageRecord['role'], model: string, u: Parameters<typeof usageRecord>[3]) => usage.push(usageRecord(provider, role, model, u, 0)),
+        onStage: (stage: PrepareStage) => setPrep({ stage, abort }),
         signal: abort.signal,
-      });
-      begin(problem, usage);
+      };
+      if (source === 'variation') {
+        const problem = await prepareVariation(base!, opts);
+        await saveProblem(problem);
+        begin(problem, usage);
+      } else {
+        const { problem } = await preparePasted(text, opts);
+        begin(problem, usage, source === 'list' ? entry?.id : undefined);
+      }
     } catch (err) {
       const kind = err instanceof ProviderError ? err.kind : 'unknown';
       if (kind !== 'aborted') setError(kind === 'bad-output' ? copy.prepFailed : (aiCopy.errors[kind] ?? copy.prepFailed));
@@ -130,9 +172,43 @@ export function SetupScreen() {
             options={[
               { value: 'random', label: copy.sourceRandom },
               { value: 'paste', label: copy.sourcePaste },
+              { value: 'list', label: copy.sourceList },
+              { value: 'variation', label: copy.sourceVariation },
             ]}
           />
-          {source === 'random' ? (
+          {source === 'list' && (
+            <div className="flex flex-col gap-2">
+              {entries.length ? (
+                <>
+                  <Select
+                    label={copy.listPick}
+                    value={entry?.id ?? ''}
+                    onChange={(e) => setListId(e.target.value)}
+                    options={entries.map((e) => ({ value: e.id, label: isWeak(e) ? `${e.title} (${listCopy.weak.toLowerCase()})` : e.title }))}
+                  />
+                  {entry && !entry.text && <p className="text-sm text-red">{copy.listNeedsText}</p>}
+                </>
+              ) : (
+                <p className="text-sm text-ink-soft">{copy.listEmpty}</p>
+              )}
+              <a href="#/list" className="text-sm text-blue underline underline-offset-4">
+                {listCopy.manage}
+              </a>
+            </div>
+          )}
+          {source === 'variation' &&
+            (pastProblems.length ? (
+              <Select
+                label={varCopy.pick}
+                help={varCopy.help}
+                value={base?.id ?? ''}
+                onChange={(e) => setBaseId(e.target.value)}
+                options={pastProblems.map((p) => ({ value: p.id, label: p.title }))}
+              />
+            ) : (
+              <p className="text-sm text-ink-soft">{varCopy.none}</p>
+            ))}
+          {source === 'list' || source === 'variation' ? null : source === 'random' ? (
             <div className="flex flex-col gap-4">
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <Select
@@ -223,6 +299,11 @@ export function SetupScreen() {
             <a href="#/settings" className="text-blue underline underline-offset-4">
               {copy.addKey}
             </a>
+          </p>
+        )}
+        {(limit === 'near' || limit === 'over') && (
+          <p role="status" className={`text-sm ${limit === 'over' ? 'text-red' : ''}`}>
+            {(limit === 'over' ? copy.monthlyLimitReached : copy.monthlyLimitWarning)(formatUsd(money.monthUsd), formatUsd(settings.monthlyLimitUsd!))}
           </p>
         )}
         {prep && (

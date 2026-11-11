@@ -23,6 +23,7 @@ export async function buildSession(c: InterviewController): Promise<Session> {
     createdAt: Date.now() - endedMs,
     endedAt: Date.now(),
     problem: c.problem,
+    ...(c.draft.listEntryId ? { listEntryId: c.draft.listEntryId } : {}),
     language: c.language,
     persona: c.draft.persona,
     feedbackMode: c.draft.feedbackMode,
