@@ -1,0 +1,321 @@
+{
+  "schemaVersion": 1,
+  "id": "exact-change",
+  "title": "Exact change combinations",
+  "difficulty": "medium",
+  "topics": [
+    "backtracking"
+  ],
+  "statement": "A vending machine accepts coins with the distinct values in `coins`, and you can use each value as many times as you like. List every combination of coins that adds up to exactly `amount`.\n\nTwo combinations are the same if they use the same number of each coin. Return each combination once, as a list of coin values; the combinations and the coins inside them can be in any order.",
+  "examples": [
+    {
+      "input": "coins = [2, 3, 5], amount = 8",
+      "output": "[[2, 2, 2, 2], [2, 3, 3], [3, 5]]"
+    }
+  ],
+  "signature": {
+    "name": "exact_change",
+    "params": [
+      {
+        "name": "coins",
+        "type": "int[]"
+      },
+      {
+        "name": "amount",
+        "type": "int"
+      }
+    ],
+    "returns": "int[][]"
+  },
+  "starterCode": {
+    "python": "def exact_change(coins, amount):\n    pass\n",
+    "javascript": "function exact_change(coins, amount) {\n\n}\n"
+  },
+  "tests": [
+    {
+      "name": "example",
+      "args": [
+        [
+          2,
+          3,
+          5
+        ],
+        8
+      ],
+      "expected": [
+        [
+          2,
+          2,
+          2,
+          2
+        ],
+        [
+          2,
+          3,
+          3
+        ],
+        [
+          3,
+          5
+        ]
+      ],
+      "compare": "unordered-deep"
+    },
+    {
+      "name": "impossible",
+      "args": [
+        [
+          4
+        ],
+        7
+      ],
+      "expected": [],
+      "compare": "unordered-deep"
+    },
+    {
+      "name": "amount zero",
+      "args": [
+        [
+          1,
+          2
+        ],
+        0
+      ],
+      "expected": [
+        []
+      ],
+      "compare": "unordered-deep"
+    },
+    {
+      "name": "single coin repeated",
+      "args": [
+        [
+          3
+        ],
+        9
+      ],
+      "expected": [
+        [
+          3,
+          3,
+          3
+        ]
+      ],
+      "compare": "unordered-deep"
+    },
+    {
+      "name": "unsorted coins",
+      "args": [
+        [
+          7,
+          2,
+          6
+        ],
+        13
+      ],
+      "expected": [
+        [
+          2,
+          2,
+          2,
+          7
+        ],
+        [
+          6,
+          7
+        ]
+      ],
+      "compare": "unordered-deep",
+      "hidden": true
+    },
+    {
+      "name": "ones and fives",
+      "args": [
+        [
+          5,
+          1
+        ],
+        7
+      ],
+      "expected": [
+        [
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        [
+          1,
+          1,
+          5
+        ]
+      ],
+      "compare": "unordered-deep",
+      "hidden": true
+    }
+  ],
+  "analysis": {
+    "clarifyingQuestions": [
+      {
+        "question": "Can I reuse a coin value?",
+        "answer": "Yes, as many times as you like.",
+        "why": "Determines whether recursion stays on the same coin."
+      },
+      {
+        "question": "Are [2, 3, 3] and [3, 2, 3] the same?",
+        "answer": "Yes, combinations not orderings.",
+        "why": "Requires generating in a fixed order to avoid duplicates."
+      },
+      {
+        "question": "What if the amount is 0?",
+        "answer": "One combination: use no coins.",
+        "why": "Base case."
+      },
+      {
+        "question": "Are coin values positive and distinct?",
+        "answer": "Yes.",
+        "why": "Guarantees the recursion terminates."
+      }
+    ],
+    "hiddenConstraints": [
+      "Up to 30 coin values, each at least 1.",
+      "amount up to 500."
+    ],
+    "edgeCases": [
+      {
+        "input": "amount = 0",
+        "why": "Return [[]]."
+      },
+      {
+        "input": "[4], 7",
+        "why": "No combination: []."
+      },
+      {
+        "input": "Unsorted coins",
+        "why": "Sorting helps prune."
+      },
+      {
+        "input": "A single coin that divides the amount",
+        "why": "One combination repeating it."
+      }
+    ],
+    "approaches": [
+      {
+        "name": "Try every ordering",
+        "idea": "Recurse choosing any coin each time and deduplicate at the end.",
+        "time": "Exponential with many duplicates",
+        "space": "Large",
+        "tradeoffs": "Wasteful because orderings repeat."
+      },
+      {
+        "name": "Backtracking with a start index",
+        "idea": "Only allow coins at or after the current index, so each combination is generated in one order. Stay on the same index to reuse a coin.",
+        "time": "Exponential in the output size",
+        "space": "O(amount / min coin) recursion",
+        "tradeoffs": "No duplicates; prune when a coin exceeds what remains."
+      }
+    ],
+    "optimal": {
+      "name": "Backtracking from a start index",
+      "explanation": "Sort the coins. build(start, remaining): if remaining is 0, record a copy. Otherwise for i from start: if coins[i] > remaining, stop (sorted, so the rest are larger); add coins[i], recurse with build(i, remaining - coins[i]), then remove it.",
+      "time": "Exponential, proportional to the number of combinations",
+      "space": "O(amount / smallest coin) recursion depth"
+    },
+    "hintLadder": [
+      "How would you list combinations by hand without repeating one in a different order?",
+      "What if you only allowed coins in non-decreasing order?",
+      "How do you allow reusing the same coin in that scheme?",
+      "Backtrack with a start index; recurse with the same index to reuse, and stop when the coin exceeds the remainder."
+    ],
+    "expectedMentions": [
+      {
+        "id": "ask-reuse",
+        "what": "Asks whether coins can be reused",
+        "category": "clarification"
+      },
+      {
+        "id": "dedupe-order",
+        "what": "Explains generating combinations in a fixed order to avoid duplicates",
+        "category": "reasoning"
+      },
+      {
+        "id": "backtracking-plan",
+        "what": "Describes backtracking with a start index",
+        "category": "planning"
+      },
+      {
+        "id": "prune",
+        "what": "Prunes when a coin exceeds the remaining amount",
+        "category": "reasoning"
+      },
+      {
+        "id": "trace",
+        "what": "Traces part of the example",
+        "category": "testing"
+      }
+    ],
+    "followUps": [
+      "Just count the combinations, for a large amount.",
+      "Each coin can be used at most once."
+    ],
+    "vocabulary": [
+      "backtracking",
+      "recursion",
+      "combination sum",
+      "start index",
+      "pruning",
+      "sort",
+      "duplicates",
+      "exponential"
+    ],
+    "referenceSolution": {
+      "python": "def exact_change(coins, amount):\n    coins = sorted(coins)\n    out = []\n    current = []\n    def build(start, remaining):\n        if remaining == 0:\n            out.append(current[:])\n            return\n        for i in range(start, len(coins)):\n            c = coins[i]\n            if c > remaining:\n                break\n            current.append(c)\n            build(i, remaining - c)\n            current.pop()\n    build(0, amount)\n    return out\n",
+      "javascript": "function exact_change(coins, amount) {\n  const sorted = [...coins].sort((a, b) => a - b);\n  const out = [];\n  const current = [];\n  const build = (start, remaining) => {\n    if (remaining === 0) {\n      out.push([...current]);\n      return;\n    }\n    for (let i = start; i < sorted.length; i++) {\n      const c = sorted[i];\n      if (c > remaining) break;\n      current.push(c);\n      build(i, remaining - c);\n      current.pop();\n    }\n  };\n  build(0, amount);\n  return out;\n}\n"
+    },
+    "walkthrough": [
+      {
+        "phase": "clarify",
+        "say": "I can use each value as often as I like, and two combinations with the same counts are the same regardless of order? An amount of zero gives one empty combination?"
+      },
+      {
+        "phase": "plan",
+        "say": "If I just recurse picking any coin, I’ll get 2, 3, 3 and 3, 2, 3 as separate results. To avoid that, I only let the next coin be the same or later in sorted order. Staying on the same index lets me reuse a coin."
+      },
+      {
+        "phase": "plan",
+        "say": "Sorting also lets me stop early: once a coin is bigger than what’s left, the rest are too. The time is exponential, tied to how many combinations exist."
+      },
+      {
+        "phase": "code",
+        "say": "Sort, then backtrack with a start index and the remaining amount.",
+        "code": "def exact_change(coins, amount):\n    coins = sorted(coins)\n    out = []\n    current = []\n    def build(start, remaining):\n        if remaining == 0:\n            out.append(current[:])\n            return"
+      },
+      {
+        "phase": "code",
+        "say": "Recursing with i, not i plus one, is what allows reuse.",
+        "code": "        for i in range(start, len(coins)):\n            c = coins[i]\n            if c > remaining:\n                break\n            current.append(c)\n            build(i, remaining - c)\n            current.pop()\n    build(0, amount)\n    return out"
+      },
+      {
+        "phase": "test",
+        "say": "For 2, 3, 5 and 8: four 2s works. 2, 2, 2 leaves 2 but then 3 is too big. 2, 3, 3 works. 2, 2 plus 3 leaves 1, nothing. 3, 5 works. 5 alone leaves 3 but I can’t go back to 3 from index of 5. Three combinations."
+      },
+      {
+        "phase": "test",
+        "say": "For 4 and 7: 4 leaves 3, then 4 is too big, so nothing. Empty list."
+      },
+      {
+        "phase": "wrap-up",
+        "say": "Exponential in the number of results, with recursion depth up to amount divided by the smallest coin."
+      }
+    ],
+    "generatedBy": {
+      "provider": "maintainers",
+      "model": "hand-written",
+      "date": "2026-11-11"
+    }
+  },
+  "source": "built-in"
+}

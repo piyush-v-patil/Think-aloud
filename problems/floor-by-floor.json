@@ -1,0 +1,278 @@
+{
+  "schemaVersion": 1,
+  "id": "floor-by-floor",
+  "title": "Floor by floor",
+  "difficulty": "medium",
+  "topics": [
+    "trees"
+  ],
+  "statement": "A building's emergency plan is a binary tree: each node is a room, and its children are the rooms reached next. The fire marshal wants the rooms listed floor by floor, left to right.\n\nReturn a list of floors, where each floor is the list of room numbers at that depth, from the top floor down. In tests, a tree is written as a level-order array with nulls.",
+  "examples": [
+    {
+      "input": "root = [7, 3, 9, null, null, 8, 12]",
+      "output": "[[7], [3, 9], [8, 12]]"
+    }
+  ],
+  "signature": {
+    "name": "floors",
+    "params": [
+      {
+        "name": "root",
+        "type": "TreeNode"
+      }
+    ],
+    "returns": "int[][]"
+  },
+  "starterCode": {
+    "python": "def floors(root):\n    pass\n",
+    "javascript": "function floors(root) {\n\n}\n"
+  },
+  "tests": [
+    {
+      "name": "example",
+      "args": [
+        [
+          7,
+          3,
+          9,
+          null,
+          null,
+          8,
+          12
+        ]
+      ],
+      "expected": [
+        [
+          7
+        ],
+        [
+          3,
+          9
+        ],
+        [
+          8,
+          12
+        ]
+      ]
+    },
+    {
+      "name": "empty",
+      "args": [
+        []
+      ],
+      "expected": []
+    },
+    {
+      "name": "one room",
+      "args": [
+        [
+          1
+        ]
+      ],
+      "expected": [
+        [
+          1
+        ]
+      ]
+    },
+    {
+      "name": "left chain",
+      "args": [
+        [
+          1,
+          2,
+          null,
+          3
+        ]
+      ],
+      "expected": [
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          3
+        ]
+      ]
+    },
+    {
+      "name": "full",
+      "args": [
+        [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7
+        ]
+      ],
+      "expected": [
+        [
+          1
+        ],
+        [
+          2,
+          3
+        ],
+        [
+          4,
+          5,
+          6,
+          7
+        ]
+      ],
+      "hidden": true
+    }
+  ],
+  "analysis": {
+    "clarifyingQuestions": [
+      {
+        "question": "What should an empty tree return?",
+        "answer": "An empty list.",
+        "why": "Base case."
+      },
+      {
+        "question": "Within a floor, what order?",
+        "answer": "Left to right.",
+        "why": "Determines the order children are enqueued."
+      },
+      {
+        "question": "How big can the tree be?",
+        "answer": "Up to 2,000 rooms.",
+        "why": "Any O(n) traversal is fine."
+      }
+    ],
+    "hiddenConstraints": [
+      "Up to 2,000 nodes."
+    ],
+    "edgeCases": [
+      {
+        "input": "[]",
+        "why": "Return []."
+      },
+      {
+        "input": "[1]",
+        "why": "One floor."
+      },
+      {
+        "input": "A chain",
+        "why": "Each floor has one room."
+      }
+    ],
+    "approaches": [
+      {
+        "name": "BFS with a queue, level by level",
+        "idea": "Process all nodes of the current level, collecting their children as the next level.",
+        "time": "O(n)",
+        "space": "O(w), the widest level",
+        "tradeoffs": "Natural fit for \"by depth\"."
+      },
+      {
+        "name": "DFS with depth",
+        "idea": "Recursively visit nodes, appending each value to the list for its depth, visiting left before right.",
+        "time": "O(n)",
+        "space": "O(h) stack plus output",
+        "tradeoffs": "Also correct; order within a floor relies on visiting left first."
+      }
+    ],
+    "optimal": {
+      "name": "Level-by-level BFS",
+      "explanation": "Keep the current level as a list. Record its values, then build the next level from each node’s left and right children in order. Stop when a level is empty.",
+      "time": "O(n)",
+      "space": "O(w)"
+    },
+    "hintLadder": [
+      "Which traversal visits nodes in order of depth?",
+      "How can you tell where one floor ends and the next begins?",
+      "What if you process one whole level at a time?",
+      "Use BFS and take the whole current level before moving to its children."
+    ],
+    "expectedMentions": [
+      {
+        "id": "ask-empty",
+        "what": "Asks about the empty tree",
+        "category": "clarification"
+      },
+      {
+        "id": "bfs-plan",
+        "what": "Proposes breadth-first search with O(n) time",
+        "category": "planning"
+      },
+      {
+        "id": "level-boundary",
+        "what": "Explains how levels are separated",
+        "category": "reasoning"
+      },
+      {
+        "id": "space",
+        "what": "States the space as the widest level",
+        "category": "reasoning"
+      },
+      {
+        "id": "trace",
+        "what": "Traces the example level by level",
+        "category": "testing"
+      }
+    ],
+    "followUps": [
+      "Return the floors in zigzag order, alternating direction.",
+      "Return only the rightmost room on each floor."
+    ],
+    "vocabulary": [
+      "breadth first search",
+      "level order traversal",
+      "queue",
+      "binary tree",
+      "depth",
+      "level",
+      "O of n",
+      "children"
+    ],
+    "referenceSolution": {
+      "python": "def floors(root):\n    if root is None:\n        return []\n    out = []\n    level = [root]\n    while level:\n        out.append([n.val for n in level])\n        nxt = []\n        for n in level:\n            if n.left:\n                nxt.append(n.left)\n            if n.right:\n                nxt.append(n.right)\n        level = nxt\n    return out\n",
+      "javascript": "function floors(root) {\n  if (!root) return [];\n  const out = [];\n  let level = [root];\n  while (level.length) {\n    out.push(level.map((n) => n.val));\n    const next = [];\n    for (const n of level) {\n      if (n.left) next.push(n.left);\n      if (n.right) next.push(n.right);\n    }\n    level = next;\n  }\n  return out;\n}\n"
+    },
+    "walkthrough": [
+      {
+        "phase": "clarify",
+        "say": "Empty tree returns an empty list, and within each floor I go left to right?"
+      },
+      {
+        "phase": "plan",
+        "say": "Floor by floor is breadth-first search. The only extra thing is knowing where each floor ends. If I process an entire level at once and build the next level from its children, each list is one floor. O(n) time, and space for the widest level."
+      },
+      {
+        "phase": "code",
+        "say": "Start with the root as the first level.",
+        "code": "def floors(root):\n    if root is None:\n        return []\n    out = []\n    level = [root]\n    while level:\n        out.append([n.val for n in level])"
+      },
+      {
+        "phase": "code",
+        "say": "Children in left-to-right order become the next level.",
+        "code": "        nxt = []\n        for n in level:\n            if n.left:\n                nxt.append(n.left)\n            if n.right:\n                nxt.append(n.right)\n        level = nxt\n    return out"
+      },
+      {
+        "phase": "test",
+        "say": "For 7 with children 3 and 9, where 9 has 8 and 12: first level 7, then 3 and 9. 3 has no children and 9 gives 8 and 12. Then the next level is empty. Result 7, then 3, 9, then 8, 12."
+      },
+      {
+        "phase": "test",
+        "say": "For a left chain 1, 2, 3, each level has one node, so three floors of one."
+      },
+      {
+        "phase": "wrap-up",
+        "say": "O(n) time and O(w) space where w is the widest floor."
+      }
+    ],
+    "generatedBy": {
+      "provider": "maintainers",
+      "model": "hand-written",
+      "date": "2026-11-11"
+    }
+  },
+  "source": "built-in"
+}

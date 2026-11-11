@@ -1,0 +1,294 @@
+{
+  "schemaVersion": 1,
+  "id": "warmer-days",
+  "title": "Days until warmer",
+  "difficulty": "medium",
+  "topics": [
+    "stack"
+  ],
+  "statement": "A weather station logs one temperature per day in `temps`.\n\nFor each day, return how many days you would wait until a strictly warmer day. If no warmer day comes later, use 0 for that day.",
+  "examples": [
+    {
+      "input": "temps = [18, 16, 17, 21, 19, 15, 20]",
+      "output": "[3, 1, 1, 0, 2, 1, 0]"
+    }
+  ],
+  "signature": {
+    "name": "days_until_warmer",
+    "params": [
+      {
+        "name": "temps",
+        "type": "int[]"
+      }
+    ],
+    "returns": "int[]"
+  },
+  "starterCode": {
+    "python": "def days_until_warmer(temps):\n    pass\n",
+    "javascript": "function days_until_warmer(temps) {\n\n}\n"
+  },
+  "tests": [
+    {
+      "name": "example",
+      "args": [
+        [
+          18,
+          16,
+          17,
+          21,
+          19,
+          15,
+          20
+        ]
+      ],
+      "expected": [
+        3,
+        1,
+        1,
+        0,
+        2,
+        1,
+        0
+      ]
+    },
+    {
+      "name": "empty",
+      "args": [
+        []
+      ],
+      "expected": []
+    },
+    {
+      "name": "equal temps",
+      "args": [
+        [
+          20,
+          20,
+          20
+        ]
+      ],
+      "expected": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "rising",
+      "args": [
+        [
+          1,
+          2,
+          3,
+          4
+        ]
+      ],
+      "expected": [
+        1,
+        1,
+        1,
+        0
+      ]
+    },
+    {
+      "name": "falling",
+      "args": [
+        [
+          4,
+          3,
+          2,
+          1
+        ]
+      ],
+      "expected": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "hidden": true
+    },
+    {
+      "name": "valley",
+      "args": [
+        [
+          5,
+          1,
+          1,
+          1,
+          6
+        ]
+      ],
+      "expected": [
+        4,
+        3,
+        2,
+        1,
+        0
+      ],
+      "hidden": true
+    }
+  ],
+  "analysis": {
+    "clarifyingQuestions": [
+      {
+        "question": "Does an equal temperature count as warmer?",
+        "answer": "No, it must be strictly warmer.",
+        "why": "Changes the comparison from <= to <."
+      },
+      {
+        "question": "What if no warmer day comes?",
+        "answer": "Use 0 for that day.",
+        "why": "Defines the default."
+      },
+      {
+        "question": "How many days?",
+        "answer": "Up to 100,000.",
+        "why": "Rules out scanning forward from every day."
+      },
+      {
+        "question": "What range are temperatures in?",
+        "answer": "Integers from -50 to 60.",
+        "why": "A small range allows a different approach, but the stack works regardless."
+      }
+    ],
+    "hiddenConstraints": [
+      "Up to 100,000 days.",
+      "Temperatures are integers between -50 and 60."
+    ],
+    "edgeCases": [
+      {
+        "input": "[]",
+        "why": "Return []."
+      },
+      {
+        "input": "[20, 20, 20]",
+        "why": "Equal temperatures are not warmer: all zeros."
+      },
+      {
+        "input": "[4, 3, 2, 1]",
+        "why": "Nothing warmer ever: all zeros, and the stack fills up."
+      },
+      {
+        "input": "[5, 1, 1, 1, 6]",
+        "why": "One warm day resolves many waiting days at once."
+      }
+    ],
+    "approaches": [
+      {
+        "name": "Scan forward from each day",
+        "idea": "For each day, look ahead until a warmer day.",
+        "time": "O(n^2)",
+        "space": "O(1) extra",
+        "tradeoffs": "Quadratic when temperatures fall for a long time."
+      },
+      {
+        "name": "Monotonic stack of waiting days",
+        "idea": "Keep a stack of positions still waiting for a warmer day; their temperatures decrease from bottom to top. Each new day pops every waiting day that is colder and fills in its answer.",
+        "time": "O(n)",
+        "space": "O(n)",
+        "tradeoffs": "Each day is pushed and popped at most once."
+      }
+    ],
+    "optimal": {
+      "name": "Monotonic decreasing stack",
+      "explanation": "Initialize answers to 0. For each day i, while the stack is non-empty and the temperature at its top is lower than temps[i], pop j and set answer[j] = i - j. Then push i. Days left on the stack never found a warmer day and keep 0.",
+      "time": "O(n)",
+      "space": "O(n)"
+    },
+    "hintLadder": [
+      "Which earlier days could today be the answer for?",
+      "Among days still waiting, what do you know about their temperatures?",
+      "What structure lets you resolve the most recent waiting days first?",
+      "Keep a stack of indexes with decreasing temperatures; pop while today is warmer."
+    ],
+    "expectedMentions": [
+      {
+        "id": "ask-strict",
+        "what": "Asks whether equal temperatures count as warmer",
+        "category": "clarification"
+      },
+      {
+        "id": "brute-force",
+        "what": "States the O(n^2) forward scan",
+        "category": "planning"
+      },
+      {
+        "id": "monotonic-stack",
+        "what": "Proposes a stack of waiting days with decreasing temperatures",
+        "category": "planning"
+      },
+      {
+        "id": "amortized",
+        "what": "Explains why it is O(n): each index is pushed and popped once",
+        "category": "reasoning"
+      },
+      {
+        "id": "store-indexes",
+        "what": "Explains storing indexes rather than temperatures to compute the wait",
+        "category": "reasoning"
+      },
+      {
+        "id": "trace",
+        "what": "Traces an example showing several pops at once",
+        "category": "testing"
+      }
+    ],
+    "followUps": [
+      "Return the next warmer temperature instead of the wait.",
+      "The list is circular: after the last day, wrap around to the first."
+    ],
+    "vocabulary": [
+      "monotonic stack",
+      "stack",
+      "next greater element",
+      "amortized",
+      "O of n",
+      "index",
+      "pop",
+      "push",
+      "strictly warmer"
+    ],
+    "referenceSolution": {
+      "python": "def days_until_warmer(temps):\n    out = [0] * len(temps)\n    stack = []\n    for i, t in enumerate(temps):\n        while stack and temps[stack[-1]] < t:\n            j = stack.pop()\n            out[j] = i - j\n        stack.append(i)\n    return out\n",
+      "javascript": "function days_until_warmer(temps) {\n  const out = new Array(temps.length).fill(0);\n  const stack = [];\n  for (let i = 0; i < temps.length; i++) {\n    while (stack.length && temps[stack[stack.length - 1]] < temps[i]) {\n      const j = stack.pop();\n      out[j] = i - j;\n    }\n    stack.push(i);\n  }\n  return out;\n}\n"
+    },
+    "walkthrough": [
+      {
+        "phase": "clarify",
+        "say": "Warmer means strictly warmer, so an equal temperature doesn’t count? And days with no warmer day get zero?"
+      },
+      {
+        "phase": "plan",
+        "say": "Brute force scans forward from each day until it finds something warmer. If temperatures keep falling, that’s n squared."
+      },
+      {
+        "phase": "plan",
+        "say": "Instead, think about days that are still waiting. If I keep them on a stack, their temperatures must be decreasing from bottom to top, because a warmer day would have resolved the colder ones below it. When a new day comes, I pop every waiting day that’s colder and record the gap. Each day is pushed and popped once, so it’s O(n)."
+      },
+      {
+        "phase": "code",
+        "say": "I store indexes on the stack, because I need the positions to compute the wait.",
+        "code": "def days_until_warmer(temps):\n    out = [0] * len(temps)\n    stack = []\n    for i, t in enumerate(temps):\n        while stack and temps[stack[-1]] < t:\n            j = stack.pop()\n            out[j] = i - j\n        stack.append(i)\n    return out"
+      },
+      {
+        "phase": "test",
+        "say": "For 18, 16, 17, 21, 19, 15, 20: 18 and 16 wait. 17 resolves 16 with a gap of 1, then waits on top of 18. 21 resolves 17 and 18, giving 1 and 3. 19 and 15 wait, then 20 resolves 15 and 19 with 1 and 2. 21 and 20 stay at 0. That matches."
+      },
+      {
+        "phase": "test",
+        "say": "Equal temperatures: the comparison is strictly less than, so 20, 20, 20 never pops and all stay zero."
+      },
+      {
+        "phase": "wrap-up",
+        "say": "O(n) time, O(n) space for the stack in the worst case of falling temperatures."
+      }
+    ],
+    "generatedBy": {
+      "provider": "maintainers",
+      "model": "hand-written",
+      "date": "2026-11-11"
+    }
+  },
+  "source": "built-in"
+}

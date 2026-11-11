@@ -1,0 +1,262 @@
+{
+  "schemaVersion": 1,
+  "id": "first-version",
+  "title": "First version at or above",
+  "difficulty": "easy",
+  "topics": [
+    "binary-search"
+  ],
+  "statement": "Release numbers are stored in `versions` in strictly increasing order. Given a `target` number, return the position of the first release whose number is at least `target`. If every release is smaller than `target`, return the length of the list.\n\nUse a logarithmic-time search.",
+  "examples": [
+    {
+      "input": "versions = [2, 5, 9, 14], target = 9",
+      "output": "2"
+    },
+    {
+      "input": "versions = [2, 5, 9, 14], target = 10",
+      "output": "3"
+    },
+    {
+      "input": "versions = [2, 5, 9, 14], target = 20",
+      "output": "4"
+    }
+  ],
+  "signature": {
+    "name": "first_at_or_above",
+    "params": [
+      {
+        "name": "versions",
+        "type": "int[]"
+      },
+      {
+        "name": "target",
+        "type": "int"
+      }
+    ],
+    "returns": "int"
+  },
+  "starterCode": {
+    "python": "def first_at_or_above(versions, target):\n    pass\n",
+    "javascript": "function first_at_or_above(versions, target) {\n\n}\n"
+  },
+  "tests": [
+    {
+      "name": "exact match",
+      "args": [
+        [
+          2,
+          5,
+          9,
+          14
+        ],
+        9
+      ],
+      "expected": 2
+    },
+    {
+      "name": "between",
+      "args": [
+        [
+          2,
+          5,
+          9,
+          14
+        ],
+        10
+      ],
+      "expected": 3
+    },
+    {
+      "name": "past the end",
+      "args": [
+        [
+          2,
+          5,
+          9,
+          14
+        ],
+        20
+      ],
+      "expected": 4
+    },
+    {
+      "name": "before the start",
+      "args": [
+        [
+          2,
+          5,
+          9,
+          14
+        ],
+        1
+      ],
+      "expected": 0
+    },
+    {
+      "name": "empty",
+      "args": [
+        [],
+        3
+      ],
+      "expected": 0,
+      "hidden": true
+    },
+    {
+      "name": "single",
+      "args": [
+        [
+          7
+        ],
+        7
+      ],
+      "expected": 0,
+      "hidden": true
+    }
+  ],
+  "analysis": {
+    "clarifyingQuestions": [
+      {
+        "question": "Is the list strictly increasing?",
+        "answer": "Yes, no duplicates.",
+        "why": "With duplicates you would still want the first match, which this search gives."
+      },
+      {
+        "question": "What if every release is below the target?",
+        "answer": "Return the length of the list.",
+        "why": "The answer can be one past the last index."
+      },
+      {
+        "question": "Can the list be empty?",
+        "answer": "Yes; return 0.",
+        "why": "Base case."
+      }
+    ],
+    "hiddenConstraints": [
+      "Up to 100,000 releases.",
+      "Logarithmic time expected."
+    ],
+    "edgeCases": [
+      {
+        "input": "[]",
+        "why": "Return 0."
+      },
+      {
+        "input": "target smaller than everything",
+        "why": "Return 0."
+      },
+      {
+        "input": "target larger than everything",
+        "why": "Return len(versions)."
+      },
+      {
+        "input": "target equal to an element",
+        "why": "Return that element’s position."
+      }
+    ],
+    "approaches": [
+      {
+        "name": "Linear scan",
+        "idea": "Walk until the first value at least the target.",
+        "time": "O(n)",
+        "space": "O(1)",
+        "tradeoffs": "Ignores the sort."
+      },
+      {
+        "name": "Binary search for the lower bound",
+        "idea": "Keep a half-open range [lo, hi) that always contains the answer; move lo past values below the target and hi down otherwise.",
+        "time": "O(log n)",
+        "space": "O(1)",
+        "tradeoffs": "Logarithmic; the half-open range handles the \"past the end\" answer naturally."
+      }
+    ],
+    "optimal": {
+      "name": "Lower-bound binary search",
+      "explanation": "Set lo = 0 and hi = len(versions). While lo < hi: mid = (lo + hi) // 2; if versions[mid] < target, the answer is after mid, so lo = mid + 1; else hi = mid. Return lo.",
+      "time": "O(log n)",
+      "space": "O(1)"
+    },
+    "hintLadder": [
+      "The list is sorted. How can you use that?",
+      "What can you rule out when the middle value is smaller than the target?",
+      "Can the answer be one past the last index? How should your range account for that?",
+      "Use a half-open range [0, n) and binary search for the first value not less than the target."
+    ],
+    "expectedMentions": [
+      {
+        "id": "ask-not-found",
+        "what": "Asks what to return when every release is smaller",
+        "category": "clarification"
+      },
+      {
+        "id": "binary-search",
+        "what": "Proposes binary search and O(log n) before coding",
+        "category": "planning"
+      },
+      {
+        "id": "half-open",
+        "what": "Explains the range bounds, including the past-the-end answer",
+        "category": "reasoning"
+      },
+      {
+        "id": "trace-edges",
+        "what": "Tests targets below, between and above the values",
+        "category": "testing"
+      }
+    ],
+    "followUps": [
+      "Return the last position whose value is at most the target.",
+      "Releases can repeat; return the first of the repeats."
+    ],
+    "vocabulary": [
+      "binary search",
+      "lower bound",
+      "half-open interval",
+      "insertion point",
+      "O of log n",
+      "midpoint",
+      "sorted",
+      "off by one"
+    ],
+    "referenceSolution": {
+      "python": "def first_at_or_above(versions, target):\n    lo, hi = 0, len(versions)\n    while lo < hi:\n        mid = (lo + hi) // 2\n        if versions[mid] < target:\n            lo = mid + 1\n        else:\n            hi = mid\n    return lo\n",
+      "javascript": "function first_at_or_above(versions, target) {\n  let lo = 0;\n  let hi = versions.length;\n  while (lo < hi) {\n    const mid = (lo + hi) >> 1;\n    if (versions[mid] < target) lo = mid + 1;\n    else hi = mid;\n  }\n  return lo;\n}\n"
+    },
+    "walkthrough": [
+      {
+        "phase": "clarify",
+        "say": "The list is strictly increasing, and if everything is smaller than the target I return the length. An empty list gives zero?"
+      },
+      {
+        "phase": "plan",
+        "say": "Since it’s sorted, binary search gives O(log n). I’m looking for the first position whose value isn’t less than the target, which is a lower bound."
+      },
+      {
+        "phase": "plan",
+        "say": "The answer can be the length of the list, so I’ll use a half-open range from 0 to n. That way the \"past the end\" answer is inside the range from the start."
+      },
+      {
+        "phase": "code",
+        "say": "If the middle is too small, the answer is strictly after it. Otherwise the middle might be the answer, so I keep it.",
+        "code": "def first_at_or_above(versions, target):\n    lo, hi = 0, len(versions)\n    while lo < hi:\n        mid = (lo + hi) // 2\n        if versions[mid] < target:\n            lo = mid + 1\n        else:\n            hi = mid\n    return lo"
+      },
+      {
+        "phase": "test",
+        "say": "For 2, 5, 9, 14 and target 10: lo 0, hi 4, mid 2 is 9, too small, so lo is 3. Mid 3 is 14, so hi is 3. Return 3."
+      },
+      {
+        "phase": "test",
+        "say": "Target 20: every mid is too small, lo climbs to 4, which is the length. Empty list: lo equals hi equals 0 immediately."
+      },
+      {
+        "phase": "wrap-up",
+        "say": "O(log n) time, O(1) space."
+      }
+    ],
+    "generatedBy": {
+      "provider": "maintainers",
+      "model": "hand-written",
+      "date": "2026-11-11"
+    }
+  },
+  "source": "built-in"
+}

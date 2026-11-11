@@ -1,0 +1,291 @@
+{
+  "schemaVersion": 1,
+  "id": "reading-pace",
+  "title": "Slowest reading pace",
+  "difficulty": "medium",
+  "topics": [
+    "binary-search"
+  ],
+  "statement": "You have a stack of reports, where `pages[i]` is the page count of report i, and `hours` hours before a meeting. Each hour you pick one report and read up to `pace` pages of it; if the report has fewer pages left, you finish it and rest for the rest of that hour.\n\nReturn the smallest whole-number `pace` that lets you finish every report within `hours` hours. You can assume `hours` is at least the number of reports.",
+  "examples": [
+    {
+      "input": "pages = [4, 9, 6, 13], hours = 8",
+      "output": "5",
+      "explanation": "At 5 pages an hour: 1 + 2 + 2 + 3 = 8 hours. At 4 it would take 9."
+    },
+    {
+      "input": "pages = [25, 10, 18, 5], hours = 4",
+      "output": "25"
+    }
+  ],
+  "signature": {
+    "name": "slowest_pace",
+    "params": [
+      {
+        "name": "pages",
+        "type": "int[]"
+      },
+      {
+        "name": "hours",
+        "type": "int"
+      }
+    ],
+    "returns": "int"
+  },
+  "starterCode": {
+    "python": "def slowest_pace(pages, hours):\n    pass\n",
+    "javascript": "function slowest_pace(pages, hours) {\n\n}\n"
+  },
+  "tests": [
+    {
+      "name": "example 1",
+      "args": [
+        [
+          4,
+          9,
+          6,
+          13
+        ],
+        8
+      ],
+      "expected": 5
+    },
+    {
+      "name": "one hour per report",
+      "args": [
+        [
+          25,
+          10,
+          18,
+          5
+        ],
+        4
+      ],
+      "expected": 25
+    },
+    {
+      "name": "some spare time",
+      "args": [
+        [
+          25,
+          10,
+          18,
+          5
+        ],
+        6
+      ],
+      "expected": 13
+    },
+    {
+      "name": "single report",
+      "args": [
+        [
+          12
+        ],
+        5
+      ],
+      "expected": 3
+    },
+    {
+      "name": "all ones",
+      "args": [
+        [
+          1,
+          1,
+          1
+        ],
+        3
+      ],
+      "expected": 1,
+      "hidden": true
+    },
+    {
+      "name": "plenty of hours",
+      "args": [
+        [
+          100
+        ],
+        100
+      ],
+      "expected": 1,
+      "hidden": true
+    }
+  ],
+  "analysis": {
+    "clarifyingQuestions": [
+      {
+        "question": "Can I read two reports in the same hour?",
+        "answer": "No. Each hour you work on one report, even if you finish it early.",
+        "why": "This is why the hours for a report are its pages divided by the pace, rounded up."
+      },
+      {
+        "question": "Is there always an answer?",
+        "answer": "Yes, hours is at least the number of reports, so reading the largest report in one hour always works.",
+        "why": "Gives the upper bound for the search."
+      },
+      {
+        "question": "Does the pace have to be a whole number?",
+        "answer": "Yes, at least 1.",
+        "why": "Sets the lower bound and makes binary search on integers valid."
+      },
+      {
+        "question": "How large can the numbers get?",
+        "answer": "Up to 10,000 reports, each up to a billion pages; hours up to a billion.",
+        "why": "Trying every pace from 1 upward is far too slow."
+      }
+    ],
+    "hiddenConstraints": [
+      "Up to 10,000 reports.",
+      "Page counts and hours up to 1,000,000,000.",
+      "hours >= number of reports."
+    ],
+    "edgeCases": [
+      {
+        "input": "hours equals the number of reports",
+        "why": "The answer is the largest report."
+      },
+      {
+        "input": "pages = [1, 1, 1], hours = 3",
+        "why": "The answer is the minimum pace, 1."
+      },
+      {
+        "input": "pages = [100], hours = 100",
+        "why": "A lot of spare time still means pace 1, not 0."
+      },
+      {
+        "input": "Very large page counts",
+        "why": "Rounding up must use integer arithmetic to avoid float error."
+      }
+    ],
+    "approaches": [
+      {
+        "name": "Try every pace upward",
+        "idea": "Start at pace 1 and increase until the total hours fit.",
+        "time": "O(n * max(pages))",
+        "space": "O(1)",
+        "tradeoffs": "Correct but max(pages) can be a billion."
+      },
+      {
+        "name": "Binary search on the pace",
+        "idea": "If a pace works, every faster pace works too. So search the range 1..max(pages) for the smallest pace whose total hours fit.",
+        "time": "O(n log max(pages))",
+        "space": "O(1)",
+        "tradeoffs": "Needs the monotonic observation, then it’s a standard search for the first true."
+      }
+    ],
+    "optimal": {
+      "name": "Binary search on the answer",
+      "explanation": "Search pace in [1, max(pages)]. For a candidate pace, total hours = sum of ceil(p / pace). If total <= hours, the pace works, so search the lower half including it (hi = mid); otherwise lo = mid + 1. When lo == hi, that is the slowest working pace.",
+      "time": "O(n log M), where M is the largest report",
+      "space": "O(1)"
+    },
+    "hintLadder": [
+      "If a pace works, what can you say about a faster pace?",
+      "What is the slowest pace that could possibly work, and the fastest you would ever need?",
+      "You are looking for the first pace in a range where a yes/no answer flips. Which search does that?",
+      "Binary search the pace between 1 and the largest report, checking the total hours with ceiling division."
+    ],
+    "expectedMentions": [
+      {
+        "id": "ask-one-report-per-hour",
+        "what": "Confirms you cannot switch reports within an hour",
+        "category": "clarification"
+      },
+      {
+        "id": "linear-baseline",
+        "what": "Mentions trying every pace and why it is too slow",
+        "category": "planning"
+      },
+      {
+        "id": "monotonic",
+        "what": "Notes that feasibility is monotonic in pace, enabling binary search",
+        "category": "reasoning"
+      },
+      {
+        "id": "bounds",
+        "what": "States the search bounds 1 and max(pages)",
+        "category": "planning"
+      },
+      {
+        "id": "complexity",
+        "what": "States O(n log M) time",
+        "category": "planning"
+      },
+      {
+        "id": "ceil-division",
+        "what": "Explains rounding up the hours per report",
+        "category": "reasoning"
+      },
+      {
+        "id": "trace",
+        "what": "Traces the search on a small example",
+        "category": "testing"
+      }
+    ],
+    "followUps": [
+      "You can now switch reports mid-hour. How does the answer change?",
+      "Reports must be read in order and you have k readers. Minimize the time."
+    ],
+    "vocabulary": [
+      "binary search",
+      "search on the answer",
+      "monotonic",
+      "ceiling division",
+      "lower bound",
+      "upper bound",
+      "O of n log m",
+      "feasible",
+      "pace"
+    ],
+    "referenceSolution": {
+      "python": "def slowest_pace(pages, hours):\n    lo, hi = 1, max(pages)\n    while lo < hi:\n        mid = (lo + hi) // 2\n        needed = sum((p + mid - 1) // mid for p in pages)\n        if needed <= hours:\n            hi = mid\n        else:\n            lo = mid + 1\n    return lo\n",
+      "javascript": "function slowest_pace(pages, hours) {\n  let lo = 1;\n  let hi = Math.max(...pages);\n  while (lo < hi) {\n    const mid = Math.floor((lo + hi) / 2);\n    let needed = 0;\n    for (const p of pages) needed += Math.ceil(p / mid);\n    if (needed <= hours) hi = mid;\n    else lo = mid + 1;\n  }\n  return lo;\n}\n"
+    },
+    "walkthrough": [
+      {
+        "phase": "clarify",
+        "say": "In one hour I only work on one report, so if I finish early I don’t start another? And hours is always at least the number of reports, so there’s always some pace that works?"
+      },
+      {
+        "phase": "plan",
+        "say": "Brute force tries pace 1, 2, 3 and so on until it fits. Each check is O(n), but the pace could go up to a billion."
+      },
+      {
+        "phase": "plan",
+        "say": "The useful observation is that if a pace works, any faster pace also works. So the answers look like no, no, no, yes, yes. I want the first yes, which is binary search over the pace."
+      },
+      {
+        "phase": "plan",
+        "say": "The range is 1 up to the largest report, since reading the largest report in one hour means every report takes one hour. Each check is O(n), so O(n log M) overall."
+      },
+      {
+        "phase": "code",
+        "say": "Search for the first pace that fits. The hours for one report is pages divided by pace, rounded up, which I do with integer math.",
+        "code": "def slowest_pace(pages, hours):\n    lo, hi = 1, max(pages)\n    while lo < hi:\n        mid = (lo + hi) // 2\n        needed = sum((p + mid - 1) // mid for p in pages)"
+      },
+      {
+        "phase": "code",
+        "say": "If mid works, the answer is mid or slower, so keep it in range. Otherwise it’s strictly faster.",
+        "code": "        if needed <= hours:\n            hi = mid\n        else:\n            lo = mid + 1\n    return lo"
+      },
+      {
+        "phase": "test",
+        "say": "For 4, 9, 6, 13 with 8 hours: the range is 1 to 13. Mid 7 takes 1 plus 2 plus 1 plus 2, which is 6, so it fits and hi becomes 7. Mid 4 takes 10 hours, too slow, so lo becomes 5. Mid 6 takes 7, fits. Mid 5 takes exactly 8, fits. Now lo and hi are both 5, so the answer is 5."
+      },
+      {
+        "phase": "test",
+        "say": "If hours equals the number of reports, every report must take one hour, so the answer is the biggest report, and my upper bound already starts there."
+      },
+      {
+        "phase": "wrap-up",
+        "say": "O(n log M) time, O(1) space."
+      }
+    ],
+    "generatedBy": {
+      "provider": "maintainers",
+      "model": "hand-written",
+      "date": "2026-11-11"
+    }
+  },
+  "source": "built-in"
+}

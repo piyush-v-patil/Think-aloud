@@ -1,0 +1,364 @@
+{
+  "schemaVersion": 1,
+  "id": "balanced-trios",
+  "title": "Balanced trios",
+  "difficulty": "medium",
+  "topics": [
+    "two-pointers"
+  ],
+  "statement": "A ledger records balance changes as integers. Find every trio of entries at three different positions whose values add up to zero.\n\nReturn each distinct trio of values once, as a list of three numbers in ascending order. The trios can be in any order. Two trios are the same if they contain the same three values.",
+  "examples": [
+    {
+      "input": "changes = [3, -1, -2, 0, 1, -1]",
+      "output": "[[-2, -1, 3], [-1, 0, 1]]",
+      "explanation": "-2 + -1 + 3 = 0 and -1 + 0 + 1 = 0. The second -1 forms the same trio, so it is listed once."
+    }
+  ],
+  "signature": {
+    "name": "balanced_trios",
+    "params": [
+      {
+        "name": "changes",
+        "type": "int[]"
+      }
+    ],
+    "returns": "int[][]"
+  },
+  "starterCode": {
+    "python": "def balanced_trios(changes):\n    pass\n",
+    "javascript": "function balanced_trios(changes) {\n\n}\n"
+  },
+  "tests": [
+    {
+      "name": "example",
+      "args": [
+        [
+          3,
+          -1,
+          -2,
+          0,
+          1,
+          -1
+        ]
+      ],
+      "expected": [
+        [
+          -2,
+          -1,
+          3
+        ],
+        [
+          -1,
+          0,
+          1
+        ]
+      ],
+      "compare": "unordered"
+    },
+    {
+      "name": "no trio",
+      "args": [
+        [
+          1,
+          2,
+          3
+        ]
+      ],
+      "expected": [],
+      "compare": "unordered"
+    },
+    {
+      "name": "all zeros",
+      "args": [
+        [
+          0,
+          0,
+          0,
+          0
+        ]
+      ],
+      "expected": [
+        [
+          0,
+          0,
+          0
+        ]
+      ],
+      "compare": "unordered"
+    },
+    {
+      "name": "fewer than three",
+      "args": [
+        [
+          0,
+          1
+        ]
+      ],
+      "expected": [],
+      "compare": "unordered"
+    },
+    {
+      "name": "many duplicates",
+      "args": [
+        [
+          -2,
+          -2,
+          0,
+          0,
+          2,
+          2,
+          4,
+          -4
+        ]
+      ],
+      "expected": [
+        [
+          -4,
+          0,
+          4
+        ],
+        [
+          -4,
+          2,
+          2
+        ],
+        [
+          -2,
+          -2,
+          4
+        ],
+        [
+          -2,
+          0,
+          2
+        ]
+      ],
+      "compare": "unordered",
+      "hidden": true
+    },
+    {
+      "name": "wide range",
+      "args": [
+        [
+          -5,
+          1,
+          4,
+          -3,
+          2,
+          1,
+          0,
+          3
+        ]
+      ],
+      "expected": [
+        [
+          -5,
+          1,
+          4
+        ],
+        [
+          -5,
+          2,
+          3
+        ],
+        [
+          -3,
+          0,
+          3
+        ],
+        [
+          -3,
+          1,
+          2
+        ]
+      ],
+      "compare": "unordered",
+      "hidden": true
+    }
+  ],
+  "analysis": {
+    "clarifyingQuestions": [
+      {
+        "question": "Can values repeat in the list?",
+        "answer": "Yes. Each distinct trio of values should appear once.",
+        "why": "Duplicates are the main source of bugs here."
+      },
+      {
+        "question": "What does \"distinct\" mean for trios?",
+        "answer": "Two trios are the same if they hold the same three values, regardless of positions.",
+        "why": "Decides how to deduplicate."
+      },
+      {
+        "question": "What order should the output be in?",
+        "answer": "Each trio in ascending order; the list of trios in any order.",
+        "why": "Lets you sort without worrying about output order."
+      },
+      {
+        "question": "How big can the list be?",
+        "answer": "Up to 3,000 entries.",
+        "why": "An O(n^2) solution fits; O(n^3) does not."
+      }
+    ],
+    "hiddenConstraints": [
+      "Up to 3,000 entries.",
+      "Values between -100,000 and 100,000."
+    ],
+    "edgeCases": [
+      {
+        "input": "[0, 0, 0, 0]",
+        "why": "Only one trio [0, 0, 0] despite four zeros."
+      },
+      {
+        "input": "[0, 1]",
+        "why": "Fewer than three entries: no trios."
+      },
+      {
+        "input": "[-2, -2, 0, 0, 2, 2, 4, -4]",
+        "why": "Duplicates on both pointers must be skipped."
+      },
+      {
+        "input": "[1, 2, 3]",
+        "why": "No trio sums to zero."
+      }
+    ],
+    "approaches": [
+      {
+        "name": "Three nested loops",
+        "idea": "Try every trio of positions, sort each matching trio and add it to a set.",
+        "time": "O(n^3)",
+        "space": "O(number of trios)",
+        "tradeoffs": "Correct but too slow beyond a few hundred entries."
+      },
+      {
+        "name": "Fix one, hash for the pair",
+        "idea": "For each first value, run a pair-sum with a hash set over the rest.",
+        "time": "O(n^2)",
+        "space": "O(n)",
+        "tradeoffs": "Quadratic, but deduplication needs extra care with the set."
+      },
+      {
+        "name": "Sort, fix one, two pointers",
+        "idea": "Sort. For each first value, move a low and high pointer inward over the rest to find pairs summing to its negative, skipping duplicates.",
+        "time": "O(n^2)",
+        "space": "O(1) beyond the output and sort",
+        "tradeoffs": "Quadratic, no extra hash memory, and sorting makes deduplication simple."
+      }
+    ],
+    "optimal": {
+      "name": "Sort plus two pointers",
+      "explanation": "Sort the values. For each index i, skip it if it equals the previous value. Set lo = i + 1 and hi = end. If the sum is negative move lo right, if positive move hi left; on zero record the trio, move lo right past duplicates and move hi left. The sorted order guarantees each trio is ascending and each distinct trio appears once.",
+      "time": "O(n^2)",
+      "space": "O(1) extra, plus the output"
+    },
+    "hintLadder": [
+      "If you fix the first number, what problem is left for the other two?",
+      "You may have solved the two-number version before. How does sorted input help with it?",
+      "How can sorting help you avoid listing the same trio twice?",
+      "Sort, fix each first value once, and use two pointers on the rest, skipping repeated values."
+    ],
+    "expectedMentions": [
+      {
+        "id": "ask-duplicates",
+        "what": "Asks how duplicate values and duplicate trios are handled",
+        "category": "clarification"
+      },
+      {
+        "id": "brute-force",
+        "what": "States the O(n^3) brute force",
+        "category": "planning"
+      },
+      {
+        "id": "reduce-to-pair",
+        "what": "Reduces the problem to a pair sum after fixing one value",
+        "category": "planning"
+      },
+      {
+        "id": "sort-dedupe",
+        "what": "Explains how sorting makes skipping duplicates possible",
+        "category": "reasoning"
+      },
+      {
+        "id": "quadratic",
+        "what": "States the final O(n^2) time",
+        "category": "planning"
+      },
+      {
+        "id": "trace-zeros",
+        "what": "Traces a duplicate-heavy input like all zeros",
+        "category": "testing"
+      }
+    ],
+    "followUps": [
+      "Find the trio whose sum is closest to a target instead of exactly zero.",
+      "Generalize to four values summing to a target."
+    ],
+    "vocabulary": [
+      "three sum",
+      "two pointers",
+      "sort",
+      "duplicates",
+      "O of n squared",
+      "O of n cubed",
+      "pair sum",
+      "skip duplicates",
+      "triplet",
+      "low pointer",
+      "high pointer"
+    ],
+    "referenceSolution": {
+      "python": "def balanced_trios(changes):\n    nums = sorted(changes)\n    out = []\n    for i in range(len(nums) - 2):\n        if i > 0 and nums[i] == nums[i - 1]:\n            continue\n        lo, hi = i + 1, len(nums) - 1\n        while lo < hi:\n            s = nums[i] + nums[lo] + nums[hi]\n            if s < 0:\n                lo += 1\n            elif s > 0:\n                hi -= 1\n            else:\n                out.append([nums[i], nums[lo], nums[hi]])\n                lo += 1\n                while lo < hi and nums[lo] == nums[lo - 1]:\n                    lo += 1\n                hi -= 1\n    return out\n",
+      "javascript": "function balanced_trios(changes) {\n  const nums = [...changes].sort((a, b) => a - b);\n  const out = [];\n  for (let i = 0; i < nums.length - 2; i++) {\n    if (i > 0 && nums[i] === nums[i - 1]) continue;\n    let lo = i + 1;\n    let hi = nums.length - 1;\n    while (lo < hi) {\n      const s = nums[i] + nums[lo] + nums[hi];\n      if (s < 0) lo++;\n      else if (s > 0) hi--;\n      else {\n        out.push([nums[i], nums[lo], nums[hi]]);\n        lo++;\n        while (lo < hi && nums[lo] === nums[lo - 1]) lo++;\n        hi--;\n      }\n    }\n  }\n  return out;\n}\n"
+    },
+    "walkthrough": [
+      {
+        "phase": "clarify",
+        "say": "Can values repeat? And if two different sets of positions give the same three values, I return that trio once, right? Does the output order matter?"
+      },
+      {
+        "phase": "plan",
+        "say": "Brute force is three loops, n cubed, plus a set to remove duplicate trios. Too slow at three thousand entries."
+      },
+      {
+        "phase": "plan",
+        "say": "If I fix the first value, I need two others that sum to its negative. That’s a pair sum, and on sorted input I can do it with two pointers in linear time. So sort once, then for each first value run two pointers. That’s O(n squared) overall."
+      },
+      {
+        "phase": "plan",
+        "say": "Sorting also handles duplicates: equal values sit next to each other, so I can skip a first value equal to the previous one, and skip repeated lows after recording a trio."
+      },
+      {
+        "phase": "code",
+        "say": "Sort, then loop over the first value, skipping repeats.",
+        "code": "def balanced_trios(changes):\n    nums = sorted(changes)\n    out = []\n    for i in range(len(nums) - 2):\n        if i > 0 and nums[i] == nums[i - 1]:\n            continue"
+      },
+      {
+        "phase": "code",
+        "say": "Standard two pointers. When the sum is too small I need a bigger value, so lo moves right.",
+        "code": "        lo, hi = i + 1, len(nums) - 1\n        while lo < hi:\n            s = nums[i] + nums[lo] + nums[hi]\n            if s < 0:\n                lo += 1\n            elif s > 0:\n                hi -= 1"
+      },
+      {
+        "phase": "code",
+        "say": "On a match, record it and move lo past any equal values so the same trio doesn’t appear again.",
+        "code": "            else:\n                out.append([nums[i], nums[lo], nums[hi]])\n                lo += 1\n                while lo < hi and nums[lo] == nums[lo - 1]:\n                    lo += 1\n                hi -= 1\n    return out"
+      },
+      {
+        "phase": "test",
+        "say": "All zeros: i is 0, lo 1, hi 3, sum 0, record 0, 0, 0. Then lo skips the remaining zeros and the loop ends. The next i values are skipped as duplicates. One trio, correct."
+      },
+      {
+        "phase": "test",
+        "say": "The example sorts to -2, -1, -1, 0, 1, 3. With -2 I find -1 and 3. With the first -1 I find 0 and 1. The second -1 is skipped. Two trios, matching."
+      },
+      {
+        "phase": "wrap-up",
+        "say": "O(n squared) time, constant extra space beyond the sort and the output."
+      }
+    ],
+    "generatedBy": {
+      "provider": "maintainers",
+      "model": "hand-written",
+      "date": "2026-11-11"
+    }
+  },
+  "source": "built-in"
+}

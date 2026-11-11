@@ -1,0 +1,267 @@
+{
+  "schemaVersion": 1,
+  "id": "drop-from-end",
+  "title": "Drop the nth stop from the end",
+  "difficulty": "medium",
+  "topics": [
+    "linked-list",
+    "two-pointers"
+  ],
+  "statement": "A route is a singly linked list. Remove the `n`th node counting from the end (n = 1 is the last node) and return the head of the changed list. `n` is always between 1 and the length of the list.\n\nTry to do it in a single pass. In tests, a list is written as an array of its values.",
+  "examples": [
+    {
+      "input": "head = [5, 6, 7, 8, 9], n = 2",
+      "output": "[5, 6, 7, 9]"
+    },
+    {
+      "input": "head = [5], n = 1",
+      "output": "[]"
+    }
+  ],
+  "signature": {
+    "name": "drop_from_end",
+    "params": [
+      {
+        "name": "head",
+        "type": "ListNode"
+      },
+      {
+        "name": "n",
+        "type": "int"
+      }
+    ],
+    "returns": "ListNode"
+  },
+  "starterCode": {
+    "python": "def drop_from_end(head, n):\n    pass\n",
+    "javascript": "function drop_from_end(head, n) {\n\n}\n"
+  },
+  "tests": [
+    {
+      "name": "example",
+      "args": [
+        [
+          5,
+          6,
+          7,
+          8,
+          9
+        ],
+        2
+      ],
+      "expected": [
+        5,
+        6,
+        7,
+        9
+      ]
+    },
+    {
+      "name": "only node",
+      "args": [
+        [
+          5
+        ],
+        1
+      ],
+      "expected": []
+    },
+    {
+      "name": "remove head",
+      "args": [
+        [
+          1,
+          2,
+          3
+        ],
+        3
+      ],
+      "expected": [
+        2,
+        3
+      ]
+    },
+    {
+      "name": "remove last",
+      "args": [
+        [
+          1,
+          2,
+          3
+        ],
+        1
+      ],
+      "expected": [
+        1,
+        2
+      ]
+    },
+    {
+      "name": "two nodes remove first",
+      "args": [
+        [
+          1,
+          2
+        ],
+        2
+      ],
+      "expected": [
+        2
+      ],
+      "hidden": true
+    }
+  ],
+  "analysis": {
+    "clarifyingQuestions": [
+      {
+        "question": "Is n always valid?",
+        "answer": "Yes, 1 <= n <= length.",
+        "why": "Lets you skip bounds checks for n."
+      },
+      {
+        "question": "Can I remove the head?",
+        "answer": "Yes, when n equals the length.",
+        "why": "The most common bug: the head case needs care, solved by a dummy node."
+      },
+      {
+        "question": "Can I do it in one pass?",
+        "answer": "That’s the goal; two passes are fine as a start.",
+        "why": "Sets up the gap-of-n pointers."
+      }
+    ],
+    "hiddenConstraints": [
+      "Up to 30 nodes in tests.",
+      "n is valid."
+    ],
+    "edgeCases": [
+      {
+        "input": "[5], n = 1",
+        "why": "Removing the only node returns an empty list."
+      },
+      {
+        "input": "[1, 2, 3], n = 3",
+        "why": "Removing the head."
+      },
+      {
+        "input": "[1, 2, 3], n = 1",
+        "why": "Removing the tail."
+      }
+    ],
+    "approaches": [
+      {
+        "name": "Two passes",
+        "idea": "Count the length L, then walk L - n steps to the node before the target and unlink it.",
+        "time": "O(L)",
+        "space": "O(1)",
+        "tradeoffs": "Simple; reads the list twice."
+      },
+      {
+        "name": "One pass with a gap",
+        "idea": "Move a fast pointer n steps ahead, then move fast and slow together until fast reaches the last node. slow is now just before the target.",
+        "time": "O(L)",
+        "space": "O(1)",
+        "tradeoffs": "One pass; needs a dummy head so slow can stop before the head."
+      }
+    ],
+    "optimal": {
+      "name": "Two pointers n apart with a dummy",
+      "explanation": "Start fast and slow at a dummy node before head. Advance fast n times. Then advance both until fast.next is None. Set slow.next = slow.next.next and return dummy.next.",
+      "time": "O(L)",
+      "space": "O(1)"
+    },
+    "hintLadder": [
+      "Removing a node in a singly linked list needs which node?",
+      "Could you find the length first?",
+      "What if two pointers kept a fixed distance apart?",
+      "Lead with a fast pointer n steps ahead from a dummy head; when it hits the end, the slow one is before the target."
+    ],
+    "expectedMentions": [
+      {
+        "id": "ask-head",
+        "what": "Asks or notes that the head itself may be removed",
+        "category": "clarification"
+      },
+      {
+        "id": "two-pass",
+        "what": "Mentions the two-pass length-based solution",
+        "category": "planning"
+      },
+      {
+        "id": "gap-pointers",
+        "what": "Proposes pointers n apart for one pass",
+        "category": "planning"
+      },
+      {
+        "id": "dummy-node",
+        "what": "Uses a dummy node to handle removing the head",
+        "category": "reasoning"
+      },
+      {
+        "id": "trace-head",
+        "what": "Traces removing the head or the only node",
+        "category": "testing"
+      }
+    ],
+    "followUps": [
+      "Return the removed value too.",
+      "Do it for a doubly linked list."
+    ],
+    "vocabulary": [
+      "linked list",
+      "two pointers",
+      "fast pointer",
+      "slow pointer",
+      "dummy node",
+      "one pass",
+      "O of n",
+      "unlink",
+      "gap"
+    ],
+    "referenceSolution": {
+      "python": "def drop_from_end(head, n):\n    dummy = ListNode(0, head)\n    fast = slow = dummy\n    for _ in range(n):\n        fast = fast.next\n    while fast.next:\n        fast = fast.next\n        slow = slow.next\n    slow.next = slow.next.next\n    return dummy.next\n",
+      "javascript": "function drop_from_end(head, n) {\n  const dummy = new ListNode(0, head);\n  let fast = dummy;\n  let slow = dummy;\n  for (let i = 0; i < n; i++) fast = fast.next;\n  while (fast.next) {\n    fast = fast.next;\n    slow = slow.next;\n  }\n  slow.next = slow.next.next;\n  return dummy.next;\n}\n"
+    },
+    "walkthrough": [
+      {
+        "phase": "clarify",
+        "say": "n is always between 1 and the length? So n equal to the length means I remove the head?"
+      },
+      {
+        "phase": "plan",
+        "say": "The straightforward way is two passes: count the length, then walk to the node before the target. That’s O(n) and fine, but I can do one pass."
+      },
+      {
+        "phase": "plan",
+        "say": "If a fast pointer starts n nodes ahead of a slow pointer and they move together, when fast is at the last node, slow is n plus one from the end, the node right before the one to remove. I’ll start both at a dummy node so removing the head works the same way."
+      },
+      {
+        "phase": "code",
+        "say": "Build the gap, then move together.",
+        "code": "def drop_from_end(head, n):\n    dummy = ListNode(0, head)\n    fast = slow = dummy\n    for _ in range(n):\n        fast = fast.next\n    while fast.next:\n        fast = fast.next\n        slow = slow.next"
+      },
+      {
+        "phase": "code",
+        "say": "slow is just before the target, so skip over it.",
+        "code": "    slow.next = slow.next.next\n    return dummy.next"
+      },
+      {
+        "phase": "test",
+        "say": "For 5, 6, 7, 8, 9 and n of 2: fast moves to 6. Then both move until fast is 9, and slow is at 7. Unlink 8. Result 5, 6, 7, 9."
+      },
+      {
+        "phase": "test",
+        "say": "For a single node 5 with n of 1: fast moves to 5, fast.next is null so slow stays at dummy, and I unlink 5. dummy.next is null, an empty list. That’s exactly why I needed the dummy."
+      },
+      {
+        "phase": "wrap-up",
+        "say": "One pass, O(L) time, O(1) space."
+      }
+    ],
+    "generatedBy": {
+      "provider": "maintainers",
+      "model": "hand-written",
+      "date": "2026-11-11"
+    }
+  },
+  "source": "built-in"
+}

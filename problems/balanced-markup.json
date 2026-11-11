@@ -90,5 +90,191 @@
       "hidden": true
     }
   ],
+  "analysis": {
+    "clarifyingQuestions": [
+      {
+        "question": "Which characters count as brackets?",
+        "answer": "Only (), [] and {}. Everything else is ordinary text and should be ignored.",
+        "why": "Decides whether to skip other characters or treat them as errors."
+      },
+      {
+        "question": "Is an empty string balanced?",
+        "answer": "Yes. Text with no brackets is balanced.",
+        "why": "Confirms the base case."
+      },
+      {
+        "question": "Do quotes or escape characters change anything?",
+        "answer": "No, there is no escaping. Every bracket character counts.",
+        "why": "Avoids building a parser for strings that the problem does not need."
+      },
+      {
+        "question": "How long can the text be?",
+        "answer": "Up to 100,000 characters.",
+        "why": "Rules out repeatedly deleting matched pairs, which is quadratic."
+      }
+    ],
+    "hiddenConstraints": [
+      "Text can be up to 100,000 characters.",
+      "There is no escaping; every bracket character counts."
+    ],
+    "edgeCases": [
+      {
+        "input": "\"\" (empty)",
+        "why": "Should return true."
+      },
+      {
+        "input": "\"(((\"",
+        "why": "Only openers: the stack is non-empty at the end, so the answer is false."
+      },
+      {
+        "input": "\")(\"",
+        "why": "A closer with nothing open: must not pop from an empty stack."
+      },
+      {
+        "input": "\"([)]\"",
+        "why": "Counts match but the order is wrong; counting alone fails here."
+      },
+      {
+        "input": "\"no brackets here\"",
+        "why": "Ordinary text only."
+      }
+    ],
+    "approaches": [
+      {
+        "name": "Count each kind",
+        "idea": "Keep a counter per bracket kind and fail if one goes negative.",
+        "time": "O(n)",
+        "space": "O(1)",
+        "tradeoffs": "Fast, but wrong: it accepts \"([)]\" because it ignores nesting order."
+      },
+      {
+        "name": "Repeatedly remove matched pairs",
+        "idea": "Delete \"()\", \"[]\" and \"{}\" substrings until none remain, then check whether any brackets are left.",
+        "time": "O(n^2)",
+        "space": "O(n)",
+        "tradeoffs": "Correct but quadratic because each pass rescans the string."
+      },
+      {
+        "name": "Stack of open brackets",
+        "idea": "Push each opener. On a closer, the top of the stack must be the matching opener; pop it. At the end the stack must be empty.",
+        "time": "O(n)",
+        "space": "O(n)",
+        "tradeoffs": "Linear and correct; the stack holds at most n characters in the worst case."
+      }
+    ],
+    "optimal": {
+      "name": "Stack",
+      "explanation": "Walk the text. Push opening brackets. For a closing bracket, fail if the stack is empty or the top is not its matching opener; otherwise pop. Ignore other characters. Return whether the stack is empty at the end. A map from closer to opener keeps the matching readable.",
+      "time": "O(n)",
+      "space": "O(n)"
+    },
+    "hintLadder": [
+      "When you see a closing bracket, which opening bracket must it match?",
+      "Is it the first opener you saw, or the most recent one still open?",
+      "What data structure gives you the most recent item first?",
+      "Push openers on a stack; on a closer, compare with the top and pop. Check the stack is empty at the end."
+    ],
+    "expectedMentions": [
+      {
+        "id": "ask-other-chars",
+        "what": "Asks how to treat characters that are not brackets",
+        "category": "clarification"
+      },
+      {
+        "id": "counting-fails",
+        "what": "Explains why counting brackets is not enough, for example with \"([)]\"",
+        "category": "reasoning"
+      },
+      {
+        "id": "stack-plan",
+        "what": "Proposes a stack before coding and states O(n) time",
+        "category": "planning"
+      },
+      {
+        "id": "space-stack",
+        "what": "Notes the stack can grow to O(n) in the worst case",
+        "category": "reasoning"
+      },
+      {
+        "id": "empty-stack-closer",
+        "what": "Handles a closing bracket when the stack is empty",
+        "category": "testing"
+      },
+      {
+        "id": "leftover-openers",
+        "what": "Checks the stack is empty at the end for unclosed openers",
+        "category": "testing"
+      }
+    ],
+    "followUps": [
+      "Return the position of the first bracket that breaks the balance.",
+      "Now quotes start a literal string where brackets do not count. How does that change things?",
+      "What is the minimum number of brackets to insert to balance the text?"
+    ],
+    "vocabulary": [
+      "stack",
+      "push",
+      "pop",
+      "top of the stack",
+      "opening bracket",
+      "closing bracket",
+      "parentheses",
+      "curly brace",
+      "square bracket",
+      "O of n",
+      "nesting",
+      "matching"
+    ],
+    "referenceSolution": {
+      "python": "def is_balanced(text):\n    pairs = {')': '(', ']': '[', '}': '{'}\n    stack = []\n    for ch in text:\n        if ch in '([{':\n            stack.append(ch)\n        elif ch in pairs:\n            if not stack or stack.pop() != pairs[ch]:\n                return False\n    return not stack\n",
+      "javascript": "function is_balanced(text) {\n  const pairs = { ')': '(', ']': '[', '}': '{' };\n  const stack = [];\n  for (const ch of text) {\n    if ('([{'.includes(ch)) stack.push(ch);\n    else if (ch in pairs) {\n      if (!stack.length || stack.pop() !== pairs[ch]) return false;\n    }\n  }\n  return stack.length === 0;\n}\n"
+    },
+    "walkthrough": [
+      {
+        "phase": "clarify",
+        "say": "Should I ignore everything that isn’t one of the three bracket kinds? And I’ll assume an empty string counts as balanced, is that right?"
+      },
+      {
+        "phase": "plan",
+        "say": "My first thought is counting each kind, but that breaks on something like open round, open square, close round, close square. The counts match, but the nesting is wrong. So order matters, specifically the most recent unclosed bracket."
+      },
+      {
+        "phase": "plan",
+        "say": "That’s a stack. Push every opener; when I see a closer, the top must be its partner, and I pop it. At the end the stack must be empty. That’s one pass, O(n) time, and O(n) space in the worst case when everything is an opener."
+      },
+      {
+        "phase": "code",
+        "say": "I’ll keep a small map from each closer to its opener so the check is one comparison.",
+        "code": "def is_balanced(text):\n    pairs = {')': '(', ']': '[', '}': '{'}\n    stack = []"
+      },
+      {
+        "phase": "code",
+        "say": "Openers go on the stack. For a closer, if the stack is empty or the top doesn’t match, it’s unbalanced right away.",
+        "code": "    for ch in text:\n        if ch in '([{':\n            stack.append(ch)\n        elif ch in pairs:\n            if not stack or stack.pop() != pairs[ch]:\n                return False"
+      },
+      {
+        "phase": "code",
+        "say": "Anything left open at the end also means unbalanced.",
+        "code": "    return not stack"
+      },
+      {
+        "phase": "test",
+        "say": "Tracing open round, open square, close round: the top is the square bracket when the round closer arrives, so I return false. Good, that’s the case counting got wrong."
+      },
+      {
+        "phase": "test",
+        "say": "A closer first, like close then open: the stack is empty, so the not-stack check returns false before I pop. And three openers end with a non-empty stack, so false."
+      },
+      {
+        "phase": "wrap-up",
+        "say": "O(n) time, O(n) space. If I only had one bracket kind I could replace the stack with a counter and get O(1) space."
+      }
+    ],
+    "generatedBy": {
+      "provider": "maintainers",
+      "model": "hand-written",
+      "date": "2026-11-11"
+    }
+  },
   "source": "built-in"
 }

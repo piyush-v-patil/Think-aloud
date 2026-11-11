@@ -1,0 +1,270 @@
+{
+  "schemaVersion": 1,
+  "id": "search-tree-check",
+  "title": "Is it a search tree?",
+  "difficulty": "medium",
+  "topics": [
+    "trees"
+  ],
+  "statement": "A catalog stores product codes in a binary tree. It is a valid search tree if, for every node, all codes in its left subtree are strictly smaller and all codes in its right subtree are strictly larger.\n\nReturn true if the tree is a valid search tree. In tests, a tree is written as a level-order array with nulls.",
+  "examples": [
+    {
+      "input": "root = [8, 4, 12, 2, 6]",
+      "output": "true"
+    },
+    {
+      "input": "root = [8, 4, 12, 2, 9]",
+      "output": "false",
+      "explanation": "9 is in the left subtree of 8 but is larger than 8."
+    }
+  ],
+  "signature": {
+    "name": "is_search_tree",
+    "params": [
+      {
+        "name": "root",
+        "type": "TreeNode"
+      }
+    ],
+    "returns": "bool"
+  },
+  "starterCode": {
+    "python": "def is_search_tree(root):\n    pass\n",
+    "javascript": "function is_search_tree(root) {\n\n}\n"
+  },
+  "tests": [
+    {
+      "name": "valid",
+      "args": [
+        [
+          8,
+          4,
+          12,
+          2,
+          6
+        ]
+      ],
+      "expected": true
+    },
+    {
+      "name": "deep violation",
+      "args": [
+        [
+          8,
+          4,
+          12,
+          2,
+          9
+        ]
+      ],
+      "expected": false
+    },
+    {
+      "name": "empty",
+      "args": [
+        []
+      ],
+      "expected": true
+    },
+    {
+      "name": "duplicate value",
+      "args": [
+        [
+          5,
+          5
+        ]
+      ],
+      "expected": false
+    },
+    {
+      "name": "right subtree violation",
+      "args": [
+        [
+          10,
+          5,
+          15,
+          null,
+          null,
+          6,
+          20
+        ]
+      ],
+      "expected": false,
+      "hidden": true
+    },
+    {
+      "name": "single",
+      "args": [
+        [
+          1
+        ]
+      ],
+      "expected": true,
+      "hidden": true
+    }
+  ],
+  "analysis": {
+    "clarifyingQuestions": [
+      {
+        "question": "Are equal codes allowed?",
+        "answer": "No. Left must be strictly smaller and right strictly larger.",
+        "why": "Duplicates make the tree invalid here."
+      },
+      {
+        "question": "Does the rule apply to the whole subtree or just direct children?",
+        "answer": "The whole subtree.",
+        "why": "The classic bug is checking only direct children."
+      },
+      {
+        "question": "Is an empty tree valid?",
+        "answer": "Yes.",
+        "why": "Base case."
+      },
+      {
+        "question": "What range are codes in?",
+        "answer": "Any 32-bit integer.",
+        "why": "Using a sentinel like 0 or -1 as a bound would be wrong; use infinities or None."
+      }
+    ],
+    "hiddenConstraints": [
+      "Up to 10,000 nodes.",
+      "Codes span the full 32-bit range."
+    ],
+    "edgeCases": [
+      {
+        "input": "[8, 4, 12, 2, 9]",
+        "why": "Each parent-child pair looks fine, but 9 is in 8’s left subtree."
+      },
+      {
+        "input": "[5, 5]",
+        "why": "Equal value on the left is invalid."
+      },
+      {
+        "input": "[]",
+        "why": "Valid."
+      },
+      {
+        "input": "Codes at the integer limits",
+        "why": "Bounds must not be ordinary numbers that collide."
+      }
+    ],
+    "approaches": [
+      {
+        "name": "Check only children",
+        "idea": "Compare each node with its direct children.",
+        "time": "O(n)",
+        "space": "O(h)",
+        "tradeoffs": "Wrong: misses violations deeper in the subtree."
+      },
+      {
+        "name": "Pass down allowed ranges",
+        "idea": "Each node must lie strictly between a low and high bound inherited from its ancestors. Going left tightens the high bound; going right tightens the low bound.",
+        "time": "O(n)",
+        "space": "O(h)",
+        "tradeoffs": "Correct and linear."
+      },
+      {
+        "name": "In-order traversal is increasing",
+        "idea": "An in-order walk of a valid search tree yields strictly increasing values.",
+        "time": "O(n)",
+        "space": "O(h)",
+        "tradeoffs": "Also correct; compare each value with the previous one."
+      }
+    ],
+    "optimal": {
+      "name": "Recursive bounds",
+      "explanation": "Define ok(node, low, high): None is valid; the node must satisfy low < val < high; then the left child must be in (low, val) and the right child in (val, high). Start with (-infinity, +infinity).",
+      "time": "O(n)",
+      "space": "O(h)"
+    },
+    "hintLadder": [
+      "Is it enough to compare each node with its two children? Try a tree three levels deep.",
+      "What range of values is allowed at each position?",
+      "How does the allowed range change when you go left or right?",
+      "Pass a low and high bound down the recursion and check each node is strictly between them."
+    ],
+    "expectedMentions": [
+      {
+        "id": "ask-duplicates",
+        "what": "Asks whether equal codes are allowed",
+        "category": "clarification"
+      },
+      {
+        "id": "children-only-bug",
+        "what": "Explains why checking only direct children fails",
+        "category": "reasoning"
+      },
+      {
+        "id": "bounds-plan",
+        "what": "Proposes passing min and max bounds down, O(n) time",
+        "category": "planning"
+      },
+      {
+        "id": "inorder-alt",
+        "what": "Mentions the in-order traversal alternative",
+        "category": "reasoning"
+      },
+      {
+        "id": "trace-deep",
+        "what": "Traces a case where the violation is deeper than one level",
+        "category": "testing"
+      }
+    ],
+    "followUps": [
+      "Two nodes were swapped by mistake. Find them.",
+      "Return the size of the largest subtree that is a valid search tree."
+    ],
+    "vocabulary": [
+      "binary search tree",
+      "in order traversal",
+      "recursion",
+      "lower bound",
+      "upper bound",
+      "subtree",
+      "infinity",
+      "O of n",
+      "strictly increasing"
+    ],
+    "referenceSolution": {
+      "python": "def is_search_tree(root):\n    def ok(node, low, high):\n        if node is None:\n            return True\n        if not (low < node.val < high):\n            return False\n        return ok(node.left, low, node.val) and ok(node.right, node.val, high)\n    return ok(root, float('-inf'), float('inf'))\n",
+      "javascript": "function is_search_tree(root) {\n  const ok = (node, low, high) => {\n    if (!node) return true;\n    if (!(low < node.val && node.val < high)) return false;\n    return ok(node.left, low, node.val) && ok(node.right, node.val, high);\n  };\n  return ok(root, -Infinity, Infinity);\n}\n"
+    },
+    "walkthrough": [
+      {
+        "phase": "clarify",
+        "say": "Equal codes aren’t allowed on either side? And the rule is about the whole subtree, not just the direct children, right?"
+      },
+      {
+        "phase": "plan",
+        "say": "Checking each node against its children isn’t enough. In 8, 4, 12, 2, 9, the 9 is fine compared to its parent 4, but it sits in 8’s left subtree and is bigger than 8."
+      },
+      {
+        "phase": "plan",
+        "say": "So each node has an allowed range from its ancestors. The root can be anything. Going left, the upper bound becomes the parent’s value; going right, the lower bound does. One visit per node, O(n) time and O(h) stack."
+      },
+      {
+        "phase": "code",
+        "say": "I’ll use infinities for the open ends so any real value fits at the root.",
+        "code": "def is_search_tree(root):\n    def ok(node, low, high):\n        if node is None:\n            return True\n        if not (low < node.val < high):\n            return False\n        return ok(node.left, low, node.val) and ok(node.right, node.val, high)\n    return ok(root, float('-inf'), float('inf'))"
+      },
+      {
+        "phase": "test",
+        "say": "For 8, 4, 12, 2, 9: 8 is fine. 4 must be below 8, fine. 2 must be below 4, fine. 9 must be between 4 and 8, and it isn’t, so false."
+      },
+      {
+        "phase": "test",
+        "say": "For 5 with a left child 5: the child must be strictly less than 5, so false. That matches the no-duplicates rule."
+      },
+      {
+        "phase": "wrap-up",
+        "say": "O(n) time, O(h) space. An in-order walk checking strictly increasing values is an equivalent alternative."
+      }
+    ],
+    "generatedBy": {
+      "provider": "maintainers",
+      "model": "hand-written",
+      "date": "2026-11-11"
+    }
+  },
+  "source": "built-in"
+}

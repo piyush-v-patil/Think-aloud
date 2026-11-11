@@ -1,0 +1,296 @@
+{
+  "schemaVersion": 1,
+  "id": "longest-streak",
+  "title": "Longest streak of days",
+  "difficulty": "medium",
+  "topics": [
+    "arrays-hashing"
+  ],
+  "statement": "A habit tracker stores the day numbers on which you practiced, in no particular order and possibly with repeats.\n\nReturn the length of the longest streak: the longest run of consecutive day numbers that all appear in `days`. Your solution should run in linear time.",
+  "examples": [
+    {
+      "input": "days = [12, 4, 11, 1, 10, 3, 2]",
+      "output": "4",
+      "explanation": "Days 1, 2, 3 and 4."
+    },
+    {
+      "input": "days = []",
+      "output": "0"
+    }
+  ],
+  "signature": {
+    "name": "longest_streak",
+    "params": [
+      {
+        "name": "days",
+        "type": "int[]"
+      }
+    ],
+    "returns": "int"
+  },
+  "starterCode": {
+    "python": "def longest_streak(days):\n    pass\n",
+    "javascript": "function longest_streak(days) {\n\n}\n"
+  },
+  "tests": [
+    {
+      "name": "example",
+      "args": [
+        [
+          12,
+          4,
+          11,
+          1,
+          10,
+          3,
+          2
+        ]
+      ],
+      "expected": 4
+    },
+    {
+      "name": "empty",
+      "args": [
+        []
+      ],
+      "expected": 0
+    },
+    {
+      "name": "repeats",
+      "args": [
+        [
+          5,
+          5,
+          6,
+          6,
+          7
+        ]
+      ],
+      "expected": 3
+    },
+    {
+      "name": "negative days",
+      "args": [
+        [
+          -2,
+          -1,
+          0,
+          1,
+          8
+        ]
+      ],
+      "expected": 4
+    },
+    {
+      "name": "no streak longer than one",
+      "args": [
+        [
+          10,
+          20,
+          30
+        ]
+      ],
+      "expected": 1,
+      "hidden": true
+    },
+    {
+      "name": "long streak shuffled",
+      "args": [
+        [
+          9,
+          1,
+          8,
+          2,
+          7,
+          3,
+          6,
+          4,
+          5,
+          100
+        ]
+      ],
+      "expected": 9,
+      "hidden": true
+    }
+  ],
+  "analysis": {
+    "clarifyingQuestions": [
+      {
+        "question": "Can days repeat?",
+        "answer": "Yes. A repeated day counts once in a streak.",
+        "why": "Duplicates break approaches that count array positions."
+      },
+      {
+        "question": "Can day numbers be negative or zero?",
+        "answer": "Yes, any integer.",
+        "why": "Rules out using day numbers as array indexes."
+      },
+      {
+        "question": "What if the list is empty?",
+        "answer": "Return 0.",
+        "why": "Base case."
+      },
+      {
+        "question": "Is sorting allowed?",
+        "answer": "It works, but aim for linear time.",
+        "why": "Tells you the n log n solution is the baseline, not the goal."
+      }
+    ],
+    "hiddenConstraints": [
+      "Up to 100,000 entries.",
+      "Values fit in 32 bits.",
+      "A linear-time solution is expected."
+    ],
+    "edgeCases": [
+      {
+        "input": "[]",
+        "why": "Return 0."
+      },
+      {
+        "input": "[5, 5, 6, 6, 7]",
+        "why": "Duplicates must not inflate or split the streak."
+      },
+      {
+        "input": "[-2, -1, 0, 1, 8]",
+        "why": "Negative numbers and zero."
+      },
+      {
+        "input": "[10, 20, 30]",
+        "why": "No run longer than 1."
+      }
+    ],
+    "approaches": [
+      {
+        "name": "Check each number by stepping up",
+        "idea": "For each number, count how many of number + 1, + 2, ... are in the list, scanning the list each time.",
+        "time": "O(n^3)",
+        "space": "O(1)",
+        "tradeoffs": "Straightforward but far too slow."
+      },
+      {
+        "name": "Sort then scan",
+        "idea": "Sort, skip duplicates, and count runs where each value is one more than the previous.",
+        "time": "O(n log n)",
+        "space": "O(n) or O(1) depending on the sort",
+        "tradeoffs": "Simple and good in practice, but not linear."
+      },
+      {
+        "name": "Hash set, start only at streak beginnings",
+        "idea": "Put all days in a set. Only start counting from a day whose previous day is missing, then step up while the next day is present.",
+        "time": "O(n)",
+        "space": "O(n)",
+        "tradeoffs": "Each day is visited a constant number of times overall, because counting starts only at the beginning of a streak."
+      }
+    ],
+    "optimal": {
+      "name": "Hash set with streak starts",
+      "explanation": "Build a set of the days. For each day d in the set where d - 1 is not in the set, count up from d while d + length is in the set and keep the maximum. Because counting only starts at streak beginnings, the total work across all streaks is O(n).",
+      "time": "O(n)",
+      "space": "O(n)"
+    },
+    "hintLadder": [
+      "Sorting would work. What does it cost, and is there a faster way to ask whether a number is present?",
+      "If you can check membership in constant time, how would you measure a streak starting at some day?",
+      "You would repeat a lot of work if you counted from every day. Which days are worth starting from?",
+      "Only start counting from a day whose previous day is not in the set."
+    ],
+    "expectedMentions": [
+      {
+        "id": "ask-duplicates",
+        "what": "Asks whether days can repeat",
+        "category": "clarification"
+      },
+      {
+        "id": "sort-baseline",
+        "what": "Mentions the sort-based O(n log n) solution",
+        "category": "planning"
+      },
+      {
+        "id": "set-linear",
+        "what": "Proposes a hash set for constant-time lookups and O(n) total time",
+        "category": "planning"
+      },
+      {
+        "id": "start-of-streak",
+        "what": "Explains why counting only from streak starts keeps the total linear",
+        "category": "reasoning"
+      },
+      {
+        "id": "space-tradeoff",
+        "what": "Notes the O(n) extra space for the set",
+        "category": "reasoning"
+      },
+      {
+        "id": "trace-duplicates",
+        "what": "Traces an example with duplicates or an unordered streak",
+        "category": "testing"
+      }
+    ],
+    "followUps": [
+      "Return the streak itself.",
+      "Days arrive one at a time; report the longest streak after each arrival."
+    ],
+    "vocabulary": [
+      "hash set",
+      "consecutive",
+      "streak",
+      "sort",
+      "O of n",
+      "O of n log n",
+      "membership",
+      "lookup",
+      "duplicates",
+      "amortized"
+    ],
+    "referenceSolution": {
+      "python": "def longest_streak(days):\n    present = set(days)\n    best = 0\n    for d in present:\n        if d - 1 not in present:\n            length = 1\n            while d + length in present:\n                length += 1\n            best = max(best, length)\n    return best\n",
+      "javascript": "function longest_streak(days) {\n  const present = new Set(days);\n  let best = 0;\n  for (const d of present) {\n    if (!present.has(d - 1)) {\n      let length = 1;\n      while (present.has(d + length)) length++;\n      best = Math.max(best, length);\n    }\n  }\n  return best;\n}\n"
+    },
+    "walkthrough": [
+      {
+        "phase": "clarify",
+        "say": "Can the same day appear twice? And can day numbers be negative? If the list is empty I’ll return zero."
+      },
+      {
+        "phase": "plan",
+        "say": "The easy baseline is sorting, then walking through and counting runs, skipping duplicates. That’s n log n. You mentioned linear time, so let me think about avoiding the sort."
+      },
+      {
+        "phase": "plan",
+        "say": "If I put every day in a hash set, I can ask whether any day is present in constant time. From a day d, I can count d plus one, d plus two, and so on."
+      },
+      {
+        "phase": "plan",
+        "say": "But if I count from every day, a long streak gets recounted from each of its days, which is quadratic. The fix is to only start counting at the first day of a streak, where d minus one isn’t in the set. Then each day is stepped over once. That’s O(n) time and O(n) space."
+      },
+      {
+        "phase": "code",
+        "say": "Build the set first, then loop over the set, not the list, so duplicates don’t repeat work.",
+        "code": "def longest_streak(days):\n    present = set(days)\n    best = 0\n    for d in present:\n        if d - 1 not in present:"
+      },
+      {
+        "phase": "code",
+        "say": "This is a streak start. Step up while the next day exists.",
+        "code": "            length = 1\n            while d + length in present:\n                length += 1\n            best = max(best, length)\n    return best"
+      },
+      {
+        "phase": "test",
+        "say": "For 12, 4, 11, 1, 10, 3, 2: 1 has no 0, so I count 1, 2, 3, 4, length 4. 10 has no 9, so 10, 11, 12, length 3. The others have a predecessor and are skipped. Answer 4."
+      },
+      {
+        "phase": "test",
+        "say": "With 5, 5, 6, 6, 7 the set is 5, 6, 7, so I get 3, and an empty list never enters the loop and returns 0."
+      },
+      {
+        "phase": "wrap-up",
+        "say": "Linear time and linear space. The sorted version uses less memory if I can sort in place, so that’s the tradeoff."
+      }
+    ],
+    "generatedBy": {
+      "provider": "maintainers",
+      "model": "hand-written",
+      "date": "2026-11-11"
+    }
+  },
+  "source": "built-in"
+}

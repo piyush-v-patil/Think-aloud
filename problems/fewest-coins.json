@@ -1,0 +1,278 @@
+{
+  "schemaVersion": 1,
+  "id": "fewest-coins",
+  "title": "Fewest coins",
+  "difficulty": "medium",
+  "topics": [
+    "dynamic-programming"
+  ],
+  "statement": "A cashier has unlimited coins of each value in `coins`. Return the fewest coins that add up to exactly `amount`, or -1 if it cannot be done.\n\nNote that taking the largest coin first does not always give the fewest coins.",
+  "examples": [
+    {
+      "input": "coins = [1, 4, 6], amount = 8",
+      "output": "2",
+      "explanation": "4 + 4. Taking 6 first gives 6 + 1 + 1, three coins."
+    },
+    {
+      "input": "coins = [5], amount = 3",
+      "output": "-1"
+    }
+  ],
+  "signature": {
+    "name": "fewest_coins",
+    "params": [
+      {
+        "name": "coins",
+        "type": "int[]"
+      },
+      {
+        "name": "amount",
+        "type": "int"
+      }
+    ],
+    "returns": "int"
+  },
+  "starterCode": {
+    "python": "def fewest_coins(coins, amount):\n    pass\n",
+    "javascript": "function fewest_coins(coins, amount) {\n\n}\n"
+  },
+  "tests": [
+    {
+      "name": "greedy fails",
+      "args": [
+        [
+          1,
+          4,
+          6
+        ],
+        8
+      ],
+      "expected": 2
+    },
+    {
+      "name": "impossible",
+      "args": [
+        [
+          5
+        ],
+        3
+      ],
+      "expected": -1
+    },
+    {
+      "name": "zero amount",
+      "args": [
+        [
+          2
+        ],
+        0
+      ],
+      "expected": 0
+    },
+    {
+      "name": "single coin exact",
+      "args": [
+        [
+          7
+        ],
+        21
+      ],
+      "expected": 3
+    },
+    {
+      "name": "larger amount",
+      "args": [
+        [
+          1,
+          5,
+          12,
+          19
+        ],
+        63
+      ],
+      "expected": 5,
+      "hidden": true
+    },
+    {
+      "name": "no ones",
+      "args": [
+        [
+          3,
+          7
+        ],
+        11
+      ],
+      "expected": -1,
+      "hidden": true
+    }
+  ],
+  "analysis": {
+    "clarifyingQuestions": [
+      {
+        "question": "What if the amount cannot be made?",
+        "answer": "Return -1.",
+        "why": "Defines the impossible case."
+      },
+      {
+        "question": "What about amount 0?",
+        "answer": "0 coins.",
+        "why": "Base case."
+      },
+      {
+        "question": "Does taking the largest coin first always work?",
+        "answer": "No, it can fail. The examples show one.",
+        "why": "Pushes away from greedy toward dynamic programming."
+      },
+      {
+        "question": "How large are the amount and coin list?",
+        "answer": "Up to 12 coin values and amount up to 10,000.",
+        "why": "A table over amounts is affordable."
+      }
+    ],
+    "hiddenConstraints": [
+      "Up to 12 coin values.",
+      "amount up to 10,000."
+    ],
+    "edgeCases": [
+      {
+        "input": "amount = 0",
+        "why": "0."
+      },
+      {
+        "input": "[5], 3",
+        "why": "-1."
+      },
+      {
+        "input": "[1, 4, 6], 8",
+        "why": "Greedy gives 3; the answer is 2."
+      },
+      {
+        "input": "[3, 7], 11",
+        "why": "Impossible even though coins are smaller than the amount."
+      }
+    ],
+    "approaches": [
+      {
+        "name": "Greedy, largest coin first",
+        "idea": "Repeatedly take the largest coin that fits.",
+        "time": "O(amount)",
+        "space": "O(1)",
+        "tradeoffs": "Wrong for some coin sets."
+      },
+      {
+        "name": "Recursion over choices",
+        "idea": "Try every coin at every step.",
+        "time": "Exponential",
+        "space": "O(amount)",
+        "tradeoffs": "Correct but repeats subproblems."
+      },
+      {
+        "name": "Bottom-up table",
+        "idea": "best[a] = 1 + min(best[a - c]) over coins c <= a, with best[0] = 0.",
+        "time": "O(amount * coins)",
+        "space": "O(amount)",
+        "tradeoffs": "Each amount is solved once."
+      }
+    ],
+    "optimal": {
+      "name": "Bottom-up DP over amounts",
+      "explanation": "Fill best[0..amount] with a sentinel larger than any real answer (amount + 1), set best[0] = 0, and for each a from 1 to amount, for each coin c <= a, take best[a] = min(best[a], best[a - c] + 1). Return best[amount] or -1 if it is still the sentinel.",
+      "time": "O(amount * k)",
+      "space": "O(amount)"
+    },
+    "hintLadder": [
+      "Try greedy on 1, 4, 6 with amount 8. What goes wrong?",
+      "If you knew the fewest coins for every smaller amount, how would you get this one?",
+      "What is the last coin you add?",
+      "Fill a table from 0 to amount: best[a] is 1 plus the best of best[a - c] over every coin c."
+    ],
+    "expectedMentions": [
+      {
+        "id": "ask-impossible",
+        "what": "Asks what to return when the amount cannot be made",
+        "category": "clarification"
+      },
+      {
+        "id": "greedy-fails",
+        "what": "Shows or explains why greedy fails",
+        "category": "reasoning"
+      },
+      {
+        "id": "recurrence",
+        "what": "States the recurrence on the last coin",
+        "category": "planning"
+      },
+      {
+        "id": "complexity",
+        "what": "States O(amount * k) time and O(amount) space",
+        "category": "planning"
+      },
+      {
+        "id": "sentinel",
+        "what": "Explains the sentinel for impossible amounts",
+        "category": "reasoning"
+      },
+      {
+        "id": "trace",
+        "what": "Traces a small table",
+        "category": "testing"
+      }
+    ],
+    "followUps": [
+      "Count the number of ways to make the amount instead.",
+      "Each coin can be used at most once."
+    ],
+    "vocabulary": [
+      "dynamic programming",
+      "greedy",
+      "table",
+      "bottom up",
+      "recurrence",
+      "sentinel",
+      "infinity",
+      "O of amount times coins",
+      "subproblem"
+    ],
+    "referenceSolution": {
+      "python": "def fewest_coins(coins, amount):\n    INF = amount + 1\n    best = [0] + [INF] * amount\n    for a in range(1, amount + 1):\n        for c in coins:\n            if c <= a and best[a - c] + 1 < best[a]:\n                best[a] = best[a - c] + 1\n    return best[amount] if best[amount] <= amount else -1\n",
+      "javascript": "function fewest_coins(coins, amount) {\n  const INF = amount + 1;\n  const best = new Array(amount + 1).fill(INF);\n  best[0] = 0;\n  for (let a = 1; a <= amount; a++) {\n    for (const c of coins) {\n      if (c <= a && best[a - c] + 1 < best[a]) best[a] = best[a - c] + 1;\n    }\n  }\n  return best[amount] <= amount ? best[amount] : -1;\n}\n"
+    },
+    "walkthrough": [
+      {
+        "phase": "clarify",
+        "say": "If it can’t be made I return minus one, and amount zero is zero coins? Unlimited coins of each value?"
+      },
+      {
+        "phase": "plan",
+        "say": "Greedy is tempting, but with 1, 4 and 6 for 8, greedy takes 6, 1, 1, three coins, while 4 plus 4 is two. So I need to consider every choice."
+      },
+      {
+        "phase": "plan",
+        "say": "The last coin I add is some c, and the rest is the best way to make a minus c. So best of a is one plus the minimum of best of a minus c. I fill that from 0 up to the amount. That’s amount times number of coins, with O(amount) space."
+      },
+      {
+        "phase": "code",
+        "say": "amount plus one works as infinity because no answer can use more than amount coins.",
+        "code": "def fewest_coins(coins, amount):\n    INF = amount + 1\n    best = [0] + [INF] * amount\n    for a in range(1, amount + 1):\n        for c in coins:\n            if c <= a and best[a - c] + 1 < best[a]:\n                best[a] = best[a - c] + 1\n    return best[amount] if best[amount] <= amount else -1"
+      },
+      {
+        "phase": "test",
+        "say": "For 1, 4, 6 up to 8: best of 4 is 1, best of 6 is 1, best of 7 is 2 from 6 plus 1, and best of 8 is min of best 7 plus 1, best 4 plus 1, best 2 plus 1, so 2. Correct."
+      },
+      {
+        "phase": "test",
+        "say": "For 5 and 3, nothing fits, best of 3 stays at the sentinel 4, so minus one."
+      },
+      {
+        "phase": "wrap-up",
+        "say": "O(amount times k) time, O(amount) space."
+      }
+    ],
+    "generatedBy": {
+      "provider": "maintainers",
+      "model": "hand-written",
+      "date": "2026-11-11"
+    }
+  },
+  "source": "built-in"
+}

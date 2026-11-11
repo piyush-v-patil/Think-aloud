@@ -1,0 +1,238 @@
+{
+  "schemaVersion": 1,
+  "id": "backspace-notes",
+  "title": "Notes with backspaces",
+  "difficulty": "easy",
+  "topics": [
+    "stack",
+    "two-pointers"
+  ],
+  "statement": "Two people typed notes on a keyboard where `#` means backspace: it deletes the character before it, if any. Backspace on an empty note does nothing.\n\nGiven the raw keystrokes `a` and `b`, return true if both produce the same final text.",
+  "examples": [
+    {
+      "input": "a = \"ab#c\", b = \"ad#c\"",
+      "output": "true",
+      "explanation": "Both become \"ac\"."
+    },
+    {
+      "input": "a = \"a#b\", b = \"b#a\"",
+      "output": "false"
+    }
+  ],
+  "signature": {
+    "name": "same_notes",
+    "params": [
+      {
+        "name": "a",
+        "type": "string"
+      },
+      {
+        "name": "b",
+        "type": "string"
+      }
+    ],
+    "returns": "bool"
+  },
+  "starterCode": {
+    "python": "def same_notes(a, b):\n    pass\n",
+    "javascript": "function same_notes(a, b) {\n\n}\n"
+  },
+  "tests": [
+    {
+      "name": "example 1",
+      "args": [
+        "ab#c",
+        "ad#c"
+      ],
+      "expected": true
+    },
+    {
+      "name": "example 2",
+      "args": [
+        "a#b",
+        "b#a"
+      ],
+      "expected": false
+    },
+    {
+      "name": "backspace on empty",
+      "args": [
+        "##x",
+        "x"
+      ],
+      "expected": true
+    },
+    {
+      "name": "all deleted",
+      "args": [
+        "ab##",
+        "c#"
+      ],
+      "expected": true
+    },
+    {
+      "name": "different lengths",
+      "args": [
+        "abc",
+        "ab"
+      ],
+      "expected": false,
+      "hidden": true
+    },
+    {
+      "name": "trailing backspaces",
+      "args": [
+        "a##b#c",
+        "#c"
+      ],
+      "expected": true,
+      "hidden": true
+    }
+  ],
+  "analysis": {
+    "clarifyingQuestions": [
+      {
+        "question": "What happens with a backspace on an empty note?",
+        "answer": "Nothing; the note stays empty.",
+        "why": "A naive pop on an empty list can crash."
+      },
+      {
+        "question": "Is # the only special character?",
+        "answer": "Yes, every other character is typed text.",
+        "why": "Defines the parsing."
+      },
+      {
+        "question": "How long are the inputs?",
+        "answer": "Up to 200 characters each, but think about a constant-space version.",
+        "why": "Opens the two-pointer follow-up."
+      }
+    ],
+    "hiddenConstraints": [
+      "Up to 200 characters each.",
+      "Only lowercase letters and #."
+    ],
+    "edgeCases": [
+      {
+        "input": "\"##x\" vs \"x\"",
+        "why": "Backspaces at the start do nothing."
+      },
+      {
+        "input": "\"ab##\" vs \"c#\"",
+        "why": "Both become empty."
+      },
+      {
+        "input": "\"abc\" vs \"ab\"",
+        "why": "Different lengths after processing."
+      },
+      {
+        "input": "\"a##b#c\" vs \"#c\"",
+        "why": "Several backspaces in a row."
+      }
+    ],
+    "approaches": [
+      {
+        "name": "Build both results with a stack",
+        "idea": "Push characters, pop on #, then compare the two results.",
+        "time": "O(n + m)",
+        "space": "O(n + m)",
+        "tradeoffs": "Simple and clear."
+      },
+      {
+        "name": "Two pointers from the end",
+        "idea": "Walk both strings backward, counting pending backspaces to skip characters, and compare the next real character from each.",
+        "time": "O(n + m)",
+        "space": "O(1)",
+        "tradeoffs": "Constant space but trickier to get right."
+      }
+    ],
+    "optimal": {
+      "name": "Stack per note, or reverse two pointers",
+      "explanation": "Process each note with a stack: push normal characters, pop on # when the stack is non-empty. Compare the results. For O(1) space, walk from the end of both strings with a skip counter each, and compare the next surviving characters.",
+      "time": "O(n + m)",
+      "space": "O(n + m), or O(1) with two pointers"
+    },
+    "hintLadder": [
+      "What does a backspace remove?",
+      "Which structure naturally removes the most recent item?",
+      "Could you avoid building the strings by reading from the end?",
+      "Use a stack for each note, or two pointers from the end with a count of backspaces to skip."
+    ],
+    "expectedMentions": [
+      {
+        "id": "ask-empty-backspace",
+        "what": "Asks what a backspace does on an empty note",
+        "category": "clarification"
+      },
+      {
+        "id": "stack-plan",
+        "what": "Proposes simulating with a stack and states O(n + m)",
+        "category": "planning"
+      },
+      {
+        "id": "constant-space",
+        "what": "Mentions the two-pointer O(1) space version",
+        "category": "reasoning"
+      },
+      {
+        "id": "trace-leading",
+        "what": "Tests leading or repeated backspaces",
+        "category": "testing"
+      }
+    ],
+    "followUps": [
+      "Do it in O(1) extra space.",
+      "Add an undo key that restores the last deleted character."
+    ],
+    "vocabulary": [
+      "stack",
+      "backspace",
+      "two pointers",
+      "reverse",
+      "skip count",
+      "O of one space",
+      "simulate",
+      "pop"
+    ],
+    "referenceSolution": {
+      "python": "def same_notes(a, b):\n    def final(s):\n        out = []\n        for ch in s:\n            if ch == '#':\n                if out:\n                    out.pop()\n            else:\n                out.append(ch)\n        return out\n    return final(a) == final(b)\n",
+      "javascript": "function same_notes(a, b) {\n  const final = (s) => {\n    const out = [];\n    for (const ch of s) {\n      if (ch === '#') out.pop();\n      else out.push(ch);\n    }\n    return out.join('');\n  };\n  return final(a) === final(b);\n}\n"
+    },
+    "walkthrough": [
+      {
+        "phase": "clarify",
+        "say": "A backspace on an empty note does nothing, right? And hash is the only special character?"
+      },
+      {
+        "phase": "plan",
+        "say": "The simplest approach is to simulate typing with a stack for each note: push characters, pop on hash. Then compare. That’s linear time and space."
+      },
+      {
+        "phase": "plan",
+        "say": "If space mattered, I could walk both strings backward with a counter of backspaces to skip. I’ll start with the stack for clarity and mention that as the follow-up."
+      },
+      {
+        "phase": "code",
+        "say": "A helper that returns the final text. I only pop if there is something to pop.",
+        "code": "def same_notes(a, b):\n    def final(s):\n        out = []\n        for ch in s:\n            if ch == '#':\n                if out:\n                    out.pop()\n            else:\n                out.append(ch)\n        return out\n    return final(a) == final(b)"
+      },
+      {
+        "phase": "test",
+        "say": "a b hash c becomes a, c, and a d hash c also becomes a, c. Equal, true."
+      },
+      {
+        "phase": "test",
+        "say": "Hash hash x: the first two backspaces hit an empty stack and do nothing, then x. That equals x. Good, the guard matters."
+      },
+      {
+        "phase": "wrap-up",
+        "say": "O(n plus m) time and space. The backward two-pointer version brings space to O(1)."
+      }
+    ],
+    "generatedBy": {
+      "provider": "maintainers",
+      "model": "hand-written",
+      "date": "2026-11-11"
+    }
+  },
+  "source": "built-in"
+}

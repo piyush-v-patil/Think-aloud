@@ -1,0 +1,318 @@
+{
+  "schemaVersion": 1,
+  "id": "warehouse-path",
+  "title": "Shortest path through the warehouse",
+  "difficulty": "medium",
+  "topics": [
+    "graphs"
+  ],
+  "statement": "A warehouse floor is a grid where 0 is an open aisle and 1 is a shelf. A robot starts at the top-left cell and must reach the bottom-right cell, moving up, down, left or right one cell per step through open cells only.\n\nReturn the fewest steps needed, or -1 if it cannot get there. If the start or end is a shelf, return -1.",
+  "examples": [
+    {
+      "input": "grid = [[0, 0, 1], [1, 0, 1], [1, 0, 0]]",
+      "output": "4"
+    }
+  ],
+  "signature": {
+    "name": "fewest_steps",
+    "params": [
+      {
+        "name": "grid",
+        "type": "int[][]"
+      }
+    ],
+    "returns": "int"
+  },
+  "starterCode": {
+    "python": "def fewest_steps(grid):\n    pass\n",
+    "javascript": "function fewest_steps(grid) {\n\n}\n"
+  },
+  "tests": [
+    {
+      "name": "example",
+      "args": [
+        [
+          [
+            0,
+            0,
+            1
+          ],
+          [
+            1,
+            0,
+            1
+          ],
+          [
+            1,
+            0,
+            0
+          ]
+        ]
+      ],
+      "expected": 4
+    },
+    {
+      "name": "single open cell",
+      "args": [
+        [
+          [
+            0
+          ]
+        ]
+      ],
+      "expected": 0
+    },
+    {
+      "name": "blocked start",
+      "args": [
+        [
+          [
+            1,
+            0
+          ],
+          [
+            0,
+            0
+          ]
+        ]
+      ],
+      "expected": -1
+    },
+    {
+      "name": "walled off",
+      "args": [
+        [
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            0
+          ]
+        ]
+      ],
+      "expected": -1
+    },
+    {
+      "name": "detour",
+      "args": [
+        [
+          [
+            0,
+            0,
+            0
+          ],
+          [
+            1,
+            1,
+            0
+          ],
+          [
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            1,
+            1
+          ],
+          [
+            0,
+            0,
+            0
+          ]
+        ]
+      ],
+      "expected": 10,
+      "hidden": true
+    },
+    {
+      "name": "open floor",
+      "args": [
+        [
+          [
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0
+          ]
+        ]
+      ],
+      "expected": 4,
+      "hidden": true
+    }
+  ],
+  "analysis": {
+    "clarifyingQuestions": [
+      {
+        "question": "Which moves are allowed?",
+        "answer": "Up, down, left and right, one cell per step.",
+        "why": "Defines neighbors; no diagonals."
+      },
+      {
+        "question": "What if the start or end is a shelf?",
+        "answer": "Return -1.",
+        "why": "Must check before searching."
+      },
+      {
+        "question": "What if start and end are the same cell?",
+        "answer": "For a 1 by 1 open grid, return 0.",
+        "why": "Base case."
+      },
+      {
+        "question": "How large is the grid?",
+        "answer": "Up to 100 by 100.",
+        "why": "BFS over all cells is fine."
+      }
+    ],
+    "hiddenConstraints": [
+      "Up to 100 x 100 cells.",
+      "The grid has at least one cell."
+    ],
+    "edgeCases": [
+      {
+        "input": "[[0]]",
+        "why": "Start is the end: 0 steps."
+      },
+      {
+        "input": "Start blocked",
+        "why": "Return -1."
+      },
+      {
+        "input": "No route exists",
+        "why": "Return -1."
+      },
+      {
+        "input": "A long detour",
+        "why": "BFS must find the shortest, not the first path DFS finds."
+      }
+    ],
+    "approaches": [
+      {
+        "name": "DFS over all paths",
+        "idea": "Explore every path and keep the shortest.",
+        "time": "Exponential",
+        "space": "O(rows * cols)",
+        "tradeoffs": "Far too slow, and DFS’s first path is not the shortest."
+      },
+      {
+        "name": "Breadth-first search",
+        "idea": "BFS explores cells in order of distance from the start, so the first time it reaches the end is the shortest path.",
+        "time": "O(rows * cols)",
+        "space": "O(rows * cols)",
+        "tradeoffs": "Correct for equal step costs."
+      }
+    ],
+    "optimal": {
+      "name": "BFS from the start",
+      "explanation": "Return -1 if start or end is blocked. Queue the start with distance 0 and mark it seen. Pop cells in order; if it is the end, return its distance. Otherwise push each open, unseen, in-bounds neighbor with distance + 1, marking it seen when pushed. If the queue empties, return -1.",
+      "time": "O(rows * cols)",
+      "space": "O(rows * cols)"
+    },
+    "hintLadder": [
+      "Does every step cost the same?",
+      "Which traversal reaches cells in order of distance?",
+      "How do you avoid visiting a cell twice?",
+      "Run BFS from the start, marking cells when you enqueue them, and return the distance when you reach the end."
+    ],
+    "expectedMentions": [
+      {
+        "id": "ask-blocked",
+        "what": "Asks what to do if the start or end is blocked",
+        "category": "clarification"
+      },
+      {
+        "id": "bfs-why",
+        "what": "Explains why BFS gives the shortest path with equal step costs",
+        "category": "reasoning"
+      },
+      {
+        "id": "bfs-plan",
+        "what": "Proposes BFS with O(rows * cols) time before coding",
+        "category": "planning"
+      },
+      {
+        "id": "mark-on-enqueue",
+        "what": "Marks cells as seen when enqueued to avoid duplicates",
+        "category": "reasoning"
+      },
+      {
+        "id": "trace",
+        "what": "Traces the example or the unreachable case",
+        "category": "testing"
+      }
+    ],
+    "followUps": [
+      "The robot may remove one shelf. What is the new shortest path?",
+      "Steps through some aisles cost more. What changes?"
+    ],
+    "vocabulary": [
+      "breadth first search",
+      "queue",
+      "shortest path",
+      "grid",
+      "visited",
+      "neighbors",
+      "unweighted graph",
+      "Dijkstra",
+      "O of rows times columns"
+    ],
+    "referenceSolution": {
+      "python": "from collections import deque\n\ndef fewest_steps(grid):\n    rows, cols = len(grid), len(grid[0])\n    if grid[0][0] == 1 or grid[rows - 1][cols - 1] == 1:\n        return -1\n    queue = deque([(0, 0, 0)])\n    seen = {(0, 0)}\n    while queue:\n        r, c, d = queue.popleft()\n        if (r, c) == (rows - 1, cols - 1):\n            return d\n        for dr, dc in ((1, 0), (-1, 0), (0, 1), (0, -1)):\n            nr, nc = r + dr, c + dc\n            if 0 <= nr < rows and 0 <= nc < cols and grid[nr][nc] == 0 and (nr, nc) not in seen:\n                seen.add((nr, nc))\n                queue.append((nr, nc, d + 1))\n    return -1\n",
+      "javascript": "function fewest_steps(grid) {\n  const rows = grid.length;\n  const cols = grid[0].length;\n  if (grid[0][0] === 1 || grid[rows - 1][cols - 1] === 1) return -1;\n  const seen = new Set([0]);\n  let queue = [[0, 0]];\n  let steps = 0;\n  while (queue.length) {\n    const next = [];\n    for (const [r, c] of queue) {\n      if (r === rows - 1 && c === cols - 1) return steps;\n      for (const [dr, dc] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {\n        const nr = r + dr;\n        const nc = c + dc;\n        if (nr >= 0 && nr < rows && nc >= 0 && nc < cols && grid[nr][nc] === 0 && !seen.has(nr * cols + nc)) {\n          seen.add(nr * cols + nc);\n          next.push([nr, nc]);\n        }\n      }\n    }\n    queue = next;\n    steps++;\n  }\n  return -1;\n}\n"
+    },
+    "walkthrough": [
+      {
+        "phase": "clarify",
+        "say": "Only four directions, one cell per step? If the start or the end is a shelf, I return minus one? And a one-cell open grid is zero steps?"
+      },
+      {
+        "phase": "plan",
+        "say": "Every step costs the same, so breadth-first search finds the shortest path: it reaches all cells at distance d before any at distance d plus one. Each cell is visited once, so O(rows times cols)."
+      },
+      {
+        "phase": "plan",
+        "say": "DFS would find a path but not necessarily the shortest one, so it’s the wrong tool here."
+      },
+      {
+        "phase": "code",
+        "say": "Check the blocked cases first, then BFS with the distance stored alongside each cell.",
+        "code": "from collections import deque\n\ndef fewest_steps(grid):\n    rows, cols = len(grid), len(grid[0])\n    if grid[0][0] == 1 or grid[rows - 1][cols - 1] == 1:\n        return -1\n    queue = deque([(0, 0, 0)])\n    seen = {(0, 0)}"
+      },
+      {
+        "phase": "code",
+        "say": "Marking cells when I enqueue them means no cell enters the queue twice.",
+        "code": "    while queue:\n        r, c, d = queue.popleft()\n        if (r, c) == (rows - 1, cols - 1):\n            return d\n        for dr, dc in ((1, 0), (-1, 0), (0, 1), (0, -1)):\n            nr, nc = r + dr, c + dc\n            if 0 <= nr < rows and 0 <= nc < cols and grid[nr][nc] == 0 and (nr, nc) not in seen:\n                seen.add((nr, nc))\n                queue.append((nr, nc, d + 1))\n    return -1"
+      },
+      {
+        "phase": "test",
+        "say": "For the example: start at the top left, right to column 1, down twice through column 1, then right to the corner. That’s 4 steps, and BFS finds it at distance 4."
+      },
+      {
+        "phase": "test",
+        "say": "For 0, 1 over 1, 0, the start’s neighbors are both shelves, so the queue empties and I return minus one."
+      },
+      {
+        "phase": "wrap-up",
+        "say": "O(rows times cols) time and space. With different step costs I’d switch to Dijkstra’s algorithm."
+      }
+    ],
+    "generatedBy": {
+      "provider": "maintainers",
+      "model": "hand-written",
+      "date": "2026-11-11"
+    }
+  },
+  "source": "built-in"
+}

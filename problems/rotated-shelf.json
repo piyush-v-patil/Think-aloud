@@ -1,0 +1,312 @@
+{
+  "schemaVersion": 1,
+  "id": "rotated-shelf",
+  "title": "Search a rotated shelf",
+  "difficulty": "medium",
+  "topics": [
+    "binary-search"
+  ],
+  "statement": "Books on a shelf were sorted by ID in increasing order with no repeats, then someone moved a block from the front to the back, so the order was rotated at some unknown point.\n\nGiven `ids` and a `target` ID, return the position of `target`, or -1 if it is not on the shelf. Aim for logarithmic time.",
+  "examples": [
+    {
+      "input": "ids = [40, 50, 60, 10, 20, 30], target = 20",
+      "output": "4"
+    },
+    {
+      "input": "ids = [40, 50, 60, 10, 20, 30], target = 35",
+      "output": "-1"
+    }
+  ],
+  "signature": {
+    "name": "find_on_shelf",
+    "params": [
+      {
+        "name": "ids",
+        "type": "int[]"
+      },
+      {
+        "name": "target",
+        "type": "int"
+      }
+    ],
+    "returns": "int"
+  },
+  "starterCode": {
+    "python": "def find_on_shelf(ids, target):\n    pass\n",
+    "javascript": "function find_on_shelf(ids, target) {\n\n}\n"
+  },
+  "tests": [
+    {
+      "name": "found right half",
+      "args": [
+        [
+          40,
+          50,
+          60,
+          10,
+          20,
+          30
+        ],
+        20
+      ],
+      "expected": 4
+    },
+    {
+      "name": "missing",
+      "args": [
+        [
+          40,
+          50,
+          60,
+          10,
+          20,
+          30
+        ],
+        35
+      ],
+      "expected": -1
+    },
+    {
+      "name": "not rotated",
+      "args": [
+        [
+          1,
+          2,
+          3,
+          4,
+          5
+        ],
+        4
+      ],
+      "expected": 3
+    },
+    {
+      "name": "empty",
+      "args": [
+        [],
+        3
+      ],
+      "expected": -1
+    },
+    {
+      "name": "single",
+      "args": [
+        [
+          7
+        ],
+        7
+      ],
+      "expected": 0,
+      "hidden": true
+    },
+    {
+      "name": "pivot element",
+      "args": [
+        [
+          30,
+          40,
+          5,
+          10,
+          20
+        ],
+        5
+      ],
+      "expected": 2,
+      "hidden": true
+    },
+    {
+      "name": "first element",
+      "args": [
+        [
+          30,
+          40,
+          5,
+          10,
+          20
+        ],
+        30
+      ],
+      "expected": 0,
+      "hidden": true
+    }
+  ],
+  "analysis": {
+    "clarifyingQuestions": [
+      {
+        "question": "Are IDs unique?",
+        "answer": "Yes, no repeats.",
+        "why": "With duplicates you sometimes cannot tell which half is sorted, which breaks the logarithmic bound."
+      },
+      {
+        "question": "Could the shelf be not rotated at all?",
+        "answer": "Yes, a rotation by zero is possible.",
+        "why": "The algorithm must still work on a plain sorted list."
+      },
+      {
+        "question": "What should I return if the ID is missing?",
+        "answer": "-1.",
+        "why": "Defines the not-found result."
+      },
+      {
+        "question": "How large can the shelf be?",
+        "answer": "Up to 100,000 books, and lookups should be logarithmic.",
+        "why": "Rules out a linear scan."
+      }
+    ],
+    "hiddenConstraints": [
+      "IDs are unique.",
+      "Up to 100,000 books; logarithmic time expected."
+    ],
+    "edgeCases": [
+      {
+        "input": "[]",
+        "why": "Return -1."
+      },
+      {
+        "input": "[7], target 7",
+        "why": "Single element."
+      },
+      {
+        "input": "[30, 40, 5, 10, 20], target 5",
+        "why": "Target is the rotation point."
+      },
+      {
+        "input": "[1, 2, 3, 4, 5]",
+        "why": "Not rotated at all."
+      }
+    ],
+    "approaches": [
+      {
+        "name": "Linear scan",
+        "idea": "Check every position.",
+        "time": "O(n)",
+        "space": "O(1)",
+        "tradeoffs": "Ignores the structure."
+      },
+      {
+        "name": "Find the pivot, then binary search",
+        "idea": "Binary search for the smallest element, then binary search in the correct half.",
+        "time": "O(log n)",
+        "space": "O(1)",
+        "tradeoffs": "Two searches, each simple."
+      },
+      {
+        "name": "One modified binary search",
+        "idea": "At each step one half of [lo, hi] is sorted. Check whether the target lies inside the sorted half to decide which half to keep.",
+        "time": "O(log n)",
+        "space": "O(1)",
+        "tradeoffs": "One pass but the conditions need care."
+      }
+    ],
+    "optimal": {
+      "name": "Modified binary search",
+      "explanation": "While lo <= hi, take mid. If ids[mid] is the target, return mid. If ids[lo] <= ids[mid], the left half is sorted: keep it when ids[lo] <= target < ids[mid], otherwise go right. Else the right half is sorted: keep it when ids[mid] < target <= ids[hi], otherwise go left.",
+      "time": "O(log n)",
+      "space": "O(1)"
+    },
+    "hintLadder": [
+      "Even after rotation, what is true of at least one half around the middle?",
+      "If you know one half is sorted, can you tell whether the target is in it?",
+      "How do you tell which half is sorted from three values?",
+      "Compare ids[lo] with ids[mid] to find the sorted half, then check whether the target falls inside its range."
+    ],
+    "expectedMentions": [
+      {
+        "id": "ask-unique",
+        "what": "Asks whether IDs can repeat",
+        "category": "clarification"
+      },
+      {
+        "id": "linear-baseline",
+        "what": "Notes that a linear scan works but is O(n)",
+        "category": "planning"
+      },
+      {
+        "id": "one-half-sorted",
+        "what": "Explains that one half around mid is always sorted",
+        "category": "reasoning"
+      },
+      {
+        "id": "log-time",
+        "what": "States O(log n) before coding",
+        "category": "planning"
+      },
+      {
+        "id": "boundary-checks",
+        "what": "Discusses inclusive and exclusive bounds in the range checks",
+        "category": "reasoning"
+      },
+      {
+        "id": "trace-pivot",
+        "what": "Traces a search where the target is at or near the rotation point",
+        "category": "testing"
+      }
+    ],
+    "followUps": [
+      "IDs can now repeat. What happens to the worst case?",
+      "Return how many positions the shelf was rotated by."
+    ],
+    "vocabulary": [
+      "binary search",
+      "rotated sorted array",
+      "pivot",
+      "O of log n",
+      "midpoint",
+      "sorted half",
+      "lower bound",
+      "upper bound",
+      "invariant"
+    ],
+    "referenceSolution": {
+      "python": "def find_on_shelf(ids, target):\n    lo, hi = 0, len(ids) - 1\n    while lo <= hi:\n        mid = (lo + hi) // 2\n        if ids[mid] == target:\n            return mid\n        if ids[lo] <= ids[mid]:\n            if ids[lo] <= target < ids[mid]:\n                hi = mid - 1\n            else:\n                lo = mid + 1\n        else:\n            if ids[mid] < target <= ids[hi]:\n                lo = mid + 1\n            else:\n                hi = mid - 1\n    return -1\n",
+      "javascript": "function find_on_shelf(ids, target) {\n  let lo = 0;\n  let hi = ids.length - 1;\n  while (lo <= hi) {\n    const mid = (lo + hi) >> 1;\n    if (ids[mid] === target) return mid;\n    if (ids[lo] <= ids[mid]) {\n      if (ids[lo] <= target && target < ids[mid]) hi = mid - 1;\n      else lo = mid + 1;\n    } else {\n      if (ids[mid] < target && target <= ids[hi]) lo = mid + 1;\n      else hi = mid - 1;\n    }\n  }\n  return -1;\n}\n"
+    },
+    "walkthrough": [
+      {
+        "phase": "clarify",
+        "say": "IDs are unique, right? Could the shelf be not rotated at all? And I return minus one if it’s missing?"
+      },
+      {
+        "phase": "plan",
+        "say": "A linear scan works, but the list is almost sorted, so I want binary search, O(log n)."
+      },
+      {
+        "phase": "plan",
+        "say": "The key fact: if I split at the middle, at least one half is in sorted order, because the rotation point can only be in one of them. I can tell which by comparing the first element of the range with the middle. Then I check whether the target falls inside that sorted half’s range; if so I keep it, otherwise I go to the other half."
+      },
+      {
+        "phase": "code",
+        "say": "Standard binary search loop with inclusive bounds.",
+        "code": "def find_on_shelf(ids, target):\n    lo, hi = 0, len(ids) - 1\n    while lo <= hi:\n        mid = (lo + hi) // 2\n        if ids[mid] == target:\n            return mid"
+      },
+      {
+        "phase": "code",
+        "say": "Left half sorted. The target must be at least the first value and strictly less than mid, since mid isn’t it.",
+        "code": "        if ids[lo] <= ids[mid]:\n            if ids[lo] <= target < ids[mid]:\n                hi = mid - 1\n            else:\n                lo = mid + 1"
+      },
+      {
+        "phase": "code",
+        "say": "Otherwise the right half is sorted, same idea mirrored.",
+        "code": "        else:\n            if ids[mid] < target <= ids[hi]:\n                lo = mid + 1\n            else:\n                hi = mid - 1\n    return -1"
+      },
+      {
+        "phase": "test",
+        "say": "Looking for 20 in 40, 50, 60, 10, 20, 30: mid is index 2, 60. Left half 40 to 60 is sorted, 20 isn’t in it, so lo goes to 3. Now mid is 4, which is 20. Found at 4."
+      },
+      {
+        "phase": "test",
+        "say": "For 30, 40, 5, 10, 20 looking for 5: mid is 5 at index 2, found right away. Looking for 30: mid is 5, the left isn’t sorted since 30 is more than 5, so the right half 5 to 20 is sorted; 30 isn’t in it, so I go left and find it at 0."
+      },
+      {
+        "phase": "wrap-up",
+        "say": "O(log n) time, O(1) space. With duplicates, when the first and middle are equal I can’t tell which half is sorted, so the worst case becomes linear."
+      }
+    ],
+    "generatedBy": {
+      "provider": "maintainers",
+      "model": "hand-written",
+      "date": "2026-11-11"
+    }
+  },
+  "source": "built-in"
+}

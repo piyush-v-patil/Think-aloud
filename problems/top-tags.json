@@ -1,0 +1,297 @@
+{
+  "schemaVersion": 1,
+  "id": "top-tags",
+  "title": "Most used tags",
+  "difficulty": "medium",
+  "topics": [
+    "heaps",
+    "arrays-hashing"
+  ],
+  "statement": "A blog keeps a list of every tag used on every post, with repeats. Given `tags` and a number `k`, return the `k` tags used most often, in any order.\n\nThe answer is guaranteed to be unique: there is never a tie for the kth place.",
+  "examples": [
+    {
+      "input": "tags = [\"go\", \"rust\", \"go\", \"sql\", \"rust\", \"go\"], k = 2",
+      "output": "[\"go\", \"rust\"]"
+    }
+  ],
+  "signature": {
+    "name": "top_tags",
+    "params": [
+      {
+        "name": "tags",
+        "type": "string[]"
+      },
+      {
+        "name": "k",
+        "type": "int"
+      }
+    ],
+    "returns": "string[]"
+  },
+  "starterCode": {
+    "python": "def top_tags(tags, k):\n    pass\n",
+    "javascript": "function top_tags(tags, k) {\n\n}\n"
+  },
+  "tests": [
+    {
+      "name": "example",
+      "args": [
+        [
+          "go",
+          "rust",
+          "go",
+          "sql",
+          "rust",
+          "go"
+        ],
+        2
+      ],
+      "expected": [
+        "rust",
+        "go"
+      ],
+      "compare": "unordered"
+    },
+    {
+      "name": "k equals distinct tags",
+      "args": [
+        [
+          "a",
+          "b",
+          "a"
+        ],
+        2
+      ],
+      "expected": [
+        "b",
+        "a"
+      ],
+      "compare": "unordered"
+    },
+    {
+      "name": "single tag",
+      "args": [
+        [
+          "solo"
+        ],
+        1
+      ],
+      "expected": [
+        "solo"
+      ],
+      "compare": "unordered"
+    },
+    {
+      "name": "k is one",
+      "args": [
+        [
+          "x",
+          "y",
+          "y",
+          "z",
+          "y"
+        ],
+        1
+      ],
+      "expected": [
+        "y"
+      ],
+      "compare": "unordered"
+    },
+    {
+      "name": "many tags",
+      "args": [
+        [
+          "a",
+          "b",
+          "c",
+          "a",
+          "b",
+          "a",
+          "d",
+          "e",
+          "d",
+          "d",
+          "d"
+        ],
+        2
+      ],
+      "expected": [
+        "a",
+        "d"
+      ],
+      "compare": "unordered",
+      "hidden": true
+    }
+  ],
+  "analysis": {
+    "clarifyingQuestions": [
+      {
+        "question": "Can there be a tie for the kth place?",
+        "answer": "No, the answer is unique.",
+        "why": "Removes tie-breaking logic."
+      },
+      {
+        "question": "Does the output order matter?",
+        "answer": "No, any order.",
+        "why": "Lets you skip a final sort."
+      },
+      {
+        "question": "Is k always valid?",
+        "answer": "Yes, 1 <= k <= number of distinct tags.",
+        "why": "No bounds checks needed."
+      },
+      {
+        "question": "How many tags?",
+        "answer": "Up to 100,000.",
+        "why": "Sorting all counts is fine; a heap or buckets can do better."
+      }
+    ],
+    "hiddenConstraints": [
+      "Up to 100,000 tags.",
+      "k is at most the number of distinct tags."
+    ],
+    "edgeCases": [
+      {
+        "input": "k equals the number of distinct tags",
+        "why": "Return all of them."
+      },
+      {
+        "input": "A single tag",
+        "why": "Return it."
+      },
+      {
+        "input": "k = 1",
+        "why": "Return the single most frequent tag."
+      }
+    ],
+    "approaches": [
+      {
+        "name": "Count, then sort by count",
+        "idea": "Count with a hash map and sort the distinct tags by count descending.",
+        "time": "O(n + d log d)",
+        "space": "O(d)",
+        "tradeoffs": "Simple; d is the number of distinct tags."
+      },
+      {
+        "name": "Count, then a size-k min-heap",
+        "idea": "Push (count, tag) pairs, popping the smallest whenever the heap exceeds k.",
+        "time": "O(n + d log k)",
+        "space": "O(d + k)",
+        "tradeoffs": "Better when k is much smaller than d."
+      },
+      {
+        "name": "Count, then bucket by frequency",
+        "idea": "Make buckets indexed by count (at most n) and read from the highest bucket down until you have k tags.",
+        "time": "O(n)",
+        "space": "O(n)",
+        "tradeoffs": "Linear; uses an array of size n + 1."
+      }
+    ],
+    "optimal": {
+      "name": "Hash map plus a size-k heap (or buckets)",
+      "explanation": "Count each tag. Keep a min-heap of (count, tag) with at most k entries, popping the smallest when it grows past k. The heap then holds the k most frequent tags. Buckets by frequency give O(n) if needed.",
+      "time": "O(n + d log k)",
+      "space": "O(d + k)"
+    },
+    "hintLadder": [
+      "First, how would you know how often each tag appears?",
+      "Once you have counts, do you need a full sort?",
+      "How can you keep only the best k seen so far?",
+      "Count with a hash map, then keep a min-heap of size k, or bucket tags by count."
+    ],
+    "expectedMentions": [
+      {
+        "id": "ask-ties",
+        "what": "Asks about ties or output order",
+        "category": "clarification"
+      },
+      {
+        "id": "count-map",
+        "what": "Counts with a hash map first",
+        "category": "planning"
+      },
+      {
+        "id": "heap-plan",
+        "what": "Proposes a size-k min-heap and states O(n + d log k)",
+        "category": "planning"
+      },
+      {
+        "id": "why-min-heap",
+        "what": "Explains why the heap is a min-heap (to evict the smallest)",
+        "category": "reasoning"
+      },
+      {
+        "id": "bucket-alt",
+        "what": "Mentions bucket sort by frequency for O(n)",
+        "category": "reasoning"
+      },
+      {
+        "id": "trace",
+        "what": "Traces the example",
+        "category": "testing"
+      }
+    ],
+    "followUps": [
+      "Tags arrive as a stream; report the top k at any moment.",
+      "Break ties alphabetically."
+    ],
+    "vocabulary": [
+      "hash map",
+      "frequency",
+      "heap",
+      "min heap",
+      "priority queue",
+      "bucket sort",
+      "top k",
+      "O of n log k",
+      "counter"
+    ],
+    "referenceSolution": {
+      "python": "import heapq\n\ndef top_tags(tags, k):\n    counts = {}\n    for t in tags:\n        counts[t] = counts.get(t, 0) + 1\n    heap = []\n    for tag, c in counts.items():\n        heapq.heappush(heap, (c, tag))\n        if len(heap) > k:\n            heapq.heappop(heap)\n    return [tag for _, tag in heap]\n",
+      "javascript": "function top_tags(tags, k) {\n  const counts = new Map();\n  for (const t of tags) counts.set(t, (counts.get(t) || 0) + 1);\n  const buckets = Array.from({ length: tags.length + 1 }, () => []);\n  for (const [tag, c] of counts) buckets[c].push(tag);\n  const out = [];\n  for (let c = buckets.length - 1; c >= 0 && out.length < k; c--) {\n    for (const tag of buckets[c]) {\n      if (out.length < k) out.push(tag);\n    }\n  }\n  return out;\n}\n"
+    },
+    "walkthrough": [
+      {
+        "phase": "clarify",
+        "say": "There’s never a tie for the kth spot, and the output can be in any order?"
+      },
+      {
+        "phase": "plan",
+        "say": "First I count each tag with a hash map, O(n). Then I need the k largest counts. Sorting all distinct tags is d log d, which is fine, but a heap of size k does d log k."
+      },
+      {
+        "phase": "plan",
+        "say": "It’s a min-heap so the smallest of my current top k is on top and can be evicted when something bigger comes in. There’s also a bucket approach by frequency that gets O(n), which I can mention."
+      },
+      {
+        "phase": "code",
+        "say": "Count first.",
+        "code": "import heapq\n\ndef top_tags(tags, k):\n    counts = {}\n    for t in tags:\n        counts[t] = counts.get(t, 0) + 1"
+      },
+      {
+        "phase": "code",
+        "say": "Keep at most k items, dropping the least frequent.",
+        "code": "    heap = []\n    for tag, c in counts.items():\n        heapq.heappush(heap, (c, tag))\n        if len(heap) > k:\n            heapq.heappop(heap)\n    return [tag for _, tag in heap]"
+      },
+      {
+        "phase": "test",
+        "say": "For go, rust, go, sql, rust, go with k of 2: counts are go 3, rust 2, sql 1. Push go and rust; pushing sql makes three, so pop the smallest, sql. Left with go and rust."
+      },
+      {
+        "phase": "test",
+        "say": "With k of 1 on x, y, y, z, y: y has 3 and every other tag gets evicted, so just y."
+      },
+      {
+        "phase": "wrap-up",
+        "say": "O(n plus d log k) time and O(d) space for the counts."
+      }
+    ],
+    "generatedBy": {
+      "provider": "maintainers",
+      "model": "hand-written",
+      "date": "2026-11-11"
+    }
+  },
+  "source": "built-in"
+}

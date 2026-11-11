@@ -1,0 +1,234 @@
+{
+  "schemaVersion": 1,
+  "id": "ways-up-steps",
+  "title": "Ways up the steps",
+  "difficulty": "easy",
+  "topics": [
+    "dynamic-programming"
+  ],
+  "statement": "A stairway has `n` steps. Each move you climb either 1 step or 2 steps.\n\nReturn how many different sequences of moves take you from the bottom to exactly the top. For `n = 0` there is one way: do nothing.",
+  "examples": [
+    {
+      "input": "n = 3",
+      "output": "3",
+      "explanation": "1+1+1, 1+2, 2+1."
+    },
+    {
+      "input": "n = 5",
+      "output": "8"
+    }
+  ],
+  "signature": {
+    "name": "ways_up",
+    "params": [
+      {
+        "name": "n",
+        "type": "int"
+      }
+    ],
+    "returns": "int"
+  },
+  "starterCode": {
+    "python": "def ways_up(n):\n    pass\n",
+    "javascript": "function ways_up(n) {\n\n}\n"
+  },
+  "tests": [
+    {
+      "name": "three",
+      "args": [
+        3
+      ],
+      "expected": 3
+    },
+    {
+      "name": "five",
+      "args": [
+        5
+      ],
+      "expected": 8
+    },
+    {
+      "name": "zero",
+      "args": [
+        0
+      ],
+      "expected": 1
+    },
+    {
+      "name": "one",
+      "args": [
+        1
+      ],
+      "expected": 1
+    },
+    {
+      "name": "larger",
+      "args": [
+        30
+      ],
+      "expected": 1346269,
+      "hidden": true
+    },
+    {
+      "name": "two",
+      "args": [
+        2
+      ],
+      "expected": 2,
+      "hidden": true
+    }
+  ],
+  "analysis": {
+    "clarifyingQuestions": [
+      {
+        "question": "What about n = 0?",
+        "answer": "One way: do nothing.",
+        "why": "Sets the base case."
+      },
+      {
+        "question": "Are the only moves 1 and 2 steps?",
+        "answer": "Yes.",
+        "why": "Defines the recurrence."
+      },
+      {
+        "question": "How large can n be?",
+        "answer": "Up to 45.",
+        "why": "Plain recursion without memoization is exponential."
+      }
+    ],
+    "hiddenConstraints": [
+      "n up to 45."
+    ],
+    "edgeCases": [
+      {
+        "input": "n = 0",
+        "why": "1."
+      },
+      {
+        "input": "n = 1",
+        "why": "1."
+      },
+      {
+        "input": "n = 2",
+        "why": "2."
+      },
+      {
+        "input": "n = 45",
+        "why": "Naive recursion times out."
+      }
+    ],
+    "approaches": [
+      {
+        "name": "Plain recursion",
+        "idea": "ways(n) = ways(n - 1) + ways(n - 2).",
+        "time": "O(2^n)",
+        "space": "O(n)",
+        "tradeoffs": "Recomputes the same values exponentially often."
+      },
+      {
+        "name": "Memoization or a table",
+        "idea": "Store each ways(i) once.",
+        "time": "O(n)",
+        "space": "O(n)",
+        "tradeoffs": "Linear."
+      },
+      {
+        "name": "Two variables",
+        "idea": "Only the last two values are needed.",
+        "time": "O(n)",
+        "space": "O(1)",
+        "tradeoffs": "Best space."
+      }
+    ],
+    "optimal": {
+      "name": "Bottom-up with two variables",
+      "explanation": "The last move is 1 or 2 steps, so ways(n) = ways(n - 1) + ways(n - 2) with ways(0) = ways(1) = 1. Iterate keeping only the last two values.",
+      "time": "O(n)",
+      "space": "O(1)"
+    },
+    "hintLadder": [
+      "What could your last move be?",
+      "If you knew the answers for n - 1 and n - 2, could you get n?",
+      "Why is plain recursion slow?",
+      "Build up from the bottom keeping only the previous two counts."
+    ],
+    "expectedMentions": [
+      {
+        "id": "ask-zero",
+        "what": "Asks about n = 0 or small n",
+        "category": "clarification"
+      },
+      {
+        "id": "recurrence",
+        "what": "States the recurrence from the last move",
+        "category": "planning"
+      },
+      {
+        "id": "exponential-recursion",
+        "what": "Notes plain recursion is exponential",
+        "category": "reasoning"
+      },
+      {
+        "id": "linear-constant",
+        "what": "Reaches O(n) time and O(1) space",
+        "category": "planning"
+      },
+      {
+        "id": "trace",
+        "what": "Traces small values",
+        "category": "testing"
+      }
+    ],
+    "followUps": [
+      "Moves can be 1, 2 or 3 steps.",
+      "Some steps are broken and cannot be stepped on."
+    ],
+    "vocabulary": [
+      "dynamic programming",
+      "recurrence",
+      "memoization",
+      "Fibonacci",
+      "bottom up",
+      "base case",
+      "O of n",
+      "O of one"
+    ],
+    "referenceSolution": {
+      "python": "def ways_up(n):\n    a, b = 1, 1\n    for _ in range(n):\n        a, b = b, a + b\n    return a\n",
+      "javascript": "function ways_up(n) {\n  let a = 1;\n  let b = 1;\n  for (let i = 0; i < n; i++) [a, b] = [b, a + b];\n  return a;\n}\n"
+    },
+    "walkthrough": [
+      {
+        "phase": "clarify",
+        "say": "Just 1 or 2 steps at a time, and for zero steps there’s one way? How big can n get?"
+      },
+      {
+        "phase": "plan",
+        "say": "Think about the last move. It’s either a 1 from step n minus 1 or a 2 from step n minus 2, so ways of n is ways of n minus 1 plus ways of n minus 2. That’s Fibonacci."
+      },
+      {
+        "phase": "plan",
+        "say": "Recursing directly recomputes the same values exponentially. Building up from the bottom is O(n), and I only ever need the last two numbers, so O(1) space."
+      },
+      {
+        "phase": "code",
+        "say": "a holds ways of i, b holds ways of i plus 1.",
+        "code": "def ways_up(n):\n    a, b = 1, 1\n    for _ in range(n):\n        a, b = b, a + b\n    return a"
+      },
+      {
+        "phase": "test",
+        "say": "n of 0 returns 1. n of 3: a, b goes 1, 1 then 1, 2 then 2, 3 then 3, 5, return 3. That matches 1+1+1, 1+2 and 2+1."
+      },
+      {
+        "phase": "wrap-up",
+        "say": "O(n) time, O(1) space."
+      }
+    ],
+    "generatedBy": {
+      "provider": "maintainers",
+      "model": "hand-written",
+      "date": "2026-11-11"
+    }
+  },
+  "source": "built-in"
+}

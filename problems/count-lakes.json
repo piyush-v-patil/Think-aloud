@@ -1,0 +1,307 @@
+{
+  "schemaVersion": 1,
+  "id": "count-lakes",
+  "title": "Count the lakes",
+  "difficulty": "medium",
+  "topics": [
+    "graphs"
+  ],
+  "statement": "A satellite map is a grid where 1 is water and 0 is land. A lake is a group of water cells connected up, down, left or right (not diagonally).\n\nGiven the grid `grid`, return how many lakes there are.",
+  "examples": [
+    {
+      "input": "grid = [[1, 1, 0, 0], [0, 1, 0, 1], [1, 0, 0, 1]]",
+      "output": "3"
+    }
+  ],
+  "signature": {
+    "name": "count_lakes",
+    "params": [
+      {
+        "name": "grid",
+        "type": "int[][]"
+      }
+    ],
+    "returns": "int"
+  },
+  "starterCode": {
+    "python": "def count_lakes(grid):\n    pass\n",
+    "javascript": "function count_lakes(grid) {\n\n}\n"
+  },
+  "tests": [
+    {
+      "name": "example",
+      "args": [
+        [
+          [
+            1,
+            1,
+            0,
+            0
+          ],
+          [
+            0,
+            1,
+            0,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            1
+          ]
+        ]
+      ],
+      "expected": 3
+    },
+    {
+      "name": "empty grid",
+      "args": [
+        []
+      ],
+      "expected": 0
+    },
+    {
+      "name": "all land",
+      "args": [
+        [
+          [
+            0,
+            0
+          ],
+          [
+            0,
+            0
+          ]
+        ]
+      ],
+      "expected": 0
+    },
+    {
+      "name": "diagonal does not connect",
+      "args": [
+        [
+          [
+            1,
+            0
+          ],
+          [
+            0,
+            1
+          ]
+        ]
+      ],
+      "expected": 2
+    },
+    {
+      "name": "one big lake",
+      "args": [
+        [
+          [
+            1,
+            1,
+            1
+          ],
+          [
+            1,
+            0,
+            1
+          ],
+          [
+            1,
+            1,
+            1
+          ]
+        ]
+      ],
+      "expected": 1,
+      "hidden": true
+    },
+    {
+      "name": "single row",
+      "args": [
+        [
+          [
+            1,
+            0,
+            1,
+            1,
+            0,
+            1
+          ]
+        ]
+      ],
+      "expected": 3,
+      "hidden": true
+    }
+  ],
+  "analysis": {
+    "clarifyingQuestions": [
+      {
+        "question": "Do diagonal cells connect?",
+        "answer": "No, only up, down, left and right.",
+        "why": "Changes which neighbors to explore."
+      },
+      {
+        "question": "Can the grid be empty or have rows of different lengths?",
+        "answer": "It can be empty; all rows have the same length.",
+        "why": "Base case and indexing."
+      },
+      {
+        "question": "Can I modify the grid?",
+        "answer": "Prefer not to; use a visited set.",
+        "why": "Avoids side effects on the input."
+      },
+      {
+        "question": "How big can the grid be?",
+        "answer": "Up to 300 by 300.",
+        "why": "Deep recursion could overflow; an explicit stack is safer."
+      }
+    ],
+    "hiddenConstraints": [
+      "Up to 300 x 300 cells.",
+      "Rows are equal length."
+    ],
+    "edgeCases": [
+      {
+        "input": "[]",
+        "why": "Return 0."
+      },
+      {
+        "input": "All land",
+        "why": "Return 0."
+      },
+      {
+        "input": "[[1, 0], [0, 1]]",
+        "why": "Diagonal cells are separate lakes."
+      },
+      {
+        "input": "A ring of water",
+        "why": "One lake even though it surrounds land."
+      }
+    ],
+    "approaches": [
+      {
+        "name": "Flood fill with DFS or BFS",
+        "idea": "Scan every cell. When you find unvisited water, count a new lake and mark every connected water cell visited.",
+        "time": "O(rows * cols)",
+        "space": "O(rows * cols)",
+        "tradeoffs": "Standard; each cell is visited once."
+      },
+      {
+        "name": "Union-find",
+        "idea": "Union each water cell with water neighbors, then count distinct roots.",
+        "time": "O(rows * cols * α)",
+        "space": "O(rows * cols)",
+        "tradeoffs": "Useful when cells are added over time; more code here."
+      }
+    ],
+    "optimal": {
+      "name": "Flood fill",
+      "explanation": "Loop over cells. On an unvisited water cell, increment the count and explore its lake with an explicit stack (or queue), marking cells visited when pushed and pushing in-bounds water neighbors in four directions.",
+      "time": "O(rows * cols)",
+      "space": "O(rows * cols)"
+    },
+    "hintLadder": [
+      "When you find a water cell, how would you find the rest of its lake?",
+      "How do you make sure you don’t count the same lake twice?",
+      "This is a graph where cells are nodes. Which traversals do you know?",
+      "Scan the grid; on unvisited water, count it and flood-fill its lake with DFS or BFS."
+    ],
+    "expectedMentions": [
+      {
+        "id": "ask-diagonal",
+        "what": "Asks whether diagonal cells connect",
+        "category": "clarification"
+      },
+      {
+        "id": "graph-model",
+        "what": "Describes the grid as a graph of cells",
+        "category": "planning"
+      },
+      {
+        "id": "flood-fill",
+        "what": "Proposes flood fill with DFS or BFS and O(rows * cols) time",
+        "category": "planning"
+      },
+      {
+        "id": "visited",
+        "what": "Explains marking cells visited to avoid recounting",
+        "category": "reasoning"
+      },
+      {
+        "id": "recursion-depth",
+        "what": "Mentions recursion depth or uses an explicit stack",
+        "category": "reasoning"
+      },
+      {
+        "id": "trace",
+        "what": "Traces a small grid",
+        "category": "testing"
+      }
+    ],
+    "followUps": [
+      "Return the size of the largest lake.",
+      "Cells turn into water one at a time; report the lake count after each change."
+    ],
+    "vocabulary": [
+      "flood fill",
+      "depth first search",
+      "breadth first search",
+      "grid",
+      "visited set",
+      "neighbors",
+      "connected components",
+      "union find",
+      "O of rows times columns",
+      "stack",
+      "queue"
+    ],
+    "referenceSolution": {
+      "python": "def count_lakes(grid):\n    if not grid:\n        return 0\n    rows, cols = len(grid), len(grid[0])\n    seen = set()\n    count = 0\n    for r in range(rows):\n        for c in range(cols):\n            if grid[r][c] == 1 and (r, c) not in seen:\n                count += 1\n                stack = [(r, c)]\n                seen.add((r, c))\n                while stack:\n                    y, x = stack.pop()\n                    for dy, dx in ((1, 0), (-1, 0), (0, 1), (0, -1)):\n                        ny, nx = y + dy, x + dx\n                        if 0 <= ny < rows and 0 <= nx < cols and grid[ny][nx] == 1 and (ny, nx) not in seen:\n                            seen.add((ny, nx))\n                            stack.append((ny, nx))\n    return count\n",
+      "javascript": "function count_lakes(grid) {\n  if (!grid.length) return 0;\n  const rows = grid.length;\n  const cols = grid[0].length;\n  const seen = new Set();\n  let count = 0;\n  for (let r = 0; r < rows; r++) {\n    for (let c = 0; c < cols; c++) {\n      if (grid[r][c] !== 1 || seen.has(r * cols + c)) continue;\n      count++;\n      const stack = [[r, c]];\n      seen.add(r * cols + c);\n      while (stack.length) {\n        const [y, x] = stack.pop();\n        for (const [dy, dx] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {\n          const ny = y + dy;\n          const nx = x + dx;\n          if (ny >= 0 && ny < rows && nx >= 0 && nx < cols && grid[ny][nx] === 1 && !seen.has(ny * cols + nx)) {\n            seen.add(ny * cols + nx);\n            stack.push([ny, nx]);\n          }\n        }\n      }\n    }\n  }\n  return count;\n}\n"
+    },
+    "walkthrough": [
+      {
+        "phase": "clarify",
+        "say": "Only up, down, left and right connect, not diagonals? And should I avoid changing the grid?"
+      },
+      {
+        "phase": "plan",
+        "say": "Each lake is a connected component of water cells. I’ll scan every cell; when I hit water I haven’t visited, that’s a new lake, and I flood-fill to mark the whole lake visited. Every cell is handled a constant number of times, so O(rows times cols)."
+      },
+      {
+        "phase": "plan",
+        "say": "A big lake could make recursion very deep, so I’ll use an explicit stack."
+      },
+      {
+        "phase": "code",
+        "say": "Outer scan; a new lake when I find unvisited water.",
+        "code": "def count_lakes(grid):\n    if not grid:\n        return 0\n    rows, cols = len(grid), len(grid[0])\n    seen = set()\n    count = 0\n    for r in range(rows):\n        for c in range(cols):\n            if grid[r][c] == 1 and (r, c) not in seen:\n                count += 1"
+      },
+      {
+        "phase": "code",
+        "say": "I mark cells when I push them, so nothing gets pushed twice.",
+        "code": "                stack = [(r, c)]\n                seen.add((r, c))\n                while stack:\n                    y, x = stack.pop()\n                    for dy, dx in ((1, 0), (-1, 0), (0, 1), (0, -1)):\n                        ny, nx = y + dy, x + dx\n                        if 0 <= ny < rows and 0 <= nx < cols and grid[ny][nx] == 1 and (ny, nx) not in seen:\n                            seen.add((ny, nx))\n                            stack.append((ny, nx))\n    return count"
+      },
+      {
+        "phase": "test",
+        "say": "In the example, the top-left 1 starts lake one and the fill reaches its right neighbor and the 1 below that. The 1 in row 1, column 3 starts lake two and reaches the one below it. The bottom-left 1 is lake three. Answer 3."
+      },
+      {
+        "phase": "test",
+        "say": "For the diagonal grid, the two ones don’t touch in four directions, so 2."
+      },
+      {
+        "phase": "wrap-up",
+        "say": "O(rows times cols) time and space."
+      }
+    ],
+    "generatedBy": {
+      "provider": "maintainers",
+      "model": "hand-written",
+      "date": "2026-11-11"
+    }
+  },
+  "source": "built-in"
+}

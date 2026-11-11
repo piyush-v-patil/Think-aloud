@@ -79,5 +79,180 @@
       "hidden": true
     }
   ],
+  "analysis": {
+    "clarifyingQuestions": [
+      {
+        "question": "Is the input only lowercase letters?",
+        "answer": "Yes, only a to z.",
+        "why": "Means the window holds at most 26 distinct letters, which bounds the extra space."
+      },
+      {
+        "question": "What should an empty string return?",
+        "answer": "0.",
+        "why": "Confirms the base case."
+      },
+      {
+        "question": "Do the readings in a stretch have to be consecutive?",
+        "answer": "Yes, a stretch is a run of consecutive readings.",
+        "why": "Distinguishes this from picking any subset of letters."
+      },
+      {
+        "question": "How long can the string be?",
+        "answer": "Up to 100,000 readings.",
+        "why": "Rules out checking every substring."
+      }
+    ],
+    "hiddenConstraints": [
+      "Only lowercase letters a to z.",
+      "Up to 100,000 readings."
+    ],
+    "edgeCases": [
+      {
+        "input": "\"\" (empty)",
+        "why": "Must return 0."
+      },
+      {
+        "input": "\"aaaa\"",
+        "why": "Every letter repeats immediately; the answer is 1."
+      },
+      {
+        "input": "\"abba\"",
+        "why": "When the second a arrives, its last position is before the window start; jumping back would be a bug."
+      },
+      {
+        "input": "\"abcdefg\"",
+        "why": "No repeats at all; the whole string is the answer."
+      }
+    ],
+    "approaches": [
+      {
+        "name": "Check every substring",
+        "idea": "For every start and end, check whether the substring has a repeated letter.",
+        "time": "O(n^3), or O(n^2) with a set per start",
+        "space": "O(min(n, 26))",
+        "tradeoffs": "Easy to reason about but far too slow at 100,000 readings."
+      },
+      {
+        "name": "Sliding window with a set",
+        "idea": "Grow the right edge; while the new letter is already in the window, remove letters from the left. Track the largest window.",
+        "time": "O(n)",
+        "space": "O(26)",
+        "tradeoffs": "Each letter enters and leaves the window at most once."
+      },
+      {
+        "name": "Sliding window with last-seen positions",
+        "idea": "Store each letter’s last position. When a letter repeats inside the window, move the left edge to just after its previous position in one jump.",
+        "time": "O(n)",
+        "space": "O(26)",
+        "tradeoffs": "Same complexity as the set version but skips the inner loop; needs care so the left edge never moves backward."
+      }
+    ],
+    "optimal": {
+      "name": "Sliding window with last-seen positions",
+      "explanation": "Keep start, the left edge of the current calm window, and last, a map from letter to its most recent position. For each position i with letter c: if c was seen at a position at or after start, move start to that position plus one. Record last[c] = i and update best with i - start + 1.",
+      "time": "O(n)",
+      "space": "O(1), at most 26 entries"
+    },
+    "hintLadder": [
+      "If a stretch from i to j is calm, what do you know about the stretch from i to j minus one?",
+      "Can you reuse work as you extend the stretch by one reading instead of starting over?",
+      "Think of a window with a left and right edge. When should the left edge move?",
+      "Keep each letter’s last position. When the new letter was last seen inside the window, move the left edge just past it."
+    ],
+    "expectedMentions": [
+      {
+        "id": "ask-charset",
+        "what": "Asks what characters can appear",
+        "category": "clarification"
+      },
+      {
+        "id": "brute-force",
+        "what": "Describes checking every substring and why it is too slow",
+        "category": "planning"
+      },
+      {
+        "id": "sliding-window",
+        "what": "Proposes a sliding window with O(n) time before coding",
+        "category": "planning"
+      },
+      {
+        "id": "space-bounded",
+        "what": "Notes the extra space is bounded by the alphabet size",
+        "category": "reasoning"
+      },
+      {
+        "id": "left-never-back",
+        "what": "Explains why the left edge must never move backward (the \"abba\" case)",
+        "category": "reasoning"
+      },
+      {
+        "id": "trace-example",
+        "what": "Traces an example aloud, showing the window move",
+        "category": "testing"
+      }
+    ],
+    "followUps": [
+      "Allow at most k repeated letters in a calm stretch.",
+      "Return the stretch itself, not just its length.",
+      "The readings are any Unicode characters. What changes?"
+    ],
+    "vocabulary": [
+      "sliding window",
+      "two pointers",
+      "left pointer",
+      "right pointer",
+      "hash map",
+      "set",
+      "substring",
+      "O of n",
+      "last seen index",
+      "window size"
+    ],
+    "referenceSolution": {
+      "python": "def longest_calm(readings):\n    last = {}\n    start = 0\n    best = 0\n    for i, ch in enumerate(readings):\n        if ch in last and last[ch] >= start:\n            start = last[ch] + 1\n        last[ch] = i\n        best = max(best, i - start + 1)\n    return best\n",
+      "javascript": "function longest_calm(readings) {\n  const last = new Map();\n  let start = 0;\n  let best = 0;\n  for (let i = 0; i < readings.length; i++) {\n    const ch = readings[i];\n    if (last.has(ch) && last.get(ch) >= start) start = last.get(ch) + 1;\n    last.set(ch, i);\n    best = Math.max(best, i - start + 1);\n  }\n  return best;\n}\n"
+    },
+    "walkthrough": [
+      {
+        "phase": "clarify",
+        "say": "Just lowercase letters? And for an empty string I return zero, right? The stretch has to be consecutive readings, not any subset?"
+      },
+      {
+        "phase": "plan",
+        "say": "Brute force would check every substring for repeats, which is at least n squared. With a hundred thousand readings that’s too slow."
+      },
+      {
+        "phase": "plan",
+        "say": "Instead I’ll keep a window that is always calm. I extend the right edge one reading at a time, and when the new letter is already inside the window, I move the left edge just past its previous position. Each step is constant work, so O(n) time, and the map only ever holds 26 letters."
+      },
+      {
+        "phase": "code",
+        "say": "I need the window start, the best length so far, and each letter’s last position.",
+        "code": "def longest_calm(readings):\n    last = {}\n    start = 0\n    best = 0"
+      },
+      {
+        "phase": "code",
+        "say": "Here’s the subtle part. I only move start if the previous position is inside the current window, otherwise start could jump backward.",
+        "code": "    for i, ch in enumerate(readings):\n        if ch in last and last[ch] >= start:\n            start = last[ch] + 1\n        last[ch] = i\n        best = max(best, i - start + 1)\n    return best"
+      },
+      {
+        "phase": "test",
+        "say": "Let me trace a, b, b, a. At index 2 the second b was last seen at 1, which is in the window, so start becomes 2. At index 3, a was last seen at 0, which is before start, so start stays 2. The window is b, a, length 2. Without that check start would have gone back to 1."
+      },
+      {
+        "phase": "test",
+        "say": "Now beeper. b, e gives a window of 2. At index 2 the e repeats, so start moves to 2. At index 4 another e, last seen at 2, so start moves to 3. Then r makes the window p, e, r, length 3, which matches the example."
+      },
+      {
+        "phase": "wrap-up",
+        "say": "O(n) time and constant extra space because the alphabet is fixed. For Unicode, the map would grow with the number of distinct characters."
+      }
+    ],
+    "generatedBy": {
+      "provider": "maintainers",
+      "model": "hand-written",
+      "date": "2026-11-11"
+    }
+  },
   "source": "built-in"
 }

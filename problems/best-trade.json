@@ -1,0 +1,265 @@
+{
+  "schemaVersion": 1,
+  "id": "best-trade",
+  "title": "Best single trade",
+  "difficulty": "easy",
+  "topics": [
+    "sliding-window"
+  ],
+  "statement": "You have the closing price of a collectible for each day in `prices`. You may buy it on one day and sell it on a later day, once.\n\nReturn the largest profit you can make. If no trade makes money, return 0.",
+  "examples": [
+    {
+      "input": "prices = [8, 3, 6, 2, 9, 4]",
+      "output": "7",
+      "explanation": "Buy at 2, sell at 9."
+    },
+    {
+      "input": "prices = [9, 7, 4, 1]",
+      "output": "0"
+    }
+  ],
+  "signature": {
+    "name": "best_trade",
+    "params": [
+      {
+        "name": "prices",
+        "type": "int[]"
+      }
+    ],
+    "returns": "int"
+  },
+  "starterCode": {
+    "python": "def best_trade(prices):\n    pass\n",
+    "javascript": "function best_trade(prices) {\n\n}\n"
+  },
+  "tests": [
+    {
+      "name": "example",
+      "args": [
+        [
+          8,
+          3,
+          6,
+          2,
+          9,
+          4
+        ]
+      ],
+      "expected": 7
+    },
+    {
+      "name": "falling prices",
+      "args": [
+        [
+          9,
+          7,
+          4,
+          1
+        ]
+      ],
+      "expected": 0
+    },
+    {
+      "name": "empty",
+      "args": [
+        []
+      ],
+      "expected": 0
+    },
+    {
+      "name": "one day",
+      "args": [
+        [
+          5
+        ]
+      ],
+      "expected": 0
+    },
+    {
+      "name": "low after high",
+      "args": [
+        [
+          2,
+          10,
+          1,
+          4
+        ]
+      ],
+      "expected": 8,
+      "hidden": true
+    },
+    {
+      "name": "flat",
+      "args": [
+        [
+          3,
+          3,
+          3
+        ]
+      ],
+      "expected": 0,
+      "hidden": true
+    }
+  ],
+  "analysis": {
+    "clarifyingQuestions": [
+      {
+        "question": "Must I buy before I sell?",
+        "answer": "Yes, the sell day must come after the buy day.",
+        "why": "Rules out simply subtracting the minimum from the maximum."
+      },
+      {
+        "question": "Can I make more than one trade?",
+        "answer": "No, exactly one buy and one sell, or no trade.",
+        "why": "Separates this from the many-trades variant."
+      },
+      {
+        "question": "What if no trade is profitable, or there are fewer than two days?",
+        "answer": "Return 0.",
+        "why": "Base cases."
+      },
+      {
+        "question": "How many days of prices?",
+        "answer": "Up to 100,000.",
+        "why": "Rules out checking every pair."
+      }
+    ],
+    "hiddenConstraints": [
+      "Up to 100,000 days.",
+      "Prices are non-negative integers."
+    ],
+    "edgeCases": [
+      {
+        "input": "[]",
+        "why": "No days: 0."
+      },
+      {
+        "input": "[5]",
+        "why": "One day: 0."
+      },
+      {
+        "input": "[9, 7, 4, 1]",
+        "why": "Only falling prices: 0, never negative."
+      },
+      {
+        "input": "[2, 10, 1, 4]",
+        "why": "The global minimum comes after the global maximum, so max minus min is wrong."
+      }
+    ],
+    "approaches": [
+      {
+        "name": "Every pair",
+        "idea": "For each buy day, check every later sell day.",
+        "time": "O(n^2)",
+        "space": "O(1)",
+        "tradeoffs": "Correct but quadratic."
+      },
+      {
+        "name": "Track the lowest price so far",
+        "idea": "Walk the days once, remembering the lowest price seen. Each day, the best sale today is today’s price minus that lowest price.",
+        "time": "O(n)",
+        "space": "O(1)",
+        "tradeoffs": "Linear and constant space."
+      }
+    ],
+    "optimal": {
+      "name": "Running minimum",
+      "explanation": "Keep lowest = the minimum price so far and best = 0. For each price, update lowest, then best = max(best, price - lowest). Updating lowest first is fine because selling on the same day gives a profit of 0.",
+      "time": "O(n)",
+      "space": "O(1)"
+    },
+    "hintLadder": [
+      "If you had to sell today, which day would you have wanted to buy?",
+      "Do you need to look back over every earlier day to know that?",
+      "What single number summarizes the past for this question?",
+      "Track the lowest price so far and compare each day against it."
+    ],
+    "expectedMentions": [
+      {
+        "id": "ask-order",
+        "what": "Confirms the buy must come before the sell",
+        "category": "clarification"
+      },
+      {
+        "id": "brute-force",
+        "what": "States the O(n^2) pair check",
+        "category": "planning"
+      },
+      {
+        "id": "running-min",
+        "what": "Proposes tracking the lowest price so far for O(n)",
+        "category": "planning"
+      },
+      {
+        "id": "why-not-max-min",
+        "what": "Explains why max minus min is wrong when the minimum comes later",
+        "category": "reasoning"
+      },
+      {
+        "id": "trace-falling",
+        "what": "Tests a falling-price input returning 0",
+        "category": "testing"
+      }
+    ],
+    "followUps": [
+      "You may make any number of trades, holding at most one item at a time.",
+      "Each trade has a fixed fee."
+    ],
+    "vocabulary": [
+      "running minimum",
+      "greedy",
+      "profit",
+      "one pass",
+      "O of n",
+      "O of n squared",
+      "buy",
+      "sell",
+      "sliding window"
+    ],
+    "referenceSolution": {
+      "python": "def best_trade(prices):\n    lowest = float('inf')\n    best = 0\n    for p in prices:\n        lowest = min(lowest, p)\n        best = max(best, p - lowest)\n    return best\n",
+      "javascript": "function best_trade(prices) {\n  let lowest = Infinity;\n  let best = 0;\n  for (const p of prices) {\n    lowest = Math.min(lowest, p);\n    best = Math.max(best, p - lowest);\n  }\n  return best;\n}\n"
+    },
+    "walkthrough": [
+      {
+        "phase": "clarify",
+        "say": "I have to buy before I sell, and only once, right? If nothing makes money I return zero?"
+      },
+      {
+        "phase": "plan",
+        "say": "Brute force compares every buy day with every later sell day, n squared."
+      },
+      {
+        "phase": "plan",
+        "say": "If I sell on a given day, the best buy is the lowest price before it. So I just keep a running minimum and, each day, compare today’s price to it. One pass, O(n) time, O(1) space."
+      },
+      {
+        "phase": "plan",
+        "say": "I can’t just take the overall max minus the overall min, because the minimum might come after the maximum."
+      },
+      {
+        "phase": "code",
+        "say": "Two variables. I update the minimum first; selling the same day just gives zero.",
+        "code": "def best_trade(prices):\n    lowest = float('inf')\n    best = 0\n    for p in prices:\n        lowest = min(lowest, p)\n        best = max(best, p - lowest)\n    return best"
+      },
+      {
+        "phase": "test",
+        "say": "For 8, 3, 6, 2, 9, 4: the minimum goes 8, 3, 3, 2, 2, 2, and the best goes 0, 0, 3, 3, 7, 7. Answer 7, buying at 2 and selling at 9."
+      },
+      {
+        "phase": "test",
+        "say": "For 2, 10, 1, 4: best becomes 8 at day 2. Later the minimum drops to 1, but 4 minus 1 is only 3, so 8 stays. Max minus min would have said 9, which isn’t a legal trade."
+      },
+      {
+        "phase": "wrap-up",
+        "say": "O(n) time, O(1) space."
+      }
+    ],
+    "generatedBy": {
+      "provider": "maintainers",
+      "model": "hand-written",
+      "date": "2026-11-11"
+    }
+  },
+  "source": "built-in"
+}

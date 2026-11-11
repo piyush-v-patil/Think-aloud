@@ -1,0 +1,324 @@
+{
+  "schemaVersion": 1,
+  "id": "word-families",
+  "title": "Word families",
+  "difficulty": "medium",
+  "topics": [
+    "arrays-hashing"
+  ],
+  "statement": "A word game groups tiles into families: two words belong to the same family if one can be made by rearranging all the letters of the other.\n\nGiven a list of lowercase `words`, return the families as a list of lists. The families can be in any order, and the words inside a family can be in any order. Every word belongs to exactly one family, and repeated words stay in the same family.",
+  "examples": [
+    {
+      "input": "words = [\"stop\", \"pots\", \"tops\", \"cat\", \"act\", \"dog\"]",
+      "output": "[[\"stop\", \"pots\", \"tops\"], [\"cat\", \"act\"], [\"dog\"]]"
+    }
+  ],
+  "signature": {
+    "name": "word_families",
+    "params": [
+      {
+        "name": "words",
+        "type": "string[]"
+      }
+    ],
+    "returns": "string[][]"
+  },
+  "starterCode": {
+    "python": "def word_families(words):\n    pass\n",
+    "javascript": "function word_families(words) {\n\n}\n"
+  },
+  "tests": [
+    {
+      "name": "example",
+      "args": [
+        [
+          "stop",
+          "pots",
+          "tops",
+          "cat",
+          "act",
+          "dog"
+        ]
+      ],
+      "expected": [
+        [
+          "stop",
+          "pots",
+          "tops"
+        ],
+        [
+          "cat",
+          "act"
+        ],
+        [
+          "dog"
+        ]
+      ],
+      "compare": "unordered-deep"
+    },
+    {
+      "name": "empty list",
+      "args": [
+        []
+      ],
+      "expected": [],
+      "compare": "unordered-deep"
+    },
+    {
+      "name": "single word",
+      "args": [
+        [
+          "solo"
+        ]
+      ],
+      "expected": [
+        [
+          "solo"
+        ]
+      ],
+      "compare": "unordered-deep"
+    },
+    {
+      "name": "empty string word",
+      "args": [
+        [
+          "",
+          "",
+          "a"
+        ]
+      ],
+      "expected": [
+        [
+          "",
+          ""
+        ],
+        [
+          "a"
+        ]
+      ],
+      "compare": "unordered-deep"
+    },
+    {
+      "name": "repeated words",
+      "args": [
+        [
+          "aab",
+          "aba",
+          "aab",
+          "bba"
+        ]
+      ],
+      "expected": [
+        [
+          "aab",
+          "aba",
+          "aab"
+        ],
+        [
+          "bba"
+        ]
+      ],
+      "compare": "unordered-deep",
+      "hidden": true
+    },
+    {
+      "name": "same letters different counts",
+      "args": [
+        [
+          "ab",
+          "aab",
+          "ba",
+          "abb"
+        ]
+      ],
+      "expected": [
+        [
+          "ab",
+          "ba"
+        ],
+        [
+          "aab"
+        ],
+        [
+          "abb"
+        ]
+      ],
+      "compare": "unordered-deep",
+      "hidden": true
+    }
+  ],
+  "analysis": {
+    "clarifyingQuestions": [
+      {
+        "question": "Are words only lowercase letters?",
+        "answer": "Yes, lowercase a to z.",
+        "why": "A fixed 26-letter alphabet allows a letter-count key instead of sorting."
+      },
+      {
+        "question": "Can the list or a word be empty?",
+        "answer": "The list can be empty, which returns an empty list. An empty string is a valid word and forms its own family with other empty strings.",
+        "why": "Base cases that break code assuming at least one letter."
+      },
+      {
+        "question": "Do repeated words stay together?",
+        "answer": "Yes, duplicates go in the same family and are both kept.",
+        "why": "Rules out deduplicating with a set."
+      },
+      {
+        "question": "Does the order of families or words matter?",
+        "answer": "No, any order.",
+        "why": "Frees you from sorting the output."
+      },
+      {
+        "question": "How many words, and how long?",
+        "answer": "Up to 10,000 words, each up to 100 letters.",
+        "why": "Sets the cost of building a key per word."
+      }
+    ],
+    "hiddenConstraints": [
+      "Up to 10,000 words of up to 100 lowercase letters.",
+      "Output order does not matter."
+    ],
+    "edgeCases": [
+      {
+        "input": "[] (no words)",
+        "why": "Return an empty list."
+      },
+      {
+        "input": "[\"\", \"\"]",
+        "why": "Empty strings form one family."
+      },
+      {
+        "input": "[\"ab\", \"aab\"]",
+        "why": "Same letters, different counts: not a family."
+      },
+      {
+        "input": "[\"aab\", \"aab\"]",
+        "why": "Duplicates stay in one family, both kept."
+      }
+    ],
+    "approaches": [
+      {
+        "name": "Compare every pair",
+        "idea": "For each word, compare it with every existing family by checking whether they are rearrangements.",
+        "time": "O(n^2 * k log k)",
+        "space": "O(nk)",
+        "tradeoffs": "Simple but quadratic in the number of words."
+      },
+      {
+        "name": "Hash by sorted letters",
+        "idea": "Two words are rearrangements exactly when their sorted letters are equal. Use the sorted word as a key in a hash map of lists.",
+        "time": "O(n * k log k)",
+        "space": "O(nk)",
+        "tradeoffs": "Linear in the number of words; sorting each word costs k log k."
+      },
+      {
+        "name": "Hash by letter counts",
+        "idea": "Use a tuple of 26 letter counts as the key.",
+        "time": "O(n * k)",
+        "space": "O(nk)",
+        "tradeoffs": "Removes the log factor; the 26-length key is a constant cost. Worth it only for long words."
+      }
+    ],
+    "optimal": {
+      "name": "Hash map keyed by a canonical form",
+      "explanation": "Pick a canonical form that is identical for rearrangements: the sorted letters, or the 26 letter counts. Map each canonical form to the list of words that share it, then return the lists.",
+      "time": "O(n * k log k) with sorting, O(n * k) with counts",
+      "space": "O(n * k)"
+    },
+    "hintLadder": [
+      "What do two rearranged words have in common, no matter the order of their letters?",
+      "Could you turn each word into something that is identical for every member of its family?",
+      "Once every word has that form, how could you collect words that share it?",
+      "Sort each word’s letters and use the result as a hash map key whose value is the list of words."
+    ],
+    "expectedMentions": [
+      {
+        "id": "ask-charset",
+        "what": "Asks about the character set or case",
+        "category": "clarification"
+      },
+      {
+        "id": "canonical-key",
+        "what": "Explains that rearrangements share a canonical form such as sorted letters",
+        "category": "planning"
+      },
+      {
+        "id": "complexity",
+        "what": "States the complexity in terms of the number of words and word length",
+        "category": "planning"
+      },
+      {
+        "id": "count-key-tradeoff",
+        "what": "Compares sorting each word with counting letters",
+        "category": "reasoning"
+      },
+      {
+        "id": "trace-example",
+        "what": "Traces an example, including a near-miss like \"ab\" and \"aab\"",
+        "category": "testing"
+      }
+    ],
+    "followUps": [
+      "Words can contain any Unicode characters. Which key still works?",
+      "Return only families with at least two words, largest first."
+    ],
+    "vocabulary": [
+      "anagram",
+      "hash map",
+      "dictionary",
+      "sorted key",
+      "letter count",
+      "canonical form",
+      "group by",
+      "O of n k log k",
+      "tuple",
+      "bucket"
+    ],
+    "referenceSolution": {
+      "python": "def word_families(words):\n    groups = {}\n    for word in words:\n        key = ''.join(sorted(word))\n        groups.setdefault(key, []).append(word)\n    return list(groups.values())\n",
+      "javascript": "function word_families(words) {\n  const groups = new Map();\n  for (const word of words) {\n    const key = [...word].sort().join('');\n    if (!groups.has(key)) groups.set(key, []);\n    groups.get(key).push(word);\n  }\n  return [...groups.values()];\n}\n"
+    },
+    "walkthrough": [
+      {
+        "phase": "clarify",
+        "say": "Are the words all lowercase letters? Can there be empty strings, and what about duplicates, do I keep both copies?"
+      },
+      {
+        "phase": "clarify",
+        "say": "And the order of the families in the output doesn’t matter, right?"
+      },
+      {
+        "phase": "plan",
+        "say": "Comparing every word with every family would be quadratic in the number of words. Instead, I want a key that’s the same for any rearrangement. If I sort the letters of stop, pots and tops, they all become o, p, s, t."
+      },
+      {
+        "phase": "plan",
+        "say": "So I’ll use a hash map from sorted letters to a list of words. With n words of length up to k, sorting each word is k log k, so overall n times k log k time and n times k space to hold the output."
+      },
+      {
+        "phase": "code",
+        "say": "The map’s values are the families. setdefault creates the list the first time a key appears.",
+        "code": "def word_families(words):\n    groups = {}\n    for word in words:\n        key = ''.join(sorted(word))\n        groups.setdefault(key, []).append(word)\n    return list(groups.values())"
+      },
+      {
+        "phase": "test",
+        "say": "Tracing stop, pots, tops, cat, act, dog: the first three get key opst, cat and act get act, dog gets dgo. Three families, which matches."
+      },
+      {
+        "phase": "test",
+        "say": "A near miss: ab and aab sort to ab and aab, which differ, so they stay apart. Good. And an empty string sorts to an empty key, so two empty strings share a family."
+      },
+      {
+        "phase": "wrap-up",
+        "say": "If words were very long, I could key by a tuple of 26 letter counts to avoid sorting, which makes it n times k. For short words, sorting is simpler."
+      }
+    ],
+    "generatedBy": {
+      "provider": "maintainers",
+      "model": "hand-written",
+      "date": "2026-11-11"
+    }
+  },
+  "source": "built-in"
+}

@@ -36,7 +36,7 @@ export async function finishSession(args: {
     reactions: [],
     missed: [],
     rerecords: [],
-    usage: [],
+    usage: [...(draft.prepUsage ?? [])],
     speechUsage: [],
     notices: [],
   };

@@ -1,0 +1,357 @@
+{
+  "schemaVersion": 1,
+  "id": "nearest-stations",
+  "title": "Nearest charging stations",
+  "difficulty": "medium",
+  "topics": [
+    "heaps"
+  ],
+  "statement": "Charging stations are given as `[x, y]` points on a map, and your car is at the origin `[0, 0]`. Return the `k` stations closest to the car by straight-line distance, in any order.\n\nThe answer is guaranteed to be unique: there is never a tie at the kth place.",
+  "examples": [
+    {
+      "input": "stations = [[3, 4], [1, -1], [-2, 2], [5, 0]], k = 2",
+      "output": "[[1, -1], [-2, 2]]"
+    }
+  ],
+  "signature": {
+    "name": "nearest_stations",
+    "params": [
+      {
+        "name": "stations",
+        "type": "int[][]"
+      },
+      {
+        "name": "k",
+        "type": "int"
+      }
+    ],
+    "returns": "int[][]"
+  },
+  "starterCode": {
+    "python": "def nearest_stations(stations, k):\n    pass\n",
+    "javascript": "function nearest_stations(stations, k) {\n\n}\n"
+  },
+  "tests": [
+    {
+      "name": "example",
+      "args": [
+        [
+          [
+            3,
+            4
+          ],
+          [
+            1,
+            -1
+          ],
+          [
+            -2,
+            2
+          ],
+          [
+            5,
+            0
+          ]
+        ],
+        2
+      ],
+      "expected": [
+        [
+          -2,
+          2
+        ],
+        [
+          1,
+          -1
+        ]
+      ],
+      "compare": "unordered"
+    },
+    {
+      "name": "k is all",
+      "args": [
+        [
+          [
+            1,
+            1
+          ],
+          [
+            2,
+            2
+          ]
+        ],
+        2
+      ],
+      "expected": [
+        [
+          2,
+          2
+        ],
+        [
+          1,
+          1
+        ]
+      ],
+      "compare": "unordered"
+    },
+    {
+      "name": "single",
+      "args": [
+        [
+          [
+            7,
+            7
+          ]
+        ],
+        1
+      ],
+      "expected": [
+        [
+          7,
+          7
+        ]
+      ],
+      "compare": "unordered"
+    },
+    {
+      "name": "negative coordinates",
+      "args": [
+        [
+          [
+            -1,
+            0
+          ],
+          [
+            0,
+            -3
+          ],
+          [
+            2,
+            2
+          ]
+        ],
+        1
+      ],
+      "expected": [
+        [
+          -1,
+          0
+        ]
+      ],
+      "compare": "unordered"
+    },
+    {
+      "name": "larger",
+      "args": [
+        [
+          [
+            10,
+            10
+          ],
+          [
+            1,
+            2
+          ],
+          [
+            3,
+            3
+          ],
+          [
+            -4,
+            1
+          ],
+          [
+            0,
+            6
+          ],
+          [
+            2,
+            -1
+          ]
+        ],
+        3
+      ],
+      "expected": [
+        [
+          -4,
+          1
+        ],
+        [
+          2,
+          -1
+        ],
+        [
+          1,
+          2
+        ]
+      ],
+      "compare": "unordered",
+      "hidden": true
+    }
+  ],
+  "analysis": {
+    "clarifyingQuestions": [
+      {
+        "question": "Is distance straight-line (Euclidean)?",
+        "answer": "Yes.",
+        "why": "Defines the comparison; you can compare squared distances and skip the square root."
+      },
+      {
+        "question": "Can there be ties at the kth place?",
+        "answer": "No, the answer is unique.",
+        "why": "Removes tie handling."
+      },
+      {
+        "question": "Does the output order matter?",
+        "answer": "No.",
+        "why": "You do not need to sort the final k."
+      },
+      {
+        "question": "How many stations, and how big is k?",
+        "answer": "Up to 10,000 stations; k can be anywhere from 1 to the number of stations.",
+        "why": "Decides between sorting, a heap, or quickselect."
+      }
+    ],
+    "hiddenConstraints": [
+      "Up to 10,000 stations.",
+      "Coordinates between -10,000 and 10,000."
+    ],
+    "edgeCases": [
+      {
+        "input": "k equals the number of stations",
+        "why": "Return all of them."
+      },
+      {
+        "input": "Negative coordinates",
+        "why": "Squaring handles signs."
+      },
+      {
+        "input": "A single station",
+        "why": "Return it."
+      }
+    ],
+    "approaches": [
+      {
+        "name": "Sort by distance",
+        "idea": "Sort all stations by squared distance and take the first k.",
+        "time": "O(n log n)",
+        "space": "O(n)",
+        "tradeoffs": "Simplest."
+      },
+      {
+        "name": "Max-heap of size k",
+        "idea": "Keep the k closest seen so far in a max-heap keyed by distance; when it grows past k, drop the farthest.",
+        "time": "O(n log k)",
+        "space": "O(k)",
+        "tradeoffs": "Better when k is small; works on a stream."
+      },
+      {
+        "name": "Quickselect",
+        "idea": "Partition around a pivot distance until the first k positions hold the k closest.",
+        "time": "O(n) average, O(n^2) worst",
+        "space": "O(1) extra",
+        "tradeoffs": "Fastest on average, more complex and unstable worst case."
+      }
+    ],
+    "optimal": {
+      "name": "Size-k max-heap",
+      "explanation": "For each station compute d = x^2 + y^2 and push (-d, station) onto a min-heap, which acts as a max-heap on d. If the heap holds more than k items, pop, removing the farthest. The heap ends with the k closest.",
+      "time": "O(n log k)",
+      "space": "O(k)"
+    },
+    "hintLadder": [
+      "Do you need the actual distance, or just a way to compare distances?",
+      "Do you need everything sorted, or only the k best?",
+      "How can you keep the best k as you go and know which one to drop?",
+      "Keep a max-heap of size k on squared distance and drop the farthest whenever it overflows."
+    ],
+    "expectedMentions": [
+      {
+        "id": "ask-k",
+        "what": "Asks about ties, output order or the size of k",
+        "category": "clarification"
+      },
+      {
+        "id": "squared-distance",
+        "what": "Notes comparing squared distances avoids square roots",
+        "category": "reasoning"
+      },
+      {
+        "id": "sort-baseline",
+        "what": "Mentions sorting all stations, O(n log n)",
+        "category": "planning"
+      },
+      {
+        "id": "heap-plan",
+        "what": "Proposes a size-k heap and states O(n log k)",
+        "category": "planning"
+      },
+      {
+        "id": "max-heap-why",
+        "what": "Explains why the heap evicts the farthest (max-heap)",
+        "category": "reasoning"
+      },
+      {
+        "id": "trace",
+        "what": "Traces the example",
+        "category": "testing"
+      }
+    ],
+    "followUps": [
+      "Stations arrive as a stream; keep the k nearest at all times.",
+      "The car moves; answer many queries quickly."
+    ],
+    "vocabulary": [
+      "heap",
+      "max heap",
+      "priority queue",
+      "quickselect",
+      "squared distance",
+      "Euclidean distance",
+      "top k",
+      "O of n log k",
+      "sort"
+    ],
+    "referenceSolution": {
+      "python": "import heapq\n\ndef nearest_stations(stations, k):\n    heap = []\n    for x, y in stations:\n        d = x * x + y * y\n        heapq.heappush(heap, (-d, x, y))\n        if len(heap) > k:\n            heapq.heappop(heap)\n    return [[x, y] for _, x, y in heap]\n",
+      "javascript": "function nearest_stations(stations, k) {\n  const dist = ([x, y]) => x * x + y * y;\n  return [...stations].sort((a, b) => dist(a) - dist(b)).slice(0, k);\n}\n"
+    },
+    "walkthrough": [
+      {
+        "phase": "clarify",
+        "say": "Straight-line distance from the origin, no ties at the kth spot, and any order in the output?"
+      },
+      {
+        "phase": "plan",
+        "say": "I only need to compare distances, so I can use x squared plus y squared and skip the square root. The easy answer is to sort by that and take k, n log n."
+      },
+      {
+        "phase": "plan",
+        "say": "If k is small, a max-heap of size k is better: I keep the k closest so far, and when a closer one arrives I evict the farthest. That’s n log k. Python’s heapq is a min-heap, so I’ll push negative distances."
+      },
+      {
+        "phase": "code",
+        "say": "Push each station; trim to k.",
+        "code": "import heapq\n\ndef nearest_stations(stations, k):\n    heap = []\n    for x, y in stations:\n        d = x * x + y * y\n        heapq.heappush(heap, (-d, x, y))\n        if len(heap) > k:\n            heapq.heappop(heap)\n    return [[x, y] for _, x, y in heap]"
+      },
+      {
+        "phase": "test",
+        "say": "Example: distances are 25, 2, 8 and 25. With k of 2, after the first two the heap has 25 and 2. Adding 8 makes three, pop the largest, 25. Adding 5, 0 at 25 makes three, pop 25 again. Left with 1, -1 and -2, 2."
+      },
+      {
+        "phase": "test",
+        "say": "If k equals the number of stations, nothing is ever popped, so I return them all."
+      },
+      {
+        "phase": "wrap-up",
+        "say": "O(n log k) time, O(k) space. Quickselect would get average linear time if needed."
+      }
+    ],
+    "generatedBy": {
+      "provider": "maintainers",
+      "model": "hand-written",
+      "date": "2026-11-11"
+    }
+  },
+  "source": "built-in"
+}

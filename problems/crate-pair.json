@@ -137,5 +137,196 @@
       "hidden": true
     }
   ],
+  "analysis": {
+    "clarifyingQuestions": [
+      {
+        "question": "Can weights be negative or zero?",
+        "answer": "Yes, weights can be any integer, including zero and negatives.",
+        "why": "Rules out tricks that assume positive values, like stopping early once a running value passes capacity."
+      },
+      {
+        "question": "Is there always exactly one valid pair?",
+        "answer": "Yes, exactly one pair adds up to capacity.",
+        "why": "Tells you there is no \"no answer\" case and no need to choose between pairs."
+      },
+      {
+        "question": "Can I use the same crate twice?",
+        "answer": "No, the two positions must be different.",
+        "why": "A crate weighing half the capacity must not pair with itself."
+      },
+      {
+        "question": "How many crates can there be?",
+        "answer": "Up to 100,000.",
+        "why": "Rules out the quadratic pair check and points toward a linear solution."
+      },
+      {
+        "question": "What order should the positions come back in?",
+        "answer": "Smaller position first.",
+        "why": "Avoids a mismatch on an otherwise correct answer."
+      }
+    ],
+    "hiddenConstraints": [
+      "There can be up to 100,000 crates.",
+      "Weights fit in a 32-bit signed integer.",
+      "Exactly one valid pair exists."
+    ],
+    "edgeCases": [
+      {
+        "input": "weights = [5, 5], capacity = 10",
+        "why": "Two equal weights: the lookup must find the earlier 5, not the current one."
+      },
+      {
+        "input": "weights = [0, 4, 0], capacity = 0",
+        "why": "Zero weights and zero capacity."
+      },
+      {
+        "input": "weights = [-3, 8, 1, 6], capacity = 5",
+        "why": "Negative weights break any early-exit idea based on sums growing."
+      },
+      {
+        "input": "The pair is the last two crates",
+        "why": "Makes sure the loop checks every element."
+      }
+    ],
+    "approaches": [
+      {
+        "name": "Check every pair",
+        "idea": "Two nested loops try every pair of positions and return the first whose weights sum to capacity.",
+        "time": "O(n^2)",
+        "space": "O(1)",
+        "tradeoffs": "Simplest and no extra memory, but 100,000 crates means about 5 billion pairs."
+      },
+      {
+        "name": "Sort with two pointers",
+        "idea": "Sort (weight, position) pairs, then move a left and right pointer inward depending on whether the sum is too small or too large.",
+        "time": "O(n log n)",
+        "space": "O(n)",
+        "tradeoffs": "Faster than brute force, but sorting loses the original order, so you must carry positions along and reorder the answer."
+      },
+      {
+        "name": "Hash map of seen weights",
+        "idea": "Walk the list once. For each weight, look up capacity minus weight among the weights already seen; if found, return both positions; otherwise remember this weight and its position.",
+        "time": "O(n)",
+        "space": "O(n)",
+        "tradeoffs": "Linear time at the cost of linear extra memory."
+      }
+    ],
+    "optimal": {
+      "name": "One pass with a hash map",
+      "explanation": "Keep a map from weight to the position where it was first seen. For each position i, compute need = capacity - weight. If need is in the map, the answer is [map[need], i]. Otherwise store weight -> i. Checking before storing is what stops a crate pairing with itself.",
+      "time": "O(n)",
+      "space": "O(n)"
+    },
+    "hintLadder": [
+      "For each crate, what other weight would you need to find?",
+      "Is there a way to check for that weight without scanning the whole list again?",
+      "What data structure gives you constant-time lookups?",
+      "Remember each weight you have already passed, with its position, in a hash map, and look up capacity minus the current weight."
+    ],
+    "expectedMentions": [
+      {
+        "id": "ask-duplicates",
+        "what": "Asks whether a crate can be used twice or whether weights repeat",
+        "category": "clarification"
+      },
+      {
+        "id": "ask-negatives",
+        "what": "Asks whether weights can be negative or zero",
+        "category": "clarification"
+      },
+      {
+        "id": "brute-force",
+        "what": "States the nested-loop check of every pair and that it is O(n^2)",
+        "category": "planning"
+      },
+      {
+        "id": "hash-map-linear",
+        "what": "Proposes a hash map of seen weights for O(n) time before coding",
+        "category": "planning"
+      },
+      {
+        "id": "space-tradeoff",
+        "what": "Notes the hash map costs O(n) extra space in exchange for linear time",
+        "category": "reasoning"
+      },
+      {
+        "id": "check-before-insert",
+        "what": "Explains why to look up before inserting the current weight (no self-pairing)",
+        "category": "reasoning"
+      },
+      {
+        "id": "trace-equal",
+        "what": "Traces an example aloud, ideally one with two equal weights",
+        "category": "testing"
+      }
+    ],
+    "followUps": [
+      "What if the list is already sorted? Can you use O(1) extra space?",
+      "What if you need every pair that sums to capacity, not just one?",
+      "What if the weights arrive as a stream and you must answer as soon as a pair exists?"
+    ],
+    "vocabulary": [
+      "hash map",
+      "dictionary",
+      "complement",
+      "two pointers",
+      "brute force",
+      "O of n",
+      "O of n squared",
+      "linear time",
+      "constant time lookup",
+      "index",
+      "capacity"
+    ],
+    "referenceSolution": {
+      "python": "def crate_pair(weights, capacity):\n    seen = {}\n    for i, w in enumerate(weights):\n        need = capacity - w\n        if need in seen:\n            return [seen[need], i]\n        seen[w] = i\n    return []\n",
+      "javascript": "function crate_pair(weights, capacity) {\n  const seen = new Map();\n  for (let i = 0; i < weights.length; i++) {\n    const need = capacity - weights[i];\n    if (seen.has(need)) return [seen.get(need), i];\n    seen.set(weights[i], i);\n  }\n  return [];\n}\n"
+    },
+    "walkthrough": [
+      {
+        "phase": "clarify",
+        "say": "Before I start, can weights be negative or zero? And is there always exactly one pair, or could there be none?"
+      },
+      {
+        "phase": "clarify",
+        "say": "And I assume I can’t use the same crate twice, so a crate of exactly half the capacity doesn’t count by itself. How big can the list get?"
+      },
+      {
+        "phase": "plan",
+        "say": "The simplest idea is to try every pair with two loops. That’s O(n squared), which at a hundred thousand crates is billions of checks, so I want something better."
+      },
+      {
+        "phase": "plan",
+        "say": "For each crate I know exactly what weight I need: capacity minus this weight. If I remember every weight I’ve already passed in a hash map, I can look that up in constant time. That’s one pass, O(n) time, and O(n) extra space for the map. I think that tradeoff is fine here."
+      },
+      {
+        "phase": "code",
+        "say": "I’ll map each weight to the position where I first saw it, and walk the list with its index.",
+        "code": "def crate_pair(weights, capacity):\n    seen = {}\n    for i, w in enumerate(weights):"
+      },
+      {
+        "phase": "code",
+        "say": "The key detail is to look up before I insert. If I inserted first, a crate weighing half the capacity would find itself.",
+        "code": "        need = capacity - w\n        if need in seen:\n            return [seen[need], i]\n        seen[w] = i\n    return []"
+      },
+      {
+        "phase": "test",
+        "say": "Let me trace 4, 9, 2, 7 with capacity 11. At 4 I need 7, not seen, store 4. At 9 I need 2, not seen, store 9. At 2 I need 9, which is at position 1, so I return 1 and 2. Smaller position first, good."
+      },
+      {
+        "phase": "test",
+        "say": "Now 5 and 5 with capacity 10. At the first 5 I need 5, nothing seen yet, so I store it. At the second 5 I find position 0 and return 0, 1. That’s the duplicate case working because I checked before inserting."
+      },
+      {
+        "phase": "wrap-up",
+        "say": "So it’s O(n) time and O(n) space. If the input were sorted I’d use two pointers instead and get O(1) space."
+      }
+    ],
+    "generatedBy": {
+      "provider": "maintainers",
+      "model": "hand-written",
+      "date": "2026-11-11"
+    }
+  },
   "source": "built-in"
 }

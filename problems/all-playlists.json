@@ -1,0 +1,363 @@
+{
+  "schemaVersion": 1,
+  "id": "all-playlists",
+  "title": "Every playlist",
+  "difficulty": "medium",
+  "topics": [
+    "backtracking"
+  ],
+  "statement": "You have a list of distinct song IDs in `songs`. A playlist is any selection of them (order does not matter), including the empty playlist and the playlist with every song.\n\nReturn every possible playlist. The playlists can be in any order, and songs within a playlist can be in any order.",
+  "examples": [
+    {
+      "input": "songs = [4, 7]",
+      "output": "[[], [4], [7], [4, 7]]"
+    }
+  ],
+  "signature": {
+    "name": "all_playlists",
+    "params": [
+      {
+        "name": "songs",
+        "type": "int[]"
+      }
+    ],
+    "returns": "int[][]"
+  },
+  "starterCode": {
+    "python": "def all_playlists(songs):\n    pass\n",
+    "javascript": "function all_playlists(songs) {\n\n}\n"
+  },
+  "tests": [
+    {
+      "name": "two songs",
+      "args": [
+        [
+          4,
+          7
+        ]
+      ],
+      "expected": [
+        [
+          4,
+          7
+        ],
+        [
+          4
+        ],
+        [
+          7
+        ],
+        []
+      ],
+      "compare": "unordered-deep"
+    },
+    {
+      "name": "empty",
+      "args": [
+        []
+      ],
+      "expected": [
+        []
+      ],
+      "compare": "unordered-deep"
+    },
+    {
+      "name": "one song",
+      "args": [
+        [
+          9
+        ]
+      ],
+      "expected": [
+        [
+          9
+        ],
+        []
+      ],
+      "compare": "unordered-deep"
+    },
+    {
+      "name": "three songs",
+      "args": [
+        [
+          1,
+          2,
+          3
+        ]
+      ],
+      "expected": [
+        [
+          1,
+          2,
+          3
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          1
+        ],
+        [
+          2,
+          3
+        ],
+        [
+          2
+        ],
+        [
+          3
+        ],
+        []
+      ],
+      "compare": "unordered-deep"
+    },
+    {
+      "name": "four songs",
+      "args": [
+        [
+          5,
+          1,
+          8,
+          2
+        ]
+      ],
+      "expected": [
+        [
+          5,
+          1,
+          8,
+          2
+        ],
+        [
+          5,
+          1,
+          8
+        ],
+        [
+          5,
+          1,
+          2
+        ],
+        [
+          5,
+          1
+        ],
+        [
+          5,
+          8,
+          2
+        ],
+        [
+          5,
+          8
+        ],
+        [
+          5,
+          2
+        ],
+        [
+          5
+        ],
+        [
+          1,
+          8,
+          2
+        ],
+        [
+          1,
+          8
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          1
+        ],
+        [
+          8,
+          2
+        ],
+        [
+          8
+        ],
+        [
+          2
+        ],
+        []
+      ],
+      "compare": "unordered-deep",
+      "hidden": true
+    }
+  ],
+  "analysis": {
+    "clarifyingQuestions": [
+      {
+        "question": "Are song IDs distinct?",
+        "answer": "Yes.",
+        "why": "With duplicates you would need to avoid repeated playlists."
+      },
+      {
+        "question": "Do the empty playlist and the full playlist count?",
+        "answer": "Yes, both.",
+        "why": "There are exactly 2^n playlists."
+      },
+      {
+        "question": "Does order inside a playlist matter?",
+        "answer": "No.",
+        "why": "These are subsets, not permutations."
+      },
+      {
+        "question": "How many songs?",
+        "answer": "Up to 12.",
+        "why": "The output itself is 2^n, so exponential time is unavoidable."
+      }
+    ],
+    "hiddenConstraints": [
+      "Up to 12 songs.",
+      "IDs are distinct."
+    ],
+    "edgeCases": [
+      {
+        "input": "[]",
+        "why": "Return [[]], one empty playlist."
+      },
+      {
+        "input": "[9]",
+        "why": "Two playlists: [] and [9]."
+      },
+      {
+        "input": "Unsorted IDs",
+        "why": "Order should not affect the set of playlists."
+      }
+    ],
+    "approaches": [
+      {
+        "name": "Backtracking include/exclude",
+        "idea": "For each song, branch on including it or not; record the current playlist at the end of each path.",
+        "time": "O(n * 2^n)",
+        "space": "O(n) recursion plus output",
+        "tradeoffs": "Matches the structure of the problem."
+      },
+      {
+        "name": "Iterative doubling",
+        "idea": "Start with [[]]. For each song, add a copy of every existing playlist with that song appended.",
+        "time": "O(n * 2^n)",
+        "space": "O(output)",
+        "tradeoffs": "Short and non-recursive."
+      },
+      {
+        "name": "Bitmasks",
+        "idea": "Each number from 0 to 2^n - 1 picks songs by its bits.",
+        "time": "O(n * 2^n)",
+        "space": "O(output)",
+        "tradeoffs": "Compact; less obvious to explain."
+      }
+    ],
+    "optimal": {
+      "name": "Include/exclude backtracking",
+      "explanation": "Recurse over positions. At index i, either add songs[i] to the current list and recurse, then remove it, or skip it and recurse. When i reaches the end, append a copy of the current list.",
+      "time": "O(n * 2^n)",
+      "space": "O(n) besides the output"
+    },
+    "hintLadder": [
+      "How many playlists are there for n songs?",
+      "For a single song, what choice do you make?",
+      "Can you make that choice for each song in turn?",
+      "Recurse over songs, branching on include or exclude, and record the list at the end of each branch."
+    ],
+    "expectedMentions": [
+      {
+        "id": "ask-distinct",
+        "what": "Asks whether IDs are distinct or whether the empty playlist counts",
+        "category": "clarification"
+      },
+      {
+        "id": "count-2n",
+        "what": "States there are 2^n playlists, so exponential time is expected",
+        "category": "reasoning"
+      },
+      {
+        "id": "backtracking-plan",
+        "what": "Describes include/exclude backtracking before coding",
+        "category": "planning"
+      },
+      {
+        "id": "copy-current",
+        "what": "Explains copying the current list when recording it",
+        "category": "reasoning"
+      },
+      {
+        "id": "trace",
+        "what": "Traces a two-song example",
+        "category": "testing"
+      }
+    ],
+    "followUps": [
+      "Song IDs can repeat; return each distinct playlist once.",
+      "Return only playlists of exactly k songs."
+    ],
+    "vocabulary": [
+      "subsets",
+      "power set",
+      "backtracking",
+      "recursion",
+      "include",
+      "exclude",
+      "bitmask",
+      "two to the n",
+      "O of n times two to the n"
+    ],
+    "referenceSolution": {
+      "python": "def all_playlists(songs):\n    out = []\n    current = []\n    def build(i):\n        if i == len(songs):\n            out.append(current[:])\n            return\n        current.append(songs[i])\n        build(i + 1)\n        current.pop()\n        build(i + 1)\n    build(0)\n    return out\n",
+      "javascript": "function all_playlists(songs) {\n  const out = [[]];\n  for (const s of songs) {\n    const size = out.length;\n    for (let i = 0; i < size; i++) out.push([...out[i], s]);\n  }\n  return out;\n}\n"
+    },
+    "walkthrough": [
+      {
+        "phase": "clarify",
+        "say": "The IDs are all distinct, and I should include the empty playlist and the full one? Order inside a playlist doesn’t matter?"
+      },
+      {
+        "phase": "plan",
+        "say": "Each song is either in or out, so there are two to the n playlists. Since the output is that big, n times two to the n is the best possible."
+      },
+      {
+        "phase": "plan",
+        "say": "I’ll backtrack: at each song, branch on including it or skipping it, and record the playlist when I’ve decided every song."
+      },
+      {
+        "phase": "code",
+        "say": "One shared list I add to and remove from.",
+        "code": "def all_playlists(songs):\n    out = []\n    current = []\n    def build(i):\n        if i == len(songs):\n            out.append(current[:])\n            return"
+      },
+      {
+        "phase": "code",
+        "say": "Include, recurse, undo, then exclude and recurse.",
+        "code": "        current.append(songs[i])\n        build(i + 1)\n        current.pop()\n        build(i + 1)\n    build(0)\n    return out"
+      },
+      {
+        "phase": "test",
+        "say": "For 4 and 7: include 4, include 7, record 4, 7. Undo 7, record 4. Undo 4, include 7, record 7. Then record empty. Four playlists."
+      },
+      {
+        "phase": "test",
+        "say": "I copy current when recording; if I appended the list itself, every entry would end up empty after the pops. Empty input records one empty list."
+      },
+      {
+        "phase": "wrap-up",
+        "say": "O(n times two to the n) time, O(n) recursion depth."
+      }
+    ],
+    "generatedBy": {
+      "provider": "maintainers",
+      "model": "hand-written",
+      "date": "2026-11-11"
+    }
+  },
+  "source": "built-in"
+}

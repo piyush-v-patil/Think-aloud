@@ -1,0 +1,326 @@
+{
+  "schemaVersion": 1,
+  "id": "merge-bookings",
+  "title": "Merge room bookings",
+  "difficulty": "medium",
+  "topics": [
+    "intervals"
+  ],
+  "statement": "A meeting room's bookings are `[start, end]` pairs in no particular order. Two bookings that overlap or touch (one ends exactly when the other starts) should be merged into one.\n\nReturn the merged bookings sorted by start time.",
+  "examples": [
+    {
+      "input": "bookings = [[9, 11], [1, 4], [3, 6], [11, 12]]",
+      "output": "[[1, 6], [9, 12]]"
+    }
+  ],
+  "signature": {
+    "name": "merge_bookings",
+    "params": [
+      {
+        "name": "bookings",
+        "type": "int[][]"
+      }
+    ],
+    "returns": "int[][]"
+  },
+  "starterCode": {
+    "python": "def merge_bookings(bookings):\n    pass\n",
+    "javascript": "function merge_bookings(bookings) {\n\n}\n"
+  },
+  "tests": [
+    {
+      "name": "example",
+      "args": [
+        [
+          [
+            9,
+            11
+          ],
+          [
+            1,
+            4
+          ],
+          [
+            3,
+            6
+          ],
+          [
+            11,
+            12
+          ]
+        ]
+      ],
+      "expected": [
+        [
+          1,
+          6
+        ],
+        [
+          9,
+          12
+        ]
+      ]
+    },
+    {
+      "name": "empty",
+      "args": [
+        []
+      ],
+      "expected": []
+    },
+    {
+      "name": "contained",
+      "args": [
+        [
+          [
+            1,
+            10
+          ],
+          [
+            2,
+            3
+          ]
+        ]
+      ],
+      "expected": [
+        [
+          1,
+          10
+        ]
+      ]
+    },
+    {
+      "name": "no overlaps",
+      "args": [
+        [
+          [
+            5,
+            6
+          ],
+          [
+            1,
+            2
+          ]
+        ]
+      ],
+      "expected": [
+        [
+          1,
+          2
+        ],
+        [
+          5,
+          6
+        ]
+      ]
+    },
+    {
+      "name": "chain",
+      "args": [
+        [
+          [
+            4,
+            5
+          ],
+          [
+            1,
+            2
+          ],
+          [
+            2,
+            3
+          ],
+          [
+            3,
+            4
+          ]
+        ]
+      ],
+      "expected": [
+        [
+          1,
+          5
+        ]
+      ],
+      "hidden": true
+    },
+    {
+      "name": "zero length",
+      "args": [
+        [
+          [
+            3,
+            3
+          ],
+          [
+            1,
+            2
+          ]
+        ]
+      ],
+      "expected": [
+        [
+          1,
+          2
+        ],
+        [
+          3,
+          3
+        ]
+      ],
+      "hidden": true
+    }
+  ],
+  "analysis": {
+    "clarifyingQuestions": [
+      {
+        "question": "Do bookings that touch count as overlapping?",
+        "answer": "Yes. [1, 4] and [4, 6] merge into [1, 6].",
+        "why": "Decides between < and <= in the comparison."
+      },
+      {
+        "question": "Is the input sorted?",
+        "answer": "No, any order.",
+        "why": "You will need to sort."
+      },
+      {
+        "question": "Can start equal end?",
+        "answer": "Yes, a zero-length booking is allowed.",
+        "why": "Edge case for the comparison."
+      },
+      {
+        "question": "What should the output order be?",
+        "answer": "Sorted by start time.",
+        "why": "Sorting first gives this naturally."
+      }
+    ],
+    "hiddenConstraints": [
+      "Up to 10,000 bookings.",
+      "start <= end."
+    ],
+    "edgeCases": [
+      {
+        "input": "[]",
+        "why": "Return []."
+      },
+      {
+        "input": "[[1, 10], [2, 3]]",
+        "why": "A booking inside another: the end must take the max, not the later booking’s end."
+      },
+      {
+        "input": "[[1, 2], [2, 3], [3, 4]]",
+        "why": "A chain of touching bookings merges into one."
+      },
+      {
+        "input": "[[3, 3], [1, 2]]",
+        "why": "Zero-length booking."
+      }
+    ],
+    "approaches": [
+      {
+        "name": "Compare every pair repeatedly",
+        "idea": "Merge any overlapping pair and repeat until nothing changes.",
+        "time": "O(n^2) or worse",
+        "space": "O(n)",
+        "tradeoffs": "Simple to state, slow and fiddly."
+      },
+      {
+        "name": "Sort by start, then sweep",
+        "idea": "After sorting, overlaps can only happen with the most recent merged booking, so one pass suffices.",
+        "time": "O(n log n)",
+        "space": "O(n) for the output",
+        "tradeoffs": "Standard; the sort dominates."
+      }
+    ],
+    "optimal": {
+      "name": "Sort and sweep",
+      "explanation": "Sort by start. For each booking, if it starts at or before the end of the last merged booking, extend that end to the max of both ends; otherwise append it as a new merged booking.",
+      "time": "O(n log n)",
+      "space": "O(n)"
+    },
+    "hintLadder": [
+      "If the bookings were in order of start time, which booking could the next one overlap with?",
+      "What happens to the merged end when one booking contains another?",
+      "Sort first. Then how many passes do you need?",
+      "Sort by start and keep extending the last merged booking while the next one starts before it ends."
+    ],
+    "expectedMentions": [
+      {
+        "id": "ask-touching",
+        "what": "Asks whether touching bookings merge",
+        "category": "clarification"
+      },
+      {
+        "id": "sort-plan",
+        "what": "Proposes sorting by start then one sweep, O(n log n)",
+        "category": "planning"
+      },
+      {
+        "id": "why-sort",
+        "what": "Explains why after sorting only the last merged booking can overlap",
+        "category": "reasoning"
+      },
+      {
+        "id": "max-end",
+        "what": "Uses the max of the ends to handle contained bookings",
+        "category": "reasoning"
+      },
+      {
+        "id": "trace-contained",
+        "what": "Traces a contained or chained example",
+        "category": "testing"
+      }
+    ],
+    "followUps": [
+      "Insert one new booking into an already merged, sorted list.",
+      "Return the free gaps between bookings in a day."
+    ],
+    "vocabulary": [
+      "intervals",
+      "merge",
+      "sort by start",
+      "sweep",
+      "overlap",
+      "O of n log n",
+      "start time",
+      "end time"
+    ],
+    "referenceSolution": {
+      "python": "def merge_bookings(bookings):\n    out = []\n    for start, end in sorted(bookings):\n        if out and start <= out[-1][1]:\n            out[-1][1] = max(out[-1][1], end)\n        else:\n            out.append([start, end])\n    return out\n",
+      "javascript": "function merge_bookings(bookings) {\n  const sorted = [...bookings].sort((a, b) => a[0] - b[0] || a[1] - b[1]);\n  const out = [];\n  for (const [start, end] of sorted) {\n    if (out.length && start <= out[out.length - 1][1]) {\n      out[out.length - 1][1] = Math.max(out[out.length - 1][1], end);\n    } else out.push([start, end]);\n  }\n  return out;\n}\n"
+    },
+    "walkthrough": [
+      {
+        "phase": "clarify",
+        "say": "If one booking ends at 4 and the next starts at 4, do they merge? And the input isn’t sorted, but the output should be sorted by start?"
+      },
+      {
+        "phase": "plan",
+        "say": "If I sort by start time, any booking can only overlap the last merged one, because everything before it ended earlier or was already absorbed. So sort, then one pass. O(n log n) for the sort."
+      },
+      {
+        "phase": "code",
+        "say": "Sort, then either extend the last merged booking or start a new one.",
+        "code": "def merge_bookings(bookings):\n    out = []\n    for start, end in sorted(bookings):\n        if out and start <= out[-1][1]:\n            out[-1][1] = max(out[-1][1], end)\n        else:\n            out.append([start, end])\n    return out"
+      },
+      {
+        "phase": "test",
+        "say": "For 9 to 11, 1 to 4, 3 to 6, 11 to 12: sorted it’s 1-4, 3-6, 9-11, 11-12. 3-6 overlaps 1-4, so 1-6. 9-11 starts after 6, new booking. 11-12 touches 11, so 9-12. Result 1-6 and 9-12."
+      },
+      {
+        "phase": "test",
+        "say": "For 1-10 and 2-3: 2-3 overlaps, and the max keeps the end at 10. If I had just set the end to 3, that would be a bug."
+      },
+      {
+        "phase": "wrap-up",
+        "say": "O(n log n) time and O(n) for the output."
+      }
+    ],
+    "generatedBy": {
+      "provider": "maintainers",
+      "model": "hand-written",
+      "date": "2026-11-11"
+    }
+  },
+  "source": "built-in"
+}

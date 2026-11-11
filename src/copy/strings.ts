@@ -147,6 +147,15 @@ export const setup = {
   needKeyForPaste: 'Add an AI key in settings to prepare a pasted problem.',
   needKey: 'Add an AI key in settings to start an interview. You can watch the demo session without one.',
   addKey: 'Add an AI key',
+  preparing: 'Preparing your problem',
+  prepStage: {
+    reading: 'Reading the problem and writing tests and a model answer.',
+    checking: 'Checking the tests against the model answer.',
+    retrying: 'Some tests didn’t check out. Writing them again.',
+  } as Record<string, string>,
+  prepTime: 'This takes about a minute the first time. The same problem is instant next time.',
+  cancelPrep: 'Cancel',
+  prepFailed: 'The problem couldn’t be prepared. Try again, or paste the problem with its examples and constraints.',
   monthlyLimitWarning: (spent: string, limit: string) =>
     `You have spent ${spent} this month, close to your limit of ${limit}. You can still start.`,
   monthlyLimitReached: (spent: string, limit: string) =>

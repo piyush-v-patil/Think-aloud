@@ -1,0 +1,266 @@
+{
+  "schemaVersion": 1,
+  "id": "widest-reservoir",
+  "title": "Widest reservoir",
+  "difficulty": "medium",
+  "topics": [
+    "two-pointers"
+  ],
+  "statement": "Wall heights stand at equal one-meter spacing along a valley. Choosing any two walls forms a reservoir between them; the water level is limited by the shorter wall, and the width is the distance between the walls' positions.\n\nGiven `heights`, return the largest amount of water (width times the shorter height) any two walls can hold. Walls between the chosen two do not matter.",
+  "examples": [
+    {
+      "input": "heights = [2, 5, 4, 1, 6]",
+      "output": "15",
+      "explanation": "Walls at positions 1 and 4: width 3, shorter height 5."
+    }
+  ],
+  "signature": {
+    "name": "widest_reservoir",
+    "params": [
+      {
+        "name": "heights",
+        "type": "int[]"
+      }
+    ],
+    "returns": "int"
+  },
+  "starterCode": {
+    "python": "def widest_reservoir(heights):\n    pass\n",
+    "javascript": "function widest_reservoir(heights) {\n\n}\n"
+  },
+  "tests": [
+    {
+      "name": "example",
+      "args": [
+        [
+          2,
+          5,
+          4,
+          1,
+          6
+        ]
+      ],
+      "expected": 15
+    },
+    {
+      "name": "two walls",
+      "args": [
+        [
+          3,
+          7
+        ]
+      ],
+      "expected": 3
+    },
+    {
+      "name": "equal heights",
+      "args": [
+        [
+          4,
+          4,
+          4,
+          4
+        ]
+      ],
+      "expected": 12
+    },
+    {
+      "name": "tall middle walls",
+      "args": [
+        [
+          1,
+          9,
+          9,
+          1
+        ]
+      ],
+      "expected": 9
+    },
+    {
+      "name": "fewer than two walls",
+      "args": [
+        [
+          5
+        ]
+      ],
+      "expected": 0,
+      "hidden": true
+    },
+    {
+      "name": "decreasing",
+      "args": [
+        [
+          6,
+          5,
+          4,
+          3,
+          2,
+          1
+        ]
+      ],
+      "expected": 9,
+      "hidden": true
+    }
+  ],
+  "analysis": {
+    "clarifyingQuestions": [
+      {
+        "question": "What if there are fewer than two walls?",
+        "answer": "Return 0.",
+        "why": "Base case."
+      },
+      {
+        "question": "Can heights be zero?",
+        "answer": "Yes, heights are zero or more.",
+        "why": "A zero-height wall holds nothing."
+      },
+      {
+        "question": "Do walls between the chosen two block anything?",
+        "answer": "No. Only the two chosen walls matter.",
+        "why": "Separates this from the trapped-rainwater problem."
+      },
+      {
+        "question": "How many walls can there be?",
+        "answer": "Up to 100,000.",
+        "why": "Rules out checking every pair."
+      }
+    ],
+    "hiddenConstraints": [
+      "Up to 100,000 walls.",
+      "Heights up to 10,000."
+    ],
+    "edgeCases": [
+      {
+        "input": "[5]",
+        "why": "Fewer than two walls: 0."
+      },
+      {
+        "input": "[1, 9, 9, 1]",
+        "why": "The best pair is in the middle, not at the ends."
+      },
+      {
+        "input": "[4, 4, 4, 4]",
+        "why": "Equal heights: the widest pair wins."
+      },
+      {
+        "input": "[6, 5, 4, 3, 2, 1]",
+        "why": "Decreasing heights test the pointer-moving rule."
+      }
+    ],
+    "approaches": [
+      {
+        "name": "Every pair",
+        "idea": "Compute the water for every pair of walls.",
+        "time": "O(n^2)",
+        "space": "O(1)",
+        "tradeoffs": "Correct but too slow for 100,000 walls."
+      },
+      {
+        "name": "Two pointers, move the shorter wall",
+        "idea": "Start with the widest pair. The shorter wall limits the water, and moving the taller wall can only shrink the width without raising the limit, so always move the shorter one inward.",
+        "time": "O(n)",
+        "space": "O(1)",
+        "tradeoffs": "Linear, but you must be able to justify why discarding the shorter wall is safe."
+      }
+    ],
+    "optimal": {
+      "name": "Two pointers moving the shorter wall",
+      "explanation": "Put i at the first wall and j at the last. Record min(h[i], h[j]) * (j - i). Then move whichever pointer has the shorter wall inward. Any pair using that shorter wall with a closer partner is narrower and capped by the same short height, so none of them can beat the current one.",
+      "time": "O(n)",
+      "space": "O(1)"
+    },
+    "hintLadder": [
+      "Which pair gives the greatest width?",
+      "For a given pair, which wall limits the water?",
+      "If you move a pointer inward, the width shrinks. Which pointer could possibly lead to more water?",
+      "Use two pointers from both ends and always move the one at the shorter wall."
+    ],
+    "expectedMentions": [
+      {
+        "id": "ask-small",
+        "what": "Asks about fewer than two walls or zero heights",
+        "category": "clarification"
+      },
+      {
+        "id": "brute-force",
+        "what": "States the O(n^2) pair check",
+        "category": "planning"
+      },
+      {
+        "id": "two-pointers",
+        "what": "Proposes starting at both ends with two pointers for O(n)",
+        "category": "planning"
+      },
+      {
+        "id": "why-shorter",
+        "what": "Explains why moving the shorter wall cannot miss the best answer",
+        "category": "reasoning"
+      },
+      {
+        "id": "trace",
+        "what": "Traces an example showing which pointer moves",
+        "category": "testing"
+      }
+    ],
+    "followUps": [
+      "Now walls between the chosen two do block water, and you want total trapped water.",
+      "Return the two positions, not just the amount."
+    ],
+    "vocabulary": [
+      "two pointers",
+      "greedy",
+      "width",
+      "height",
+      "area",
+      "O of n",
+      "O of n squared",
+      "shorter wall",
+      "invariant"
+    ],
+    "referenceSolution": {
+      "python": "def widest_reservoir(heights):\n    i, j = 0, len(heights) - 1\n    best = 0\n    while i < j:\n        h = min(heights[i], heights[j])\n        best = max(best, h * (j - i))\n        if heights[i] < heights[j]:\n            i += 1\n        else:\n            j -= 1\n    return best\n",
+      "javascript": "function widest_reservoir(heights) {\n  let i = 0;\n  let j = heights.length - 1;\n  let best = 0;\n  while (i < j) {\n    const h = Math.min(heights[i], heights[j]);\n    best = Math.max(best, h * (j - i));\n    if (heights[i] < heights[j]) i++;\n    else j--;\n  }\n  return best;\n}\n"
+    },
+    "walkthrough": [
+      {
+        "phase": "clarify",
+        "say": "With fewer than two walls I return zero? And walls in between don’t block anything, only the two I pick matter?"
+      },
+      {
+        "phase": "plan",
+        "say": "Brute force checks every pair, n squared. I’d like linear."
+      },
+      {
+        "phase": "plan",
+        "say": "Start with the two outer walls, the widest possible. The water is width times the shorter wall. If I move the taller wall inward, the width drops and the limit is still the same short wall, so it can only get worse. So the shorter wall is never part of a better answer, and I can move past it."
+      },
+      {
+        "phase": "plan",
+        "say": "That gives two pointers moving inward, each step discarding one wall. O(n) time, O(1) space."
+      },
+      {
+        "phase": "code",
+        "say": "Record the current pair, then move the shorter side.",
+        "code": "def widest_reservoir(heights):\n    i, j = 0, len(heights) - 1\n    best = 0\n    while i < j:\n        h = min(heights[i], heights[j])\n        best = max(best, h * (j - i))\n        if heights[i] < heights[j]:\n            i += 1\n        else:\n            j -= 1\n    return best"
+      },
+      {
+        "phase": "test",
+        "say": "For 2, 5, 4, 1, 6: the ends give 2 times 4, which is 8. The left is shorter, so i moves to 5. Now 5 and 6, width 3, gives 15. The left is shorter again, and the remaining pairs are smaller. Answer 15."
+      },
+      {
+        "phase": "test",
+        "say": "For a single wall, i equals j, so the loop never runs and I return 0. For 1, 9, 9, 1 the ends give 3, then I move past the ones and get 9 times 1, which is 9."
+      },
+      {
+        "phase": "wrap-up",
+        "say": "O(n) time and O(1) space. The key argument is that the shorter wall can be dropped safely."
+      }
+    ],
+    "generatedBy": {
+      "provider": "maintainers",
+      "model": "hand-written",
+      "date": "2026-11-11"
+    }
+  },
+  "source": "built-in"
+}

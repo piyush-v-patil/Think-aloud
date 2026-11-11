@@ -1,0 +1,242 @@
+{
+  "schemaVersion": 1,
+  "id": "mirror-label",
+  "title": "Mirror label",
+  "difficulty": "easy",
+  "topics": [
+    "two-pointers"
+  ],
+  "statement": "A label printer checks whether a label reads the same forwards and backwards. It looks only at letters and digits, ignores case, and skips spaces and punctuation.\n\nReturn true if `label` reads the same in both directions under those rules.",
+  "examples": [
+    {
+      "input": "label = \"Step on no pets!\"",
+      "output": "true"
+    },
+    {
+      "input": "label = \"Route 66\"",
+      "output": "false"
+    }
+  ],
+  "signature": {
+    "name": "is_mirror",
+    "params": [
+      {
+        "name": "label",
+        "type": "string"
+      }
+    ],
+    "returns": "bool"
+  },
+  "starterCode": {
+    "python": "def is_mirror(label):\n    pass\n",
+    "javascript": "function is_mirror(label) {\n\n}\n"
+  },
+  "tests": [
+    {
+      "name": "example 1",
+      "args": [
+        "Step on no pets!"
+      ],
+      "expected": true
+    },
+    {
+      "name": "example 2",
+      "args": [
+        "Route 66"
+      ],
+      "expected": false
+    },
+    {
+      "name": "empty",
+      "args": [
+        ""
+      ],
+      "expected": true
+    },
+    {
+      "name": "only punctuation",
+      "args": [
+        "?!, ."
+      ],
+      "expected": true
+    },
+    {
+      "name": "digits matter",
+      "args": [
+        "1a2"
+      ],
+      "expected": false,
+      "hidden": true
+    },
+    {
+      "name": "mixed case",
+      "args": [
+        "RaceCar"
+      ],
+      "expected": true,
+      "hidden": true
+    }
+  ],
+  "analysis": {
+    "clarifyingQuestions": [
+      {
+        "question": "Which characters count?",
+        "answer": "Only letters and digits. Ignore spaces and punctuation.",
+        "why": "Defines what to skip."
+      },
+      {
+        "question": "Is the comparison case-sensitive?",
+        "answer": "No, ignore case.",
+        "why": "Avoids failing on \"RaceCar\"."
+      },
+      {
+        "question": "Is an empty label, or one with only punctuation, a mirror?",
+        "answer": "Yes, there is nothing to contradict it.",
+        "why": "Base case."
+      },
+      {
+        "question": "Can I build a cleaned copy, or should I use constant extra space?",
+        "answer": "Either works; constant space is the follow-up.",
+        "why": "Opens the two-pointer discussion."
+      }
+    ],
+    "hiddenConstraints": [
+      "Up to 200,000 characters.",
+      "Only ASCII characters."
+    ],
+    "edgeCases": [
+      {
+        "input": "\"\"",
+        "why": "Returns true."
+      },
+      {
+        "input": "\"?!, .\"",
+        "why": "No letters or digits: true."
+      },
+      {
+        "input": "\"1a2\"",
+        "why": "Digits count; this is false."
+      },
+      {
+        "input": "\"RaceCar\"",
+        "why": "Case must be ignored."
+      }
+    ],
+    "approaches": [
+      {
+        "name": "Clean and reverse",
+        "idea": "Build a string of the lowercase letters and digits and compare it with its reverse.",
+        "time": "O(n)",
+        "space": "O(n)",
+        "tradeoffs": "Very readable but uses a copy of the string."
+      },
+      {
+        "name": "Two pointers",
+        "idea": "Move one pointer from each end, skipping characters that are not letters or digits, and compare the lowercase characters.",
+        "time": "O(n)",
+        "space": "O(1)",
+        "tradeoffs": "No copy; slightly more care with the skipping logic."
+      }
+    ],
+    "optimal": {
+      "name": "Two pointers from both ends",
+      "explanation": "Start i at 0 and j at the end. While i < j: skip a non-alphanumeric character on either side, otherwise compare lowercase characters and fail on a mismatch, then move both inward. Return true when the pointers meet.",
+      "time": "O(n)",
+      "space": "O(1)"
+    },
+    "hintLadder": [
+      "What is the simplest version if you first remove everything that does not count?",
+      "Can you compare characters without building a new string?",
+      "What if one pointer starts at each end?",
+      "Move two pointers inward, skipping characters that are not letters or digits, comparing lowercase characters."
+    ],
+    "expectedMentions": [
+      {
+        "id": "ask-rules",
+        "what": "Asks about case and which characters to ignore",
+        "category": "clarification"
+      },
+      {
+        "id": "clean-baseline",
+        "what": "Mentions the clean-and-reverse version and its O(n) space",
+        "category": "planning"
+      },
+      {
+        "id": "two-pointers",
+        "what": "Proposes two pointers for O(1) extra space",
+        "category": "planning"
+      },
+      {
+        "id": "skip-logic",
+        "what": "Explains how the pointers skip characters without crossing",
+        "category": "reasoning"
+      },
+      {
+        "id": "trace-edge",
+        "what": "Tests an input with only punctuation or with digits",
+        "category": "testing"
+      }
+    ],
+    "followUps": [
+      "Allow at most one character to be removed to make a mirror.",
+      "The label is Unicode text. What changes about \"letters and digits\"?"
+    ],
+    "vocabulary": [
+      "palindrome",
+      "two pointers",
+      "alphanumeric",
+      "lowercase",
+      "reverse",
+      "O of one space",
+      "skip",
+      "left pointer",
+      "right pointer"
+    ],
+    "referenceSolution": {
+      "python": "def is_mirror(label):\n    i, j = 0, len(label) - 1\n    while i < j:\n        if not label[i].isalnum():\n            i += 1\n        elif not label[j].isalnum():\n            j -= 1\n        elif label[i].lower() != label[j].lower():\n            return False\n        else:\n            i += 1\n            j -= 1\n    return True\n",
+      "javascript": "function is_mirror(label) {\n  const ok = (c) => /[a-z0-9]/i.test(c);\n  let i = 0;\n  let j = label.length - 1;\n  while (i < j) {\n    if (!ok(label[i])) i++;\n    else if (!ok(label[j])) j--;\n    else if (label[i].toLowerCase() !== label[j].toLowerCase()) return false;\n    else {\n      i++;\n      j--;\n    }\n  }\n  return true;\n}\n"
+    },
+    "walkthrough": [
+      {
+        "phase": "clarify",
+        "say": "I only compare letters and digits, case-insensitive, right? And an empty label or one that’s all punctuation counts as a mirror?"
+      },
+      {
+        "phase": "plan",
+        "say": "The quickest version is to filter to lowercase letters and digits, then compare with the reverse. That’s O(n) time but O(n) extra space for the copy."
+      },
+      {
+        "phase": "plan",
+        "say": "I can avoid the copy with two pointers, one at each end, skipping anything that isn’t a letter or digit. Still O(n) time, now O(1) space."
+      },
+      {
+        "phase": "code",
+        "say": "Each loop step does exactly one thing: skip on the left, skip on the right, or compare and move both.",
+        "code": "def is_mirror(label):\n    i, j = 0, len(label) - 1\n    while i < j:\n        if not label[i].isalnum():\n            i += 1\n        elif not label[j].isalnum():\n            j -= 1"
+      },
+      {
+        "phase": "code",
+        "say": "If both sides are real characters, compare them ignoring case.",
+        "code": "        elif label[i].lower() != label[j].lower():\n            return False\n        else:\n            i += 1\n            j -= 1\n    return True"
+      },
+      {
+        "phase": "test",
+        "say": "Step on no pets: S and s match, t and t, e and e, then the space is skipped, p and p, and so on to the middle. True."
+      },
+      {
+        "phase": "test",
+        "say": "Route 66: R against 6 fails immediately, so false. And for one a two, 1 against 2 fails, which checks that digits aren’t skipped."
+      },
+      {
+        "phase": "wrap-up",
+        "say": "O(n) time and constant space."
+      }
+    ],
+    "generatedBy": {
+      "provider": "maintainers",
+      "model": "hand-written",
+      "date": "2026-11-11"
+    }
+  },
+  "source": "built-in"
+}

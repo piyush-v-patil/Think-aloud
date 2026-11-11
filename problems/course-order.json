@@ -1,0 +1,311 @@
+{
+  "schemaVersion": 1,
+  "id": "course-order",
+  "title": "Can you finish the courses?",
+  "difficulty": "medium",
+  "topics": [
+    "graphs"
+  ],
+  "statement": "A training program has `n` courses numbered 0 to n - 1. Each pair `[a, b]` in `prereqs` means you must finish course b before course a.\n\nReturn true if it is possible to finish every course.",
+  "examples": [
+    {
+      "input": "n = 3, prereqs = [[1, 0], [2, 1]]",
+      "output": "true"
+    },
+    {
+      "input": "n = 2, prereqs = [[0, 1], [1, 0]]",
+      "output": "false",
+      "explanation": "Each course waits on the other."
+    }
+  ],
+  "signature": {
+    "name": "can_finish",
+    "params": [
+      {
+        "name": "n",
+        "type": "int"
+      },
+      {
+        "name": "prereqs",
+        "type": "int[][]"
+      }
+    ],
+    "returns": "bool"
+  },
+  "starterCode": {
+    "python": "def can_finish(n, prereqs):\n    pass\n",
+    "javascript": "function can_finish(n, prereqs) {\n\n}\n"
+  },
+  "tests": [
+    {
+      "name": "chain",
+      "args": [
+        3,
+        [
+          [
+            1,
+            0
+          ],
+          [
+            2,
+            1
+          ]
+        ]
+      ],
+      "expected": true
+    },
+    {
+      "name": "two-course cycle",
+      "args": [
+        2,
+        [
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            0
+          ]
+        ]
+      ],
+      "expected": false
+    },
+    {
+      "name": "no prerequisites",
+      "args": [
+        4,
+        []
+      ],
+      "expected": true
+    },
+    {
+      "name": "self prerequisite",
+      "args": [
+        1,
+        [
+          [
+            0,
+            0
+          ]
+        ]
+      ],
+      "expected": false
+    },
+    {
+      "name": "cycle off to the side",
+      "args": [
+        5,
+        [
+          [
+            1,
+            0
+          ],
+          [
+            3,
+            2
+          ],
+          [
+            2,
+            4
+          ],
+          [
+            4,
+            3
+          ]
+        ]
+      ],
+      "expected": false,
+      "hidden": true
+    },
+    {
+      "name": "diamond",
+      "args": [
+        4,
+        [
+          [
+            1,
+            0
+          ],
+          [
+            2,
+            0
+          ],
+          [
+            3,
+            1
+          ],
+          [
+            3,
+            2
+          ]
+        ]
+      ],
+      "expected": true,
+      "hidden": true
+    }
+  ],
+  "analysis": {
+    "clarifyingQuestions": [
+      {
+        "question": "Can a course be its own prerequisite?",
+        "answer": "It can appear in the input; that makes finishing impossible.",
+        "why": "A self-loop is the smallest cycle."
+      },
+      {
+        "question": "Can the same pair appear twice?",
+        "answer": "Assume no duplicates.",
+        "why": "Duplicates would double-count waiting edges."
+      },
+      {
+        "question": "Do I need the order, or just whether it’s possible?",
+        "answer": "Just true or false.",
+        "why": "Either cycle detection or topological sort works."
+      },
+      {
+        "question": "How many courses and prerequisites?",
+        "answer": "Up to 2,000 courses and 5,000 pairs.",
+        "why": "Linear in courses plus edges is expected."
+      }
+    ],
+    "hiddenConstraints": [
+      "Up to 2,000 courses and 5,000 pairs.",
+      "No duplicate pairs."
+    ],
+    "edgeCases": [
+      {
+        "input": "No prerequisites",
+        "why": "Always true."
+      },
+      {
+        "input": "[[0, 0]]",
+        "why": "A course requiring itself: false."
+      },
+      {
+        "input": "A cycle among some courses only",
+        "why": "Still false even if other courses are fine."
+      },
+      {
+        "input": "A diamond (two paths to the same course)",
+        "why": "Not a cycle: true."
+      }
+    ],
+    "approaches": [
+      {
+        "name": "DFS cycle detection",
+        "idea": "Color nodes white, gray (on the current path) and black (done). Reaching a gray node means a cycle.",
+        "time": "O(V + E)",
+        "space": "O(V + E)",
+        "tradeoffs": "Concise, but recursion depth can reach V."
+      },
+      {
+        "name": "Kahn’s algorithm (topological sort)",
+        "idea": "Count prerequisites per course. Repeatedly take courses with zero remaining prerequisites, lowering the counts of courses that depend on them. If every course gets taken, there is no cycle.",
+        "time": "O(V + E)",
+        "space": "O(V + E)",
+        "tradeoffs": "Iterative and also produces a valid order."
+      }
+    ],
+    "optimal": {
+      "name": "Kahn’s algorithm",
+      "explanation": "Build an adjacency list from each prerequisite to the courses it unlocks and an in-degree count. Start with all zero in-degree courses. Pop one, count it done, and decrement its dependents, adding any that reach zero. Return done == n.",
+      "time": "O(V + E)",
+      "space": "O(V + E)"
+    },
+    "hintLadder": [
+      "Model courses as a graph. What does an edge mean?",
+      "When is it impossible to finish?",
+      "Which courses can you take right away?",
+      "Repeatedly take courses with no remaining prerequisites (topological sort); if some never become available, there is a cycle."
+    ],
+    "expectedMentions": [
+      {
+        "id": "ask-self",
+        "what": "Asks about self-prerequisites or duplicate pairs",
+        "category": "clarification"
+      },
+      {
+        "id": "graph-cycle",
+        "what": "Frames the problem as cycle detection in a directed graph",
+        "category": "planning"
+      },
+      {
+        "id": "topo-plan",
+        "what": "Proposes topological sort or DFS coloring with O(V + E)",
+        "category": "planning"
+      },
+      {
+        "id": "why-count",
+        "what": "Explains why done == n proves there is no cycle",
+        "category": "reasoning"
+      },
+      {
+        "id": "trace-cycle",
+        "what": "Traces a case with a cycle",
+        "category": "testing"
+      }
+    ],
+    "followUps": [
+      "Return one valid order to take the courses.",
+      "Each course takes a number of weeks and you can take many at once. What is the minimum total time?"
+    ],
+    "vocabulary": [
+      "directed graph",
+      "cycle",
+      "topological sort",
+      "in degree",
+      "adjacency list",
+      "depth first search",
+      "Kahn’s algorithm",
+      "queue",
+      "O of V plus E",
+      "prerequisite"
+    ],
+    "referenceSolution": {
+      "python": "def can_finish(n, prereqs):\n    after = [[] for _ in range(n)]\n    waiting = [0] * n\n    for a, b in prereqs:\n        after[b].append(a)\n        waiting[a] += 1\n    ready = [c for c in range(n) if waiting[c] == 0]\n    done = 0\n    while ready:\n        c = ready.pop()\n        done += 1\n        for nxt in after[c]:\n            waiting[nxt] -= 1\n            if waiting[nxt] == 0:\n                ready.append(nxt)\n    return done == n\n",
+      "javascript": "function can_finish(n, prereqs) {\n  const after = Array.from({ length: n }, () => []);\n  const waiting = new Array(n).fill(0);\n  for (const [a, b] of prereqs) {\n    after[b].push(a);\n    waiting[a]++;\n  }\n  const ready = [];\n  for (let c = 0; c < n; c++) if (waiting[c] === 0) ready.push(c);\n  let done = 0;\n  while (ready.length) {\n    const c = ready.pop();\n    done++;\n    for (const next of after[c]) {\n      waiting[next]--;\n      if (waiting[next] === 0) ready.push(next);\n    }\n  }\n  return done === n;\n}\n"
+    },
+    "walkthrough": [
+      {
+        "phase": "clarify",
+        "say": "So b then a for each pair. Could a course list itself as a prerequisite? And I only need to say whether it’s possible, not the order?"
+      },
+      {
+        "phase": "plan",
+        "say": "Courses are nodes and each pair is an edge from b to a. Finishing everything is possible exactly when there’s no cycle."
+      },
+      {
+        "phase": "plan",
+        "say": "I’ll use a topological sort. Count how many prerequisites each course is waiting on. Start with the courses waiting on nothing; finishing one lowers the count for courses after it. If I can finish all n, there was no cycle, because a cycle’s courses would wait on each other forever. That’s O(V plus E)."
+      },
+      {
+        "phase": "code",
+        "say": "Build the edges and waiting counts.",
+        "code": "def can_finish(n, prereqs):\n    after = [[] for _ in range(n)]\n    waiting = [0] * n\n    for a, b in prereqs:\n        after[b].append(a)\n        waiting[a] += 1"
+      },
+      {
+        "phase": "code",
+        "say": "Take ready courses and unlock their dependents.",
+        "code": "    ready = [c for c in range(n) if waiting[c] == 0]\n    done = 0\n    while ready:\n        c = ready.pop()\n        done += 1\n        for nxt in after[c]:\n            waiting[nxt] -= 1\n            if waiting[nxt] == 0:\n                ready.append(nxt)\n    return done == n"
+      },
+      {
+        "phase": "test",
+        "say": "For 3 courses with 0 then 1 then 2: only 0 is ready; finishing it readies 1, then 2. Done is 3, true."
+      },
+      {
+        "phase": "test",
+        "say": "For the two-course cycle, both are waiting on one course, so nothing is ready, done is 0, false. A self-loop is the same: the course waits on itself."
+      },
+      {
+        "phase": "wrap-up",
+        "say": "O(V plus E) time and space. If they wanted the order, I’d record courses as I pop them."
+      }
+    ],
+    "generatedBy": {
+      "provider": "maintainers",
+      "model": "hand-written",
+      "date": "2026-11-11"
+    }
+  },
+  "source": "built-in"
+}

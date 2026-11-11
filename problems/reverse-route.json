@@ -1,0 +1,256 @@
+{
+  "schemaVersion": 1,
+  "id": "reverse-route",
+  "title": "Reverse a delivery route",
+  "difficulty": "easy",
+  "topics": [
+    "linked-list"
+  ],
+  "statement": "A delivery route is stored as a singly linked list of stop numbers, starting at `head`. The driver wants to run it backward.\n\nReverse the list and return the new head. In tests, a list is written as an array of its values.",
+  "examples": [
+    {
+      "input": "head = [4, 8, 15]",
+      "output": "[15, 8, 4]"
+    },
+    {
+      "input": "head = []",
+      "output": "[]"
+    }
+  ],
+  "signature": {
+    "name": "reverse_route",
+    "params": [
+      {
+        "name": "head",
+        "type": "ListNode"
+      }
+    ],
+    "returns": "ListNode"
+  },
+  "starterCode": {
+    "python": "def reverse_route(head):\n    pass\n",
+    "javascript": "function reverse_route(head) {\n\n}\n"
+  },
+  "tests": [
+    {
+      "name": "three stops",
+      "args": [
+        [
+          4,
+          8,
+          15
+        ]
+      ],
+      "expected": [
+        15,
+        8,
+        4
+      ]
+    },
+    {
+      "name": "empty",
+      "args": [
+        []
+      ],
+      "expected": []
+    },
+    {
+      "name": "one stop",
+      "args": [
+        [
+          7
+        ]
+      ],
+      "expected": [
+        7
+      ]
+    },
+    {
+      "name": "two stops",
+      "args": [
+        [
+          1,
+          2
+        ]
+      ],
+      "expected": [
+        2,
+        1
+      ]
+    },
+    {
+      "name": "longer",
+      "args": [
+        [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ]
+      ],
+      "expected": [
+        6,
+        5,
+        4,
+        3,
+        2,
+        1
+      ],
+      "hidden": true
+    }
+  ],
+  "analysis": {
+    "clarifyingQuestions": [
+      {
+        "question": "Can the list be empty?",
+        "answer": "Yes. Return an empty list (None).",
+        "why": "Base case for the loop or recursion."
+      },
+      {
+        "question": "Should I reverse in place or build a new list?",
+        "answer": "In place, by changing next pointers.",
+        "why": "Sets the expected O(1) extra space."
+      },
+      {
+        "question": "How long can the list be?",
+        "answer": "Up to 5,000 nodes.",
+        "why": "A recursive solution uses stack depth proportional to the length."
+      }
+    ],
+    "hiddenConstraints": [
+      "Up to 5,000 nodes.",
+      "Reverse in place."
+    ],
+    "edgeCases": [
+      {
+        "input": "[]",
+        "why": "Return None."
+      },
+      {
+        "input": "[7]",
+        "why": "One node: it is its own reverse."
+      },
+      {
+        "input": "[1, 2]",
+        "why": "Smallest case where pointers actually change."
+      }
+    ],
+    "approaches": [
+      {
+        "name": "Copy values and rebuild",
+        "idea": "Read the values into an array and build a new reversed list.",
+        "time": "O(n)",
+        "space": "O(n)",
+        "tradeoffs": "Simple but uses extra memory and doesn’t reverse in place."
+      },
+      {
+        "name": "Iterative pointer reversal",
+        "idea": "Walk the list, pointing each node back at the previous node, keeping the next node before you overwrite the pointer.",
+        "time": "O(n)",
+        "space": "O(1)",
+        "tradeoffs": "In place; the order of the three pointer updates is the whole difficulty."
+      },
+      {
+        "name": "Recursion",
+        "idea": "Reverse the rest of the list, then hook the current node onto the end.",
+        "time": "O(n)",
+        "space": "O(n) call stack",
+        "tradeoffs": "Elegant but uses stack depth proportional to the length."
+      }
+    ],
+    "optimal": {
+      "name": "Iterative with prev, cur, next",
+      "explanation": "prev = None, cur = head. While cur: save nxt = cur.next, set cur.next = prev, then advance prev = cur and cur = nxt. Return prev.",
+      "time": "O(n)",
+      "space": "O(1)"
+    },
+    "hintLadder": [
+      "What should the first node point to after reversing?",
+      "If you change a node’s next pointer, what do you lose?",
+      "How many pointers do you need to keep track of as you walk?",
+      "Keep prev and cur, and save cur.next before pointing cur back at prev."
+    ],
+    "expectedMentions": [
+      {
+        "id": "ask-in-place",
+        "what": "Asks whether to reverse in place",
+        "category": "clarification"
+      },
+      {
+        "id": "pointer-plan",
+        "what": "Describes the prev, current and next pointers before coding",
+        "category": "planning"
+      },
+      {
+        "id": "save-next",
+        "what": "Explains why next must be saved before rewiring",
+        "category": "reasoning"
+      },
+      {
+        "id": "recursion-space",
+        "what": "Mentions the recursive version and its O(n) stack space",
+        "category": "reasoning"
+      },
+      {
+        "id": "trace-two",
+        "what": "Traces a short list, including empty or single-node lists",
+        "category": "testing"
+      }
+    ],
+    "followUps": [
+      "Reverse only the part of the list between positions m and n.",
+      "Reverse the list in groups of k nodes."
+    ],
+    "vocabulary": [
+      "linked list",
+      "node",
+      "next pointer",
+      "previous",
+      "in place",
+      "iterative",
+      "recursive",
+      "O of n",
+      "head",
+      "null"
+    ],
+    "referenceSolution": {
+      "python": "def reverse_route(head):\n    prev = None\n    cur = head\n    while cur:\n        nxt = cur.next\n        cur.next = prev\n        prev = cur\n        cur = nxt\n    return prev\n",
+      "javascript": "function reverse_route(head) {\n  let prev = null;\n  let cur = head;\n  while (cur) {\n    const next = cur.next;\n    cur.next = prev;\n    prev = cur;\n    cur = next;\n  }\n  return prev;\n}\n"
+    },
+    "walkthrough": [
+      {
+        "phase": "clarify",
+        "say": "I should reverse in place by changing pointers, not build a new list? And an empty list just returns null?"
+      },
+      {
+        "phase": "plan",
+        "say": "I’ll walk the list once and point each node back at the node before it. The danger is that once I change a node’s next pointer, I’ve lost the rest of the list, so I save next first. That’s O(n) time and O(1) space."
+      },
+      {
+        "phase": "code",
+        "say": "Three pointers: what’s already reversed, the current node, and the rest.",
+        "code": "def reverse_route(head):\n    prev = None\n    cur = head\n    while cur:\n        nxt = cur.next\n        cur.next = prev\n        prev = cur\n        cur = nxt\n    return prev"
+      },
+      {
+        "phase": "test",
+        "say": "For 4, 8, 15: first 4 points to null, prev is 4. Then 8 points to 4, prev is 8. Then 15 points to 8. cur is null, so I return 15, and the list reads 15, 8, 4."
+      },
+      {
+        "phase": "test",
+        "say": "Empty list: the loop never runs and prev is null. One node: it points to null and is returned."
+      },
+      {
+        "phase": "wrap-up",
+        "say": "O(n) time, O(1) space. A recursive version also works but uses O(n) stack depth."
+      }
+    ],
+    "generatedBy": {
+      "provider": "maintainers",
+      "model": "hand-written",
+      "date": "2026-11-11"
+    }
+  },
+  "source": "built-in"
+}

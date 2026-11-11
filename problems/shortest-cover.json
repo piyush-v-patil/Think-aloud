@@ -1,0 +1,277 @@
+{
+  "schemaVersion": 1,
+  "id": "shortest-cover",
+  "title": "Shortest covering window",
+  "difficulty": "hard",
+  "topics": [
+    "sliding-window"
+  ],
+  "statement": "A log is a string `log` of single-character event codes. You need the shortest stretch of consecutive characters that contains every code in `needed`, counting repeats: if `needed` has two `a`s, the stretch must contain at least two `a`s.\n\nReturn that shortest stretch. If there are several of the same length, return the one that starts first. If none exists, return an empty string.",
+  "examples": [
+    {
+      "input": "log = \"xaybzcax\", needed = \"abc\"",
+      "output": "\"bzca\"",
+      "explanation": "\"bzca\" contains a, b and c; no shorter stretch does."
+    },
+    {
+      "input": "log = \"aa\", needed = \"aaa\"",
+      "output": "\"\""
+    }
+  ],
+  "signature": {
+    "name": "shortest_cover",
+    "params": [
+      {
+        "name": "log",
+        "type": "string"
+      },
+      {
+        "name": "needed",
+        "type": "string"
+      }
+    ],
+    "returns": "string"
+  },
+  "starterCode": {
+    "python": "def shortest_cover(log, needed):\n    pass\n",
+    "javascript": "function shortest_cover(log, needed) {\n\n}\n"
+  },
+  "tests": [
+    {
+      "name": "example",
+      "args": [
+        "xaybzcax",
+        "abc"
+      ],
+      "expected": "bzca"
+    },
+    {
+      "name": "impossible",
+      "args": [
+        "aa",
+        "aaa"
+      ],
+      "expected": ""
+    },
+    {
+      "name": "whole log",
+      "args": [
+        "abc",
+        "cba"
+      ],
+      "expected": "abc"
+    },
+    {
+      "name": "repeats needed",
+      "args": [
+        "baacab",
+        "aab"
+      ],
+      "expected": "baa"
+    },
+    {
+      "name": "empty needed",
+      "args": [
+        "abc",
+        ""
+      ],
+      "expected": "",
+      "hidden": true
+    },
+    {
+      "name": "single char",
+      "args": [
+        "zzzq",
+        "q"
+      ],
+      "expected": "q",
+      "hidden": true
+    },
+    {
+      "name": "tie goes to first",
+      "args": [
+        "abab",
+        "ab"
+      ],
+      "expected": "ab",
+      "hidden": true
+    }
+  ],
+  "analysis": {
+    "clarifyingQuestions": [
+      {
+        "question": "Do repeated characters in needed count separately?",
+        "answer": "Yes. Two as in needed means the stretch needs at least two as.",
+        "why": "Changes the bookkeeping from a set to counts."
+      },
+      {
+        "question": "What if no stretch works, or needed is empty?",
+        "answer": "Return an empty string in both cases.",
+        "why": "Defines the empty answers."
+      },
+      {
+        "question": "If there is a tie, which stretch?",
+        "answer": "The one that starts first.",
+        "why": "Affects whether to update on strictly shorter windows only."
+      },
+      {
+        "question": "Is it case-sensitive, and how long are the strings?",
+        "answer": "Case-sensitive. The log can be up to 100,000 characters.",
+        "why": "Rules out checking every substring."
+      }
+    ],
+    "hiddenConstraints": [
+      "log up to 100,000 characters; needed up to 100,000 characters.",
+      "Characters are case-sensitive."
+    ],
+    "edgeCases": [
+      {
+        "input": "log = \"aa\", needed = \"aaa\"",
+        "why": "Not enough copies: return \"\"."
+      },
+      {
+        "input": "needed = \"\"",
+        "why": "Return \"\"."
+      },
+      {
+        "input": "log = \"baacab\", needed = \"aab\"",
+        "why": "Repeat counts must be respected."
+      },
+      {
+        "input": "log = \"abab\", needed = \"ab\"",
+        "why": "Tie: return the earliest."
+      }
+    ],
+    "approaches": [
+      {
+        "name": "Check every substring",
+        "idea": "For each start and end, count characters and check coverage.",
+        "time": "O(n^2) windows, more with counting",
+        "space": "O(k)",
+        "tradeoffs": "Too slow for long logs."
+      },
+      {
+        "name": "Sliding window with counts",
+        "idea": "Expand the right edge until the window covers needed, then shrink from the left while it still covers, recording the shortest. Keep a count of how many needed characters are still missing so the cover check is O(1).",
+        "time": "O(n + m)",
+        "space": "O(k) distinct characters",
+        "tradeoffs": "Linear; the bookkeeping of the missing count is the tricky part."
+      }
+    ],
+    "optimal": {
+      "name": "Expand and shrink window",
+      "explanation": "Count needed characters in a map and set missing = len(needed). Move end forward: if need[c] > 0 the character fills a gap, so missing decreases; decrement need[c] either way (negative means a surplus). While missing == 0, record the window if strictly shorter, then remove log[start]: increment its need, and if that makes it positive, missing increases. Advance start.",
+      "time": "O(n + m)",
+      "space": "O(k)"
+    },
+    "hintLadder": [
+      "Once you have a stretch that covers everything, can you make it shorter from the left?",
+      "How do you know cheaply whether the current stretch still covers everything?",
+      "Think of a window with two edges that only ever move forward.",
+      "Keep counts of what is still needed and a single number for how many needed characters are missing; expand right until it hits 0, then shrink left."
+    ],
+    "expectedMentions": [
+      {
+        "id": "ask-repeats",
+        "what": "Asks whether repeated characters in needed must all be covered",
+        "category": "clarification"
+      },
+      {
+        "id": "brute-force",
+        "what": "Describes checking every substring and why it is too slow",
+        "category": "planning"
+      },
+      {
+        "id": "expand-shrink",
+        "what": "Describes expanding the right edge and shrinking the left edge",
+        "category": "planning"
+      },
+      {
+        "id": "missing-counter",
+        "what": "Explains keeping a missing count to test coverage in O(1)",
+        "category": "reasoning"
+      },
+      {
+        "id": "linear",
+        "what": "States O(n + m) time",
+        "category": "planning"
+      },
+      {
+        "id": "trace-impossible",
+        "what": "Tests a case with no valid stretch",
+        "category": "testing"
+      }
+    ],
+    "followUps": [
+      "Return the number of stretches that are minimal.",
+      "needed changes over time; answer queries quickly."
+    ],
+    "vocabulary": [
+      "sliding window",
+      "two pointers",
+      "hash map",
+      "frequency count",
+      "expand",
+      "shrink",
+      "O of n",
+      "substring",
+      "missing count"
+    ],
+    "referenceSolution": {
+      "python": "def shortest_cover(log, needed):\n    if not needed:\n        return ''\n    need = {}\n    for c in needed:\n        need[c] = need.get(c, 0) + 1\n    missing = len(needed)\n    start = 0\n    best = (float('inf'), 0)\n    for end, c in enumerate(log):\n        if need.get(c, 0) > 0:\n            missing -= 1\n        need[c] = need.get(c, 0) - 1\n        while missing == 0:\n            if end - start + 1 < best[0]:\n                best = (end - start + 1, start)\n            left = log[start]\n            need[left] += 1\n            if need[left] > 0:\n                missing += 1\n            start += 1\n    length, s = best\n    return '' if length == float('inf') else log[s:s + length]\n",
+      "javascript": "function shortest_cover(log, needed) {\n  if (!needed) return '';\n  const need = new Map();\n  for (const c of needed) need.set(c, (need.get(c) || 0) + 1);\n  let missing = needed.length;\n  let start = 0;\n  let bestLen = Infinity;\n  let bestStart = 0;\n  for (let end = 0; end < log.length; end++) {\n    const c = log[end];\n    if ((need.get(c) || 0) > 0) missing--;\n    need.set(c, (need.get(c) || 0) - 1);\n    while (missing === 0) {\n      if (end - start + 1 < bestLen) {\n        bestLen = end - start + 1;\n        bestStart = start;\n      }\n      const left = log[start];\n      need.set(left, need.get(left) + 1);\n      if (need.get(left) > 0) missing++;\n      start++;\n    }\n  }\n  return bestLen === Infinity ? '' : log.slice(bestStart, bestStart + bestLen);\n}\n"
+    },
+    "walkthrough": [
+      {
+        "phase": "clarify",
+        "say": "If needed has two of the same letter, the stretch needs two of them? And if nothing covers it, or needed is empty, I return an empty string? On ties I take the earliest one?"
+      },
+      {
+        "phase": "plan",
+        "say": "Checking every substring is at least quadratic. I want a window that I grow on the right until it covers everything, then shrink from the left as long as it still covers, recording the shortest."
+      },
+      {
+        "phase": "plan",
+        "say": "To check coverage in constant time, I’ll keep a map of how many of each character I still need, and one number, missing, for the total still needed. When missing hits zero, the window covers. Both edges only move forward, so it’s O(n plus m) time and space for the distinct characters."
+      },
+      {
+        "phase": "code",
+        "say": "Set up the counts.",
+        "code": "def shortest_cover(log, needed):\n    if not needed:\n        return ''\n    need = {}\n    for c in needed:\n        need[c] = need.get(c, 0) + 1\n    missing = len(needed)\n    start = 0\n    best = (float('inf'), 0)"
+      },
+      {
+        "phase": "code",
+        "say": "A character only reduces missing if we still needed it. I still decrement its count, so a surplus goes negative.",
+        "code": "    for end, c in enumerate(log):\n        if need.get(c, 0) > 0:\n            missing -= 1\n        need[c] = need.get(c, 0) - 1"
+      },
+      {
+        "phase": "code",
+        "say": "While covered, record and try to shrink. Giving back a character only creates a gap if its count goes positive.",
+        "code": "        while missing == 0:\n            if end - start + 1 < best[0]:\n                best = (end - start + 1, start)\n            left = log[start]\n            need[left] += 1\n            if need[left] > 0:\n                missing += 1\n            start += 1"
+      },
+      {
+        "phase": "code",
+        "say": "Then return the best slice, or empty.",
+        "code": "    length, s = best\n    return '' if length == float('inf') else log[s:s + length]"
+      },
+      {
+        "phase": "test",
+        "say": "For x, a, y, b, z, c, a, x with a, b, c: the window first covers at index 5, from 0 to 5. Shrinking drops x and keeps a, y, b, z, c, length 5. Dropping a creates a gap. At index 6 the new a closes it, and shrinking reaches b, z, c, a, length 4. That’s the answer."
+      },
+      {
+        "phase": "test",
+        "say": "For a, a needing three as, missing never gets to zero, so best stays infinite and I return empty."
+      },
+      {
+        "phase": "wrap-up",
+        "say": "O(n plus m) time. Using strictly shorter for updates keeps the earliest window on ties."
+      }
+    ],
+    "generatedBy": {
+      "provider": "maintainers",
+      "model": "hand-written",
+      "date": "2026-11-11"
+    }
+  },
+  "source": "built-in"
+}

@@ -1,0 +1,255 @@
+{
+  "schemaVersion": 1,
+  "id": "quiet-houses",
+  "title": "Visit non-adjacent houses",
+  "difficulty": "medium",
+  "topics": [
+    "dynamic-programming"
+  ],
+  "statement": "A fundraiser walks down a street of houses in a row; `gifts[i]` is what house i would donate. Neighbors talk to each other, so if you visit a house you cannot also visit the house right next to it.\n\nReturn the most you can collect.",
+  "examples": [
+    {
+      "input": "gifts = [6, 1, 2, 9, 3]",
+      "output": "15",
+      "explanation": "Visit houses 0 and 3 for 6 + 9 = 15, or houses 0, 2 and 4 for 11."
+    }
+  ],
+  "signature": {
+    "name": "most_gifts",
+    "params": [
+      {
+        "name": "gifts",
+        "type": "int[]"
+      }
+    ],
+    "returns": "int"
+  },
+  "starterCode": {
+    "python": "def most_gifts(gifts):\n    pass\n",
+    "javascript": "function most_gifts(gifts) {\n\n}\n"
+  },
+  "tests": [
+    {
+      "name": "example",
+      "args": [
+        [
+          6,
+          1,
+          2,
+          9,
+          3
+        ]
+      ],
+      "expected": 15
+    },
+    {
+      "name": "empty",
+      "args": [
+        []
+      ],
+      "expected": 0
+    },
+    {
+      "name": "one house",
+      "args": [
+        [
+          4
+        ]
+      ],
+      "expected": 4
+    },
+    {
+      "name": "two houses",
+      "args": [
+        [
+          3,
+          8
+        ]
+      ],
+      "expected": 8
+    },
+    {
+      "name": "skip two in a row",
+      "args": [
+        [
+          5,
+          1,
+          1,
+          5
+        ]
+      ],
+      "expected": 10,
+      "hidden": true
+    },
+    {
+      "name": "all equal",
+      "args": [
+        [
+          2,
+          2,
+          2,
+          2,
+          2
+        ]
+      ],
+      "expected": 6,
+      "hidden": true
+    }
+  ],
+  "analysis": {
+    "clarifyingQuestions": [
+      {
+        "question": "Is the street a straight line, not a circle?",
+        "answer": "A straight line; the first and last houses are not neighbors.",
+        "why": "The circular version needs two passes."
+      },
+      {
+        "question": "Can gifts be zero?",
+        "answer": "Yes, gifts are zero or more.",
+        "why": "Skipping is never worse than taking a zero."
+      },
+      {
+        "question": "What if there are no houses?",
+        "answer": "Return 0.",
+        "why": "Base case."
+      },
+      {
+        "question": "How many houses?",
+        "answer": "Up to 10,000.",
+        "why": "Exponential subset search is out."
+      }
+    ],
+    "hiddenConstraints": [
+      "Up to 10,000 houses.",
+      "Gifts are non-negative."
+    ],
+    "edgeCases": [
+      {
+        "input": "[]",
+        "why": "0."
+      },
+      {
+        "input": "[4]",
+        "why": "4."
+      },
+      {
+        "input": "[5, 1, 1, 5]",
+        "why": "The best plan skips two houses in a row."
+      },
+      {
+        "input": "[3, 8]",
+        "why": "Take the larger of two neighbors."
+      }
+    ],
+    "approaches": [
+      {
+        "name": "Try every valid subset",
+        "idea": "Recursively decide visit or skip for each house.",
+        "time": "O(2^n)",
+        "space": "O(n)",
+        "tradeoffs": "Too slow."
+      },
+      {
+        "name": "DP over houses",
+        "idea": "best(i) = max(best(i - 1), best(i - 2) + gifts[i]).",
+        "time": "O(n)",
+        "space": "O(n) or O(1)",
+        "tradeoffs": "Each house decided once."
+      }
+    ],
+    "optimal": {
+      "name": "Two running values",
+      "explanation": "Track take = best total if you visit the current house and skip = best total if you do not. For each gift g: new take = skip + g, new skip = max(take, skip). Return max(take, skip).",
+      "time": "O(n)",
+      "space": "O(1)"
+    },
+    "hintLadder": [
+      "Does always taking every other house work? Try [5, 1, 1, 5].",
+      "At each house you either visit it or not. What does each choice depend on?",
+      "Define the best total up to house i.",
+      "best(i) = max(best(i - 1), best(i - 2) + gifts[i]), keeping only two values."
+    ],
+    "expectedMentions": [
+      {
+        "id": "ask-circle",
+        "what": "Asks whether the street wraps around",
+        "category": "clarification"
+      },
+      {
+        "id": "alternate-fails",
+        "what": "Explains why taking every other house fails",
+        "category": "reasoning"
+      },
+      {
+        "id": "recurrence",
+        "what": "States the take-or-skip recurrence",
+        "category": "planning"
+      },
+      {
+        "id": "constant-space",
+        "what": "Reduces to O(1) space with two variables",
+        "category": "reasoning"
+      },
+      {
+        "id": "trace",
+        "what": "Traces the example",
+        "category": "testing"
+      }
+    ],
+    "followUps": [
+      "The street is a circle.",
+      "Return which houses to visit."
+    ],
+    "vocabulary": [
+      "dynamic programming",
+      "recurrence",
+      "take or skip",
+      "adjacent",
+      "O of n",
+      "O of one",
+      "bottom up",
+      "maximum"
+    ],
+    "referenceSolution": {
+      "python": "def most_gifts(gifts):\n    take, skip = 0, 0\n    for g in gifts:\n        take, skip = skip + g, max(take, skip)\n    return max(take, skip)\n",
+      "javascript": "function most_gifts(gifts) {\n  let take = 0;\n  let skip = 0;\n  for (const g of gifts) [take, skip] = [skip + g, Math.max(take, skip)];\n  return Math.max(take, skip);\n}\n"
+    },
+    "walkthrough": [
+      {
+        "phase": "clarify",
+        "say": "The street is a line, so the first and last aren’t neighbors? Gifts are never negative, and no houses means zero?"
+      },
+      {
+        "phase": "plan",
+        "say": "Taking every other house doesn’t work: for 5, 1, 1, 5 the best is the two 5s, skipping two in the middle."
+      },
+      {
+        "phase": "plan",
+        "say": "At each house I either visit it, which means I skipped the previous one, or I skip it and keep the best so far. So I track two numbers: the best if I take this house and the best if I don’t. One pass, O(n) time, O(1) space."
+      },
+      {
+        "phase": "code",
+        "say": "Taking this house adds to the old skip. Skipping keeps the better of the two.",
+        "code": "def most_gifts(gifts):\n    take, skip = 0, 0\n    for g in gifts:\n        take, skip = skip + g, max(take, skip)\n    return max(take, skip)"
+      },
+      {
+        "phase": "test",
+        "say": "For 6, 1, 2, 9, 3: after 6, take 6, skip 0. After 1, take 1, skip 6. After 2, take 8, skip 6. After 9, take 15, skip 8. After 3, take 11, skip 15. Answer 15."
+      },
+      {
+        "phase": "test",
+        "say": "For 5, 1, 1, 5: after the third house, skip is 5 and take is 6. Taking the last 5 adds to skip, giving 10, while skip becomes 6. Answer 10, the two 5s, which skips two houses in a row."
+      },
+      {
+        "phase": "wrap-up",
+        "say": "O(n) time, O(1) space. For a circular street, run it twice: once without the first house and once without the last."
+      }
+    ],
+    "generatedBy": {
+      "provider": "maintainers",
+      "model": "hand-written",
+      "date": "2026-11-11"
+    }
+  },
+  "source": "built-in"
+}

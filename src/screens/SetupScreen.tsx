@@ -1,10 +1,17 @@
 import { useEffect, useMemo, useState } from 'react';
 import { setup as copy, quality as qualityCopy, presetName, difficultyName, topicName, personaName, personaHelp, feedbackModeName, feedbackModeHelp, languageName } from '../copy/strings';
-import { BANK, filterBank, pickRandom } from '../lib/problems/bank';
+import { BANK, filterBank, loadBankProblem, pickRandom, type BankEntry } from '../lib/problems/bank';
 import { draftFromPaste } from '../lib/problems/paste';
 import { newId } from '../lib/id';
 import { TOPICS, PERSONAS, FEEDBACK_MODES, LANGUAGES, MODEL_ROLES, type Difficulty, type Topic, type Problem, type PresetId, type Session } from '../lib/types';
-import { providerConfig, modelsFor } from '../config/providers';
+import { providerConfig, modelsFor, strongestModel } from '../config/providers';
+import { createProvider } from '../lib/ai/factory';
+import { ProviderError } from '../lib/ai/errors';
+import { ai as aiCopy } from '../copy/strings';
+import { usageRecord } from '../lib/ai/usage';
+import { preparePasted, type PrepareStage } from '../lib/problems/prepare';
+import { CodeRunner } from '../lib/runner/runner';
+import type { UsageRecord } from '../lib/types';
 import { estimateSession } from '../lib/cost/estimate';
 import { listSessions } from '../lib/storage/db';
 import { useKeys } from '../state/keys';
@@ -27,7 +34,7 @@ export function SetupScreen() {
   const [topic, setTopic] = useState<Topic | 'any'>('any');
   const [pasted, setPasted] = useState('');
   const matches = useMemo(() => filterBank(difficulty, topic), [difficulty, topic]);
-  const [picked, setPicked] = useState<Problem | undefined>(() => pickRandom(BANK));
+  const [picked, setPicked] = useState<BankEntry | undefined>(() => pickRandom(BANK));
   const current = picked && matches.includes(picked) ? picked : matches[0];
 
   const keys = useKeys();
@@ -54,16 +61,51 @@ export function SetupScreen() {
 
   const canStart = hasKey && (source === 'random' ? !!current : pasted.trim().length > 20);
 
-  function start() {
-    const problem = source === 'random' ? current! : draftFromPaste(pasted, newId('paste-'));
+  const [prep, setPrep] = useState<{ stage: PrepareStage; abort: AbortController } | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  function begin(problem: Problem, prepUsage: UsageRecord[] = []) {
     draftStore.set({
       problem,
       language: settings.language,
       persona: settings.persona,
       feedbackMode: settings.feedbackMode,
       minutes: settings.sessionMinutes,
+      prepUsage,
     });
     navigate('/interview');
+  }
+
+  async function start() {
+    setError(null);
+    if (source === 'random') {
+      const problem = await loadBankProblem(current!.id);
+      if (problem) begin(problem);
+      return;
+    }
+    const ai = createProvider(settings.provider, settings);
+    if (!ai) return begin(draftFromPaste(pasted, newId('paste-')));
+    const abort = new AbortController();
+    setPrep({ stage: 'reading', abort });
+    const runner = new CodeRunner();
+    const usage: UsageRecord[] = [];
+    try {
+      const { problem } = await preparePasted(pasted, {
+        provider: ai,
+        model: strongestModel(models),
+        run: (lang, code, p, tests) => runner.runTests(lang, code, p.signature, tests, 0),
+        record: (role, model, u) => usage.push(usageRecord(provider, role, model, u, 0)),
+        onStage: (stage) => setPrep({ stage, abort }),
+        signal: abort.signal,
+      });
+      begin(problem, usage);
+    } catch (err) {
+      const kind = err instanceof ProviderError ? err.kind : 'unknown';
+      if (kind !== 'aborted') setError(kind === 'bad-output' ? copy.prepFailed : (aiCopy.errors[kind] ?? copy.prepFailed));
+    } finally {
+      runner.dispose();
+      setPrep(null);
+    }
   }
 
   return (
@@ -182,8 +224,23 @@ export function SetupScreen() {
             </a>
           </p>
         )}
+        {prep && (
+          <div role="status" className="border-l-[3px] border-blue py-1 pl-4">
+            <p className="text-sm font-semibold">{copy.preparing}</p>
+            <p className="text-sm">{copy.prepStage[prep.stage]}</p>
+            <p className="text-sm text-ink-soft">{copy.prepTime}</p>
+            <Button variant="quiet" className="mt-1" onClick={() => prep.abort.abort()}>
+              {copy.cancelPrep}
+            </Button>
+          </div>
+        )}
+        {error && (
+          <p role="alert" className="text-sm text-red">
+            {error}
+          </p>
+        )}
         <div className="flex flex-wrap items-center gap-6">
-          <Button variant="primary" onClick={start} disabled={!canStart}>
+          <Button variant="primary" onClick={start} disabled={!canStart || !!prep}>
             {copy.start}
           </Button>
           <ButtonLink variant="quiet" href="#/replay/demo">

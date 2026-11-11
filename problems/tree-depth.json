@@ -1,0 +1,247 @@
+{
+  "schemaVersion": 1,
+  "id": "tree-depth",
+  "title": "Depth of an org chart",
+  "difficulty": "easy",
+  "topics": [
+    "trees"
+  ],
+  "statement": "A company's reporting structure is stored as a binary tree, where each node is a person and has at most two direct reports.\n\nReturn the number of people on the longest chain from the top person down to someone with no reports. An empty chart has depth 0. In tests, a tree is written as a level-order array with nulls for missing people.",
+  "examples": [
+    {
+      "input": "root = [1, 2, 3, null, 4, null, null, 5]",
+      "output": "4"
+    },
+    {
+      "input": "root = []",
+      "output": "0"
+    }
+  ],
+  "signature": {
+    "name": "chart_depth",
+    "params": [
+      {
+        "name": "root",
+        "type": "TreeNode"
+      }
+    ],
+    "returns": "int"
+  },
+  "starterCode": {
+    "python": "def chart_depth(root):\n    pass\n",
+    "javascript": "function chart_depth(root) {\n\n}\n"
+  },
+  "tests": [
+    {
+      "name": "example",
+      "args": [
+        [
+          1,
+          2,
+          3,
+          null,
+          4,
+          null,
+          null,
+          5
+        ]
+      ],
+      "expected": 4
+    },
+    {
+      "name": "empty",
+      "args": [
+        []
+      ],
+      "expected": 0
+    },
+    {
+      "name": "only the top",
+      "args": [
+        [
+          1
+        ]
+      ],
+      "expected": 1
+    },
+    {
+      "name": "full tree",
+      "args": [
+        [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7
+        ]
+      ],
+      "expected": 3
+    },
+    {
+      "name": "chain to the left",
+      "args": [
+        [
+          1,
+          2,
+          null,
+          3,
+          null,
+          4
+        ]
+      ],
+      "expected": 4,
+      "hidden": true
+    }
+  ],
+  "analysis": {
+    "clarifyingQuestions": [
+      {
+        "question": "What is the depth of an empty chart?",
+        "answer": "0.",
+        "why": "Base case for recursion."
+      },
+      {
+        "question": "Do we count people or links?",
+        "answer": "People. A chart with only the top person has depth 1.",
+        "why": "Avoids an off-by-one."
+      },
+      {
+        "question": "How deep can the tree be?",
+        "answer": "Up to 10,000 people, and it can be a single chain.",
+        "why": "Recursion depth can hit language limits; an iterative version avoids it."
+      }
+    ],
+    "hiddenConstraints": [
+      "Up to 10,000 nodes.",
+      "The tree can be completely unbalanced."
+    ],
+    "edgeCases": [
+      {
+        "input": "[]",
+        "why": "Depth 0."
+      },
+      {
+        "input": "[1]",
+        "why": "Depth 1."
+      },
+      {
+        "input": "A chain down one side",
+        "why": "Recursion depth equals the number of nodes."
+      }
+    ],
+    "approaches": [
+      {
+        "name": "Recursive DFS",
+        "idea": "The depth of a node is 1 plus the larger depth of its two subtrees.",
+        "time": "O(n)",
+        "space": "O(h) call stack",
+        "tradeoffs": "Shortest code; deep chains risk stack overflow."
+      },
+      {
+        "name": "Level-order BFS",
+        "idea": "Process the tree level by level with a queue and count levels.",
+        "time": "O(n)",
+        "space": "O(w) for the widest level",
+        "tradeoffs": "No recursion limit; slightly more code."
+      }
+    ],
+    "optimal": {
+      "name": "Recursive depth",
+      "explanation": "If the node is None return 0; otherwise return 1 + max(depth(left), depth(right)). Mention the BFS alternative for very deep trees.",
+      "time": "O(n)",
+      "space": "O(h)"
+    },
+    "hintLadder": [
+      "What is the depth of an empty tree?",
+      "If you knew the depths of the left and right subtrees, what is the depth of the whole tree?",
+      "That suggests recursion. What is the base case?",
+      "Return 0 for None, otherwise 1 plus the max of the two child depths."
+    ],
+    "expectedMentions": [
+      {
+        "id": "ask-count",
+        "what": "Clarifies whether depth counts nodes or edges",
+        "category": "clarification"
+      },
+      {
+        "id": "recursive-plan",
+        "what": "Describes the recursive definition and O(n) time",
+        "category": "planning"
+      },
+      {
+        "id": "stack-depth",
+        "what": "Notes the O(h) stack space and the risk with deep chains",
+        "category": "reasoning"
+      },
+      {
+        "id": "bfs-alternative",
+        "what": "Mentions a level-order alternative",
+        "category": "reasoning"
+      },
+      {
+        "id": "trace",
+        "what": "Traces a small tree or the empty case",
+        "category": "testing"
+      }
+    ],
+    "followUps": [
+      "Return the minimum depth to someone with no reports.",
+      "Do it without recursion."
+    ],
+    "vocabulary": [
+      "binary tree",
+      "depth",
+      "height",
+      "recursion",
+      "base case",
+      "depth first search",
+      "breadth first search",
+      "queue",
+      "O of n",
+      "call stack"
+    ],
+    "referenceSolution": {
+      "python": "def chart_depth(root):\n    if root is None:\n        return 0\n    return 1 + max(chart_depth(root.left), chart_depth(root.right))\n",
+      "javascript": "function chart_depth(root) {\n  if (!root) return 0;\n  return 1 + Math.max(chart_depth(root.left), chart_depth(root.right));\n}\n"
+    },
+    "walkthrough": [
+      {
+        "phase": "clarify",
+        "say": "Depth counts people, so just the top person is depth one, and an empty chart is zero?"
+      },
+      {
+        "phase": "plan",
+        "say": "The depth of a tree is one plus the deeper of its two subtrees, and an empty tree is zero. That’s a direct recursion, visiting each node once, O(n) time and O(h) stack space."
+      },
+      {
+        "phase": "plan",
+        "say": "If the tree could be a ten-thousand-long chain, recursion might hit the stack limit in Python, and I’d switch to a level-by-level BFS. I’ll write the recursive one first."
+      },
+      {
+        "phase": "code",
+        "say": "Base case, then combine the children.",
+        "code": "def chart_depth(root):\n    if root is None:\n        return 0\n    return 1 + max(chart_depth(root.left), chart_depth(root.right))"
+      },
+      {
+        "phase": "test",
+        "say": "For the example: 1 has children 2 and 3. 2 has a right child 4, which has a left child 5. So 5 is depth 1, 4 is 2, 2 is 3, 3 is 1, and the root is 1 plus 3, which is 4."
+      },
+      {
+        "phase": "test",
+        "say": "Empty returns 0, and a single node is 1 plus max of 0 and 0, which is 1."
+      },
+      {
+        "phase": "wrap-up",
+        "say": "O(n) time, O(h) space. BFS avoids recursion if the tree is very deep."
+      }
+    ],
+    "generatedBy": {
+      "provider": "maintainers",
+      "model": "hand-written",
+      "date": "2026-11-11"
+    }
+  },
+  "source": "built-in"
+}
