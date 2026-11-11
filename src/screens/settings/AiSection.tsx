@@ -141,7 +141,10 @@ export function KeyEditor({
           </Button>
         )}
       </div>
-      <p className="text-sm text-ink-soft">{entry ? copy.keyStored(maskKey(entry.value)) : copy.noKey} {copy.checkCost}</p>
+      <div className="text-sm text-ink-soft">
+        <p>{entry ? copy.keyStored(maskKey(entry.value)) : copy.noKey}</p>
+        <p>{copy.checkCost}</p>
+      </div>
       {message && (
         <p role={message.error ? 'alert' : 'status'} className={`text-sm ${message.error ? 'text-red' : 'text-green'}`}>
           {message.text}

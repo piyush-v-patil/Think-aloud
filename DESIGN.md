@@ -258,3 +258,40 @@ What a generic dashboard would have done, and what changed:
 8. **Buttons.** No arrows, no "Submit". Every button names its action.
 9. **Icons.** No emoji. The few icons (play, mic) are simple inline SVG
    strokes in ink color, always paired with a text label.
+
+## Review of the built screens
+
+Every screen was screenshotted at 1440px and 390px wide, in light and dark
+themes, and checked against this plan and the brief. What fell short and
+was changed:
+
+1. **Leader lines crossed words.** The first version drew a diagonal curve
+   from the end of an underline to its note, cutting through the rest of
+   the sentence. Leaders now run level along the underline to the edge of
+   the text column, then curve up to the note, and the text column is
+   capped at 42rem so they stay short.
+2. **The transcript wasn't the spine of the interview screen.** Live
+   margin notes sat below the problem statement, out of view. The left
+   column is now the interviewer and the marked transcript, following the
+   newest line; the problem moved to a collapsible panel above the
+   editor.
+3. **Rubric rows squeezed on phones.** The three-column table left the
+   summaries in a narrow strip at 390px. On phones each row now stacks:
+   category and tally on one line, summary and evidence below.
+4. **Flat hierarchy in Settings.** Sub-questions used the same size as
+   section headings. Field legends inside a section are now 15px
+   semibold; only section headings are 18px.
+5. **Notices weren't visible.** A speech engine fallback was recorded but
+   not shown during the interview. Notices now appear under the
+   interviewer, in plain words.
+6. **Off-palette editor colors.** Monaco's dark theme colored brackets
+   yellow and pink. Bracket colorization is off and delimiters use the
+   ink tones.
+7. **Doubled screen-reader text.** The score tally announced "3 of 4"
+   twice. The tally's strokes are hidden from assistive technology; the
+   digits carry the score.
+
+Checked and kept: marker shapes stay distinct in both themes (solid,
+zigzag, dashed), contrast targets hold (measured values above), focus
+rings are visible on every control, and touch targets are at least 44px,
+including the timeline marks.

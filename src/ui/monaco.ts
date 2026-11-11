@@ -22,6 +22,9 @@ monaco.editor.defineTheme('board-light', {
     { token: 'keyword', foreground: '1F4FD8' },
     { token: 'string', foreground: '0E7A55' },
     { token: 'number', foreground: 'A3361F' },
+    { token: 'delimiter', foreground: '3A4048' },
+    { token: 'delimiter.bracket', foreground: '3A4048' },
+    { token: 'delimiter.parenthesis', foreground: '3A4048' },
   ],
   colors: {
     'editor.background': '#FFFFFF',
@@ -45,6 +48,9 @@ monaco.editor.defineTheme('board-dark', {
     { token: 'keyword', foreground: 'A8C1FF' },
     { token: 'string', foreground: '5FD1A0' },
     { token: 'number', foreground: 'F0B37E' },
+    { token: 'delimiter', foreground: 'C7D3CF' },
+    { token: 'delimiter.bracket', foreground: 'C7D3CF' },
+    { token: 'delimiter.parenthesis', foreground: 'C7D3CF' },
   ],
   colors: {
     'editor.background': '#202A27',
@@ -57,6 +63,8 @@ monaco.editor.defineTheme('board-dark', {
     'editorIndentGuide.background1': '#2C3835',
     'editorWidget.background': '#18201E',
     'editorWidget.border': '#33403C',
+    'editorBracketHighlight.foreground1': '#C7D3CF',
+    'editorBracketMatch.border': '#7F8C88',
   },
 });
 
