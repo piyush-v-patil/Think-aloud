@@ -12,6 +12,7 @@ import { Button } from '../../ui/Button';
 import { ExternalLink } from '../../ui/ExternalLink';
 import { CompatibleProvider } from '../../lib/ai/compatible';
 import { claudeCode } from '../../config/providers/claudeCode';
+import { BRIDGE_DEFAULT_ORIGINS, BRIDGE_FILE_URL, REPO_URL } from '../../config/app';
 
 /** Providers whose adapters are built. The rest appear as they are added. */
 export const AVAILABLE_PROVIDERS: ProviderId[] = ['anthropic', 'claude-code', 'openai', 'gemini', 'custom'];
@@ -226,20 +227,32 @@ function CustomEndpoint() {
 function ClaudeCodeBridge() {
   const settings = useSettings();
   const c = copy.claudeCode;
+  // The bridge only answers sites it knows. Anywhere but the local dev and
+  // preview servers, the command includes this site's address.
+  const origin = BRIDGE_DEFAULT_ORIGINS.includes(window.location.origin) ? null : window.location.origin;
   return (
     <div className="flex max-w-[560px] flex-col gap-4">
       <p className="text-sm text-ink-soft">{c.intro}</p>
       <div className="flex flex-col gap-2">
         <h3 className="text-sm font-semibold">{c.stepsHeading}</h3>
-        <ol className="m-0 flex list-decimal flex-col gap-1 pl-5 text-sm">
+        <ol className="m-0 flex list-decimal flex-col gap-2 pl-5 text-sm">
           <li>
             {c.steps[0]} <ExternalLink href={claudeCode.keyUrl}>{c.install}</ExternalLink>
           </li>
           <li>
-            {c.steps[1]}
-            <pre className="mt-1 mb-0 w-fit rounded-[3px] bg-paper px-2 py-1 font-mono text-xs">{c.command}</pre>
+            {c.steps[1]} <ExternalLink href={BRIDGE_FILE_URL}>{c.downloadBridge}</ExternalLink>
+            <span className="text-ink-soft">
+              {' '}
+              (<ExternalLink href={REPO_URL}>{c.repo}</ExternalLink>)
+            </span>
           </li>
-          <li>{c.steps[2]}</li>
+          <li>
+            {c.steps[2]}
+            <pre className="mt-1 mb-0 w-fit max-w-full overflow-x-auto rounded-[3px] bg-paper px-2 py-1 font-mono text-xs">{c.command(origin)}</pre>
+            <span className="mt-2 block text-ink-soft">{c.projectCommandIntro}</span>
+            <pre className="mt-1 mb-0 w-fit max-w-full overflow-x-auto rounded-[3px] bg-paper px-2 py-1 font-mono text-xs">{c.projectCommand(origin)}</pre>
+          </li>
+          <li>{c.steps[3]}</li>
         </ol>
       </div>
       <TextField label={c.url} help={c.urlHelp} value={settings.claudeCodeUrl} onChange={(e) => updateSettings({ claudeCodeUrl: e.target.value.trim() })} />

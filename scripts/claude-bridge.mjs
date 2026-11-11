@@ -12,6 +12,11 @@
  *   npm run claude-bridge -- --origin https://example.github.io
  *   npm run claude-bridge -- --new-token  # replace the saved token
  *
+ * It's one file with no dependencies, so it also runs on its own, without
+ * the rest of the project (Node.js 18 or later):
+ *
+ *   node claude-bridge.mjs --origin https://piyush-v-patil.github.io
+ *
  * Meant for your own use, with your own Claude account. Usage counts against
  * your Claude plan's limits (or your API key, if Claude Code is set up with one).
  *
@@ -572,7 +577,8 @@ function notInstalledMessage(bin) {
 async function main() {
   const opts = parseArgs(process.argv.slice(2));
   if (opts.help) {
-    console.log('Usage: npm run claude-bridge -- [--port 8787] [--origin https://your.site] [--new-token]');
+    console.log('Usage: node claude-bridge.mjs [--port 8787] [--origin https://your.site] [--new-token]');
+    console.log('   or: npm run claude-bridge -- [same options]   (in a copy of the project)');
     return;
   }
   const port = Number(opts.port ?? process.env.THINK_ALOUD_BRIDGE_PORT ?? 8787);

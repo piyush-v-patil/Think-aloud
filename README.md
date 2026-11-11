@@ -218,18 +218,33 @@ and signed in, Think Aloud can use it instead of an API key. Usage counts
 against your Claude plan's limits. This is meant for your own practice with
 your own account.
 
-```bash
-npm run claude-bridge
-```
+The app can't start programs on your computer, so a small bridge does it.
+Get the bridge one of two ways:
 
-That starts a small bridge on `http://localhost:8787` and prints a bridge
-token. In **Settings → AI provider**, choose **Claude Code**, paste the
-token, and press **Save and check key**. Keep the terminal open while you
-practice. Running the app with `npm run dev` is the most reliable way. Your
-GitHub Pages site can reach the bridge too, though your browser may ask for
+- **Using the hosted site** (<https://piyush-v-patil.github.io/Think-aloud/>)?
+  You don't need the whole project. Download the single file
+  [`scripts/claude-bridge.mjs`](https://github.com/piyush-v-patil/think-aloud/blob/main/scripts/claude-bridge.mjs)
+  from this repository, and run it with Node.js 18 or later:
+
+  ```bash
+  node claude-bridge.mjs --origin https://piyush-v-patil.github.io
+  ```
+
+- **Running the app yourself** from a clone of
+  [this repository](https://github.com/piyush-v-patil/think-aloud):
+
+  ```bash
+  npm run claude-bridge
+  ```
+
+The bridge starts on `http://localhost:8787` and prints a bridge token. In
+**Settings → AI provider**, choose **Claude Code**, paste the token, and
+press **Save and check key**. Keep the terminal open while you practice.
+Settings shows the exact command for the site you're on, with links to the
+file and the repository. From the hosted site, your browser may ask for
 permission to connect to devices on your local network.
 
-<img src="docs/screenshots/claude-code.png" alt="Settings with Claude Code chosen as the AI provider: three setup steps, the npm run claude-bridge command, the bridge address and the bridge token, with 'Key saved. It works.'" width="560">
+<img src="docs/screenshots/claude-code.png" alt="Settings with Claude Code chosen as the AI provider: four setup steps with a link to download the bridge file and to the project on GitHub, the commands to run it, the bridge address and the bridge token, with 'Key saved. It works.'" width="560">
 
 How the bridge stays safe and private:
 
