@@ -442,7 +442,8 @@ export class InterviewController {
       return;
     }
     this.includeCodeIfChanged();
-    this.patch({ interviewer: { status: 'thinking', caption: '' } });
+    const lastSaid = this.store.get().interviewer.caption;
+    this.patch({ interviewer: { status: 'thinking', caption: lastSaid } });
     let started = false;
     let spokenUpTo = 0;
     let dropped = false;
@@ -466,7 +467,7 @@ export class InterviewController {
         });
       }
       spokenUpTo = text.length - rest.length;
-      this.patch({ interviewer: { status: started ? 'speaking' : 'thinking', caption: text.slice(0, spokenUpTo).trim() } });
+      this.patch({ interviewer: { status: started ? 'speaking' : 'thinking', caption: started ? text.slice(0, spokenUpTo).trim() : lastSaid } });
     };
     try {
       const pending = await this.interviewer.respond(
@@ -478,7 +479,7 @@ export class InterviewController {
       if (reply.decision === 'speak' && reply.say) speakReady(reply.say, true);
       if (dropped || (reply.decision === 'speak' && !started)) {
         // Not said: leave the conversation unchanged so the next call includes everything.
-        this.patch({ interviewer: { status: 'idle', caption: '' } });
+        this.patch({ interviewer: { status: 'idle', caption: lastSaid } });
       } else {
         pending.commit();
         if (reply.hint > 0) this.hints.push({ t: this.clock.now(), level: reply.hint });
@@ -489,7 +490,7 @@ export class InterviewController {
     } catch (err) {
       if (err instanceof ProviderError && err.kind === 'aborted') return;
       const kind = err instanceof ProviderError ? err.kind : 'unknown';
-      this.patch({ interviewer: { status: 'idle', caption: '' }, problem: { kind, at: this.clock.now() } });
+      this.patch({ interviewer: { status: 'idle', caption: lastSaid }, problem: { kind, at: this.clock.now() } });
     } finally {
       const next = this.queued;
       this.queued = null;
