@@ -207,6 +207,10 @@ export const interview = {
   micBlocked: 'The microphone is blocked, so type what you would say. To use your voice, allow the microphone for this site and reload.',
   micUnsupported: 'This browser has no speech recognition, so type what you would say. Voice works in Chrome, Edge and Safari.',
   micOff: 'Speech recognition stopped, so type what you would say.',
+  speechServiceDown:
+    'Your browser’s speech recognition couldn’t reach its speech service, so it heard nothing. Chrome and Edge send your voice to an online service for this; it fails offline, in Brave, and with some privacy extensions, VPNs or company networks. Your recording is still being saved. Type what you would say, or try another browser.',
+  speechKeepsFailing: (code: string) =>
+    `Your browser’s speech recognition kept failing (${code}), so it heard nothing. Your recording is still being saved. Type what you would say, or try Chrome or Edge.`,
   typeLabel: 'What you would say',
   typePlaceholder: 'Type what you would say out loud, then press Enter',
   typeSend: 'Say this',

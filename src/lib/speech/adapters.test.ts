@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { AssemblyFile, DeepgramFile, OpenAIFile, silentWav } from './files';
 import { DeepgramLiveTranscriber } from './deepgram-live';
 import { alignTranscript } from './align';
@@ -169,6 +169,96 @@ describe('alignTranscript', () => {
 describe('BrowserTranscriber', () => {
   it('reports when the browser has no speech recognition', async () => {
     await expect(new BrowserTranscriber(() => 0).start({})).rejects.toMatchObject({ kind: 'not-supported' });
+  });
+
+  /** A fake recognizer: `behave` decides what each session does once started. */
+  function fakeRecognition(behave: (rec: FakeRec, session: number) => void) {
+    let sessions = 0;
+    class FakeRec {
+      continuous = false;
+      interimResults = false;
+      lang = '';
+      maxAlternatives = 1;
+      phrases: unknown[] = [];
+      onresult: ((e: unknown) => void) | null = null;
+      onerror: ((e: { error: string }) => void) | null = null;
+      onend: (() => void) | null = null;
+      onspeechstart: (() => void) | null = null;
+      onspeechend: (() => void) | null = null;
+      start() {
+        const n = ++sessions;
+        queueMicrotask(() => behave(this, n));
+      }
+      stop() {}
+      abort() {}
+      say(text: string) {
+        this.onresult?.({ resultIndex: 0, results: [{ isFinal: true, 0: { transcript: text, confidence: 0.9 } }] });
+      }
+      fail(error: string) {
+        this.onerror?.({ error });
+        this.onend?.();
+      }
+      end() {
+        this.onend?.();
+      }
+    }
+    const g = globalThis as Record<string, unknown>;
+    g.webkitSpeechRecognition = FakeRec;
+    g.SpeechRecognitionPhrase = class {
+      constructor(
+        public phrase: string,
+        public boost: number,
+      ) {}
+    };
+    return { sessions: () => sessions, restore: () => (delete g.webkitSpeechRecognition, delete g.SpeechRecognitionPhrase) };
+  }
+  type FakeRec = { phrases: unknown[]; say(text: string): void; fail(error: string): void; end(): void };
+
+  it('drops recognition hints the browser rejects and keeps listening', async () => {
+    vi.useFakeTimers();
+    const fake = fakeRecognition((rec) => (rec.phrases.length ? rec.fail('phrases-not-supported') : rec.say('can the list be empty')));
+    const heard: string[] = [];
+    const errors: unknown[] = [];
+    const t = new BrowserTranscriber(() => 0);
+    t.setHints(['heapq', 'memoize']);
+    await t.start({ onPhrase: (p) => heard.push(p.text), onError: (e) => errors.push(e) });
+    await vi.advanceTimersByTimeAsync(1000);
+    expect(heard).toEqual(['can the list be empty']);
+    expect(errors).toEqual([]);
+    t.stop();
+    fake.restore();
+    vi.useRealTimers();
+  });
+
+  it('gives up with a clear error when the speech service keeps failing', async () => {
+    vi.useFakeTimers();
+    const fake = fakeRecognition((rec) => rec.fail('network'));
+    const fatal: { kind: string }[] = [];
+    const t = new BrowserTranscriber(() => 0);
+    await t.start({ onError: (e, isFatal) => isFatal && fatal.push(e) });
+    await vi.advanceTimersByTimeAsync(10_000);
+    expect(fatal).toHaveLength(1);
+    expect(fatal[0].kind).toBe('network');
+    const tried = fake.sessions();
+    await vi.advanceTimersByTimeAsync(10_000);
+    expect(fake.sessions()).toBe(tried);
+    fake.restore();
+    vi.useRealTimers();
+  });
+
+  it('keeps going through occasional errors as long as words come through', async () => {
+    vi.useFakeTimers();
+    const fake = fakeRecognition((rec, n) => (n % 3 === 0 ? (rec.say(`phrase ${n}`), rec.end()) : rec.fail('network')));
+    const heard: string[] = [];
+    const fatal: unknown[] = [];
+    const t = new BrowserTranscriber(() => 0);
+    await t.start({ onPhrase: (p) => heard.push(p.text), onError: (e, isFatal) => isFatal && fatal.push(e) });
+    await vi.advanceTimersByTimeAsync(20_000);
+    expect(fatal).toEqual([]);
+    expect(heard.length).toBeGreaterThan(2);
+    t.stop();
+    fake.restore();
+    vi.useRealTimers();
   });
 });
 

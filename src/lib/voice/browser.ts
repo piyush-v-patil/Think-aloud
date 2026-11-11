@@ -31,6 +31,11 @@ function score(v: SpeechSynthesisVoice): number {
 export class BrowserVoice implements Voice {
   readonly id = 'browser';
   private active = 0;
+  /**
+   * Utterances being spoken. Chrome can garbage-collect an utterance nobody
+   * holds a reference to, and then its end event never fires.
+   */
+  private live = new Set<SpeechSynthesisUtterance>();
 
   get available(): boolean {
     return typeof speechSynthesis !== 'undefined';
@@ -52,22 +57,39 @@ export class BrowserVoice implements Voice {
     u.rate = PACE[opts.persona].rate;
     u.pitch = PACE[opts.persona].pitch;
     this.active++;
+    this.live.add(u);
     let ended = false;
+    let watchdog: ReturnType<typeof setTimeout> | undefined;
     const end = () => {
       if (ended) return;
       ended = true;
+      clearTimeout(watchdog);
+      this.live.delete(u);
       this.active = Math.max(0, this.active - 1);
       opts.onEnd?.();
     };
-    u.onstart = () => opts.onStart?.();
+    // Some platforms (Chrome on Windows in particular) occasionally never
+    // fire the end event. A sentence can't take much longer than this, so
+    // don't let "the interviewer is speaking" get stuck.
+    const words = text.trim().split(/\s+/).length;
+    const expectedMs = ((words / 2.5) * 1000) / u.rate;
+    u.onstart = () => {
+      opts.onStart?.();
+      clearTimeout(watchdog);
+      watchdog = setTimeout(end, expectedMs * 2 + 3000);
+    };
     u.onend = end;
     u.onerror = end;
+    // Also covers a voice that never starts at all. Generous, because this
+    // sentence may be queued behind others that are still being spoken.
+    watchdog = setTimeout(end, 60_000);
     speechSynthesis.speak(u);
   }
 
   cancel() {
     if (!this.available) return;
     speechSynthesis.cancel();
+    this.live.clear();
     this.active = 0;
   }
 }

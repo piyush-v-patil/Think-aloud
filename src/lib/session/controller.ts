@@ -260,6 +260,9 @@ export class InterviewController {
       return;
     }
     this.transcriber = null;
+    // Say why in plain words; the mic line alone ("stopped") doesn't help.
+    if (err.kind === 'network') this.notice(copyInterview.speechServiceDown);
+    else if (err.kind === 'unknown') this.notice(copyInterview.speechKeepsFailing(err.message.match(/\(([^)]+)\)/)?.[1] ?? err.message));
     const mic: MicState = err.kind === 'mic-denied' ? 'blocked' : err.kind === 'not-supported' ? 'unsupported' : 'off';
     this.patch({ mic, input: 'text' });
   }
