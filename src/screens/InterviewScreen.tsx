@@ -11,6 +11,8 @@ import { finishSession } from '../lib/session/finish';
 import { createProvider } from '../lib/ai/factory';
 import { providerConfig, modelsFor } from '../config/providers';
 import { BrowserTranscriber, browserSpeechSupported } from '../lib/speech/browser';
+import { DeepgramLiveTranscriber } from '../lib/speech/deepgram-live';
+import { chooseAccurateEngine, chooseLiveEngine, speechKey } from '../lib/speech/choose';
 import { BrowserVoice } from '../lib/voice/browser';
 import { AudioRecorder } from '../lib/audio/recorder';
 import { CodeEditor } from '../ui/CodeEditor';
@@ -38,20 +40,24 @@ export function makeController(draft: InterviewDraft, settings: Settings): Inter
   if (!provider) return null;
   const config = providerConfig(settings.provider, settings.custom);
   const models = modelsFor(config, settings.preset, settings.advancedModels);
-  const voiceWanted = settings.speech.liveEngine !== 'text' && browserSpeechSupported();
+  const live = chooseLiveEngine(settings);
   const sessionConfig: SessionConfig = {
     provider: settings.provider,
     preset: settings.preset,
     models,
-    liveSpeechEngine: voiceWanted ? 'browser' : 'text',
+    liveSpeechEngine: live,
+    accurateSpeechEngine: chooseAccurateEngine(settings),
   };
+  const browserFallback = (clock: () => number) => (browserSpeechSupported() ? new BrowserTranscriber(clock) : null);
   return new InterviewController(draft, {
     provider,
     providerConfig: config,
     models,
     config: sessionConfig,
     voice: new BrowserVoice(),
-    transcriber: (clock) => (voiceWanted ? new BrowserTranscriber(clock) : null),
+    transcriber: (clock) =>
+      live === 'deepgram' ? new DeepgramLiveTranscriber(speechKey('deepgram', settings)!, clock) : live === 'browser' ? new BrowserTranscriber(clock) : null,
+    fallbackTranscriber: browserFallback,
     recorder: typeof navigator !== 'undefined' && navigator.mediaDevices ? new AudioRecorder() : null,
   });
 }
@@ -222,6 +228,13 @@ function InterviewerPanel({ controller, state }: { controller: InterviewControll
       <p className="min-h-[66px] border-l-[3px] border-green pl-4 text-md" aria-live="polite">
         {state.interviewer.caption}
       </p>
+      {state.notices.length > 0 && (
+        <ul role="status" className="m-0 list-none border-l-[3px] border-smudge-mark p-0 pl-4 text-sm">
+          {state.notices.map((n, i) => (
+            <li key={i}>{n}</li>
+          ))}
+        </ul>
+      )}
       {state.recovery && (
         <div role="status" className="border-l-[3px] border-blue py-1 pl-4 text-sm">
           <p className="font-semibold">{copy.recoveryHeading}</p>

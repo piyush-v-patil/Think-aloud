@@ -13,6 +13,46 @@ import { CodeRunner } from '../runner/runner';
 import { saveSession } from '../storage/db';
 import { hasTests } from '../problems/paste';
 import { createStore } from '../../state/store';
+import { getAudio } from '../storage/db';
+import { fileTranscriber, type FileTranscriber } from '../speech/files';
+import { WhisperLocal } from '../speech/whisper';
+import { alignTranscript } from '../speech/align';
+import { speechKey } from '../speech/choose';
+import { SPEECH_ENGINES } from '../../config/speech';
+import { replay as copy } from '../../copy/strings';
+
+/**
+ * The accurate transcript: the recording sent to the chosen paid engine (or
+ * transcribed on this device), aligned to the session clock. If it fails,
+ * scoring uses the live transcript and the replay says so.
+ */
+export async function transcribeAccurately(session: Session, settings: Settings): Promise<void> {
+  const engine = session.config.accurateSpeechEngine;
+  if (!engine || !session.audio || session.transcripts.accurate) return;
+  const label = SPEECH_ENGINES[engine].label;
+  const key = engine === 'whisper-local' ? undefined : speechKey(engine, settings);
+  const transcriber: FileTranscriber | null =
+    engine === 'whisper-local' ? new WhisperLocal() : key ? fileTranscriber(engine, key) : null;
+  const blob = await getAudio(session.audio.id);
+  if (!transcriber || !blob) {
+    session.notices.push(copy.accurateSkipped(label));
+    return;
+  }
+  try {
+    const hints = session.problem.analysis?.vocabulary ?? [];
+    const { words } = await transcriber.transcribe(blob, { hints });
+    if (!words.length) throw new Error('empty');
+    session.transcripts.accurate = alignTranscript({ engine, words, offsetMs: session.audio.offsetMs, live: session.transcripts.live.utterances });
+    const cfg = SPEECH_ENGINES[engine];
+    if (cfg.paid) {
+      const seconds = Math.max(1, (durationOf(session) - session.audio.offsetMs) / 1000);
+      const perMinute = (cfg.filePerMinute ?? 0) + (hints.length ? (cfg.keywordHintsPerMinute ?? 0) : 0);
+      session.speechUsage.push({ engine, purpose: 'accurate', seconds, costUsd: (seconds / 60) * perMinute });
+    }
+  } catch {
+    session.notices.push(copy.accurateFailed(label));
+  }
+}
 
 export interface ProcessState {
   stage: DebriefStage | 'transcribing' | null;
@@ -35,6 +75,8 @@ export function processSession(session: Session, settings: Settings): Promise<Se
     const config = providerConfig(session.config.provider, settings.custom);
     const runner = new CodeRunner();
     try {
+      setStage(session.id, { stage: 'transcribing' });
+      await transcribeAccurately(session, settings);
       const out = await runDebrief(session, {
         provider,
         model: session.config.models.debrief,

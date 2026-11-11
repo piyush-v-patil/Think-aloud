@@ -15,8 +15,11 @@ import type {
   SessionConfig,
   TestRun,
   UsageRecord,
+  SpeechUsageRecord,
   Utterance,
 } from '../types';
+import { SPEECH_ENGINES } from '../../config/speech';
+import { interview as copyInterview } from '../../copy/strings';
 import type { AIProvider } from '../ai/types';
 import type { ProviderConfig, RoleModels } from '../../config/providers/types';
 import type { InterviewDraft } from '../../state/draft';
@@ -78,6 +81,8 @@ export interface ControllerDeps {
   transcriber: (clock: () => number) => LiveTranscriber | null;
   recorder: AudioRecorder | null;
   clock?: SessionClock;
+  /** Used if a paid live engine fails mid-session. */
+  fallbackTranscriber?: (clock: () => number) => LiveTranscriber | null;
 }
 
 export type ControllerEvent =
@@ -97,6 +102,7 @@ export class InterviewController {
   readonly snapshots: CodeSnapshot[];
   readonly runs: TestRun[] = [];
   readonly usage: UsageRecord[] = [];
+  readonly speechUsage: SpeechUsageRecord[] = [];
   readonly phases: { phase: Phase; t: number }[] = [{ phase: 'clarify', t: 0 }];
   readonly hints: { t: number; level: number }[] = [];
   readonly deps: ControllerDeps;
@@ -246,6 +252,13 @@ export class InterviewController {
 
   private onSpeechError(err: SpeechError, fatal: boolean) {
     if (!fatal) return;
+    const failed = this.transcriber;
+    if (failed && failed.engine !== 'browser' && this.deps.fallbackTranscriber) {
+      this.recordLiveSpeech(failed);
+      const next = this.deps.fallbackTranscriber(() => this.clock.now());
+      void this.replaceTranscriber(next, copyInterview.paidFallback(SPEECH_ENGINES[failed.engine].label));
+      return;
+    }
     this.transcriber = null;
     const mic: MicState = err.kind === 'mic-denied' ? 'blocked' : err.kind === 'not-supported' ? 'unsupported' : 'off';
     this.patch({ mic, input: 'text' });
@@ -270,6 +283,15 @@ export class InterviewController {
     });
   }
 
+  /** Records the cost of a paid live engine's streamed audio. */
+  private recordLiveSpeech(t: LiveTranscriber) {
+    const seconds = (t as { secondsStreamed?: number }).secondsStreamed;
+    const cfg = SPEECH_ENGINES[t.engine];
+    if (!cfg.paid || !seconds) return;
+    const perMinute = (cfg.livePerMinute ?? 0) + (cfg.keywordHintsPerMinute ?? 0);
+    this.speechUsage.push({ engine: t.engine, purpose: 'live', seconds, costUsd: (seconds / 60) * perMinute });
+  }
+
   useTyping() {
     this.transcriber?.stop();
     this.transcriber = null;
@@ -286,6 +308,7 @@ export class InterviewController {
     this.deps.voice.cancel();
     this.finishSpeaking();
     this.transcriber?.stop();
+    if (this.transcriber) this.recordLiveSpeech(this.transcriber);
     this.turns.flush();
     this.snapshot();
     this.recording = (await this.deps.recorder?.stop()) ?? null;

@@ -16,6 +16,7 @@ import { estimateSession } from '../lib/cost/estimate';
 import { listSessions } from '../lib/storage/db';
 import { useKeys } from '../state/keys';
 import { CostEstimate } from '../ui/CostEstimate';
+import { chooseAccurateEngine, chooseLiveEngine } from '../lib/speech/choose';
 import { Onboarding } from '../ui/Onboarding';
 import { updateSettings, useSettings } from '../state/settings';
 import { draftStore } from '../state/draft';
@@ -53,10 +54,10 @@ export function SetupScreen() {
         feedbackMode: settings.feedbackMode,
         minutes: settings.sessionMinutes,
         needsAnalysis: source === 'paste',
-        speech: { liveEngine: 'browser' },
+        speech: { liveEngine: chooseLiveEngine(settings), accurateEngine: chooseAccurateEngine(settings), keywordHints: true },
         history,
       }),
-    [provider, models, settings.feedbackMode, settings.sessionMinutes, source, history],
+    [provider, models, settings, source, history],
   );
 
   const canStart = hasKey && (source === 'random' ? !!current : pasted.trim().length > 20);

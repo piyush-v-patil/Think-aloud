@@ -39,7 +39,7 @@ export async function buildSession(c: InterviewController): Promise<Session> {
     missed: [],
     rerecords: [],
     usage: [...(c.draft.prepUsage ?? []), ...c.usage],
-    speechUsage: [],
+    speechUsage: [...c.speechUsage],
     audio,
     notices: state.notices,
   };

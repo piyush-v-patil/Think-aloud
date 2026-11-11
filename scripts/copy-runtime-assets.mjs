@@ -24,3 +24,19 @@ for (const file of [
   cpSync(join(src, file), join(out, file));
 }
 console.log('[copy-runtime-assets] Pyodide copied to public/vendor/pyodide');
+
+// ONNX Runtime WebAssembly files for on-device Whisper, served from our own
+// origin instead of a CDN. The model weights themselves are downloaded from
+// Hugging Face only when the user turns on-device transcription on.
+const ortSrc = join(root, 'node_modules', 'onnxruntime-web', 'dist');
+const ortOut = join(root, 'public', 'vendor', 'ort');
+if (existsSync(ortSrc)) {
+  mkdirSync(ortOut, { recursive: true });
+  for (const variant of ['', '.jsep', '.asyncify']) {
+    for (const ext of ['wasm', 'mjs']) {
+      const file = `ort-wasm-simd-threaded${variant}.${ext}`;
+      if (existsSync(join(ortSrc, file))) cpSync(join(ortSrc, file), join(ortOut, file));
+    }
+  }
+  console.log('[copy-runtime-assets] ONNX Runtime copied to public/vendor/ort');
+}

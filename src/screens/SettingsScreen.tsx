@@ -9,6 +9,7 @@ import { Button } from '../ui/Button';
 import { Dialog } from '../ui/Dialog';
 import { Rule } from '../ui/Rule';
 import { AiSection } from './settings/AiSection';
+import { SpeechSection } from './settings/SpeechSection';
 
 export function SettingsScreen({ section }: { section?: string }) {
   void section;
@@ -30,6 +31,10 @@ export function SettingsScreen({ section }: { section?: string }) {
       <h1 className="text-lg font-bold">{copy.title}</h1>
 
       <AiSection />
+
+      <Rule />
+
+      <SpeechSection />
 
       <Rule />
 

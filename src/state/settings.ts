@@ -4,7 +4,7 @@ import { readLocal, writeLocal } from '../lib/storage/local';
 import { createStore, useStore } from './store';
 
 export type ThemeSetting = 'light' | 'dark' | 'system';
-export type LiveSpeechChoice = 'browser' | 'whisper-local' | 'text';
+export type LiveSpeechChoice = 'browser' | 'text';
 export type PaidSpeechEngine = 'deepgram' | 'assemblyai' | 'openai';
 
 export interface CustomEndpointSettings {
@@ -35,6 +35,8 @@ export interface Settings {
     paidLive: boolean;
     /** Use the OpenAI AI key for transcription too. */
     reuseOpenAIKey: boolean;
+    /** Transcribe the recording on this device with Whisper (free, private). */
+    onDevice: boolean;
   };
   custom: CustomEndpointSettings;
   monthlyLimitUsd: number | null;
@@ -50,7 +52,7 @@ export const DEFAULT_SETTINGS: Settings = {
   feedbackMode: 'training',
   language: 'python',
   sessionMinutes: DEFAULT_SESSION_MINUTES,
-  speech: { liveEngine: 'browser', paidEngine: null, accuratePass: true, paidLive: false, reuseOpenAIKey: false },
+  speech: { liveEngine: 'browser', paidEngine: null, accuratePass: true, paidLive: false, reuseOpenAIKey: false, onDevice: false },
   custom: { baseUrl: 'http://localhost:11434/v1', models: { small: '', mid: '', top: '' } },
   monthlyLimitUsd: null,
   onboarded: false,

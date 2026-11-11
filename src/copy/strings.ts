@@ -215,6 +215,7 @@ export const interview = {
   ending: 'Saving your interview',
   phaseLabel: (p: string) => `Now: ${p}`,
   impressionLabel: 'Interviewer impression so far',
+  paidFallback: (engine: string) => `${engine} stopped working, so the interview switched to your browser’s speech recognition.`,
   impressionWord: { positive: 'leaning positive', neutral: 'neutral', negative: 'leaning negative' } as Record<string, string>,
   recoveryHeading: 'Stuck? You could say:',
   recoveryDismiss: 'Hide this',
@@ -324,6 +325,8 @@ export const replay = {
   shareIntro: 'An image of your scores and overall signal, made on this device. It has no name, transcript or code.',
   saveCard: 'Save share card',
   shareCard: 'Share',
+  accurateFailed: (engine: string) => `The more accurate transcript from ${engine} failed, so your feedback is based on the live transcript.`,
+  accurateSkipped: (engine: string) => `The more accurate transcript from ${engine} was skipped because its key is missing, so your feedback is based on the live transcript.`,
   droppedLive: (n: number) => `${n} live ${n === 1 ? 'note was' : 'notes were'} removed because the more accurate transcript didn’t contain the quoted words.`,
 };
 
@@ -371,6 +374,33 @@ export const ai = {
     aborted: 'The request was cancelled.',
     unknown: 'Something went wrong talking to the provider. Try again.',
   } as Record<string, string>,
+};
+
+export const speech = {
+  heading: 'Speech',
+  intro: 'How your voice becomes text. The free browser engine works with no setup.',
+  support: 'Voice works in Chrome, Edge and Safari. In Firefox, and anywhere the microphone is blocked, you type what you would say instead.',
+  duringHeading: 'During the interview',
+  browser: 'Browser speech recognition (free)',
+  typing: 'Type instead of speaking',
+  browserNote: 'Your audio goes to your browser’s speech service: Google for Chrome and Edge, Apple for Safari.',
+  unsupportedNote: 'This browser has no speech recognition, so you’ll type during the interview.',
+  accurateHeading: 'A more accurate transcript (optional)',
+  accurateIntro: 'Speech engines make mistakes with technical words. A second transcription of your recording makes the quotes in your feedback more accurate.',
+  accurateOff: 'Off',
+  accuratePaid: 'A paid service',
+  accurateDevice: 'On this device',
+  serviceLabel: 'Service',
+  deviceNote: 'Runs Whisper in your browser. Your audio never leaves this device. The first time, it downloads a speech model of about 80 MB from Hugging Face. It needs a recent computer and can take a few minutes for a long interview.',
+  deviceWeak: 'This device may be too slow for on-device transcription.',
+  accuratePass: 'Transcribe the recording after the interview and score that version (recommended)',
+  accuratePassHelp: 'Your feedback is based on the more accurate transcript, lined up with the replay.',
+  paidLive: (engine: string) => `Use ${engine} during the interview too`,
+  paidLiveHelp: 'Replaces browser speech recognition while you talk. If it stops working, the interview switches back automatically.',
+  liveUnavailable: (engine: string) => `${engine} can’t transcribe live directly from a browser, so it is used after the interview only.`,
+  reuseKey: 'Use my OpenAI key from the AI provider',
+  keyLabel: (engine: string) => `${engine} API key`,
+  price: (perMinute: string, session: string) => `${perMinute} per minute of audio, about ${session} for a 45 minute interview, estimate.`,
 };
 
 export const quality = {
