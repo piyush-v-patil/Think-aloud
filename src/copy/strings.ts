@@ -236,6 +236,45 @@ export const settings = {
   importFailed: 'That file is not a session export from this app. Choose a file you exported here.',
 };
 
+export const replay = {
+  title: (problem: string) => `Your interview: ${problem}`,
+  demoTitle: (problem: string) => `Demo interview: ${problem}`,
+  demoNote: 'This is a sample session so you can see the replay without a key. The candidate’s words and scores are examples.',
+  processing: 'Preparing your feedback',
+  stage: {
+    transcribing: 'Transcribing your recording for accuracy.',
+    scoring: 'Reading your interview and scoring each part.',
+    checking: 'Checking every quote against your transcript.',
+    verifying: 'A second reviewer is checking each judgment against its evidence.',
+    done: 'Done.',
+  } as Record<string, string>,
+  processingTime: 'This usually takes one to two minutes.',
+  failed: 'Your feedback couldn’t be prepared.',
+  noKey: 'Add your AI key in Settings to prepare feedback for this interview.',
+  retry: 'Try again',
+  hireHeading: 'Overall signal',
+  correctnessHeading: 'Correctness',
+  correctness: (passed: number, total: number) => `${passed} of ${total} tests passed`,
+  rubricHeading: 'How you communicated',
+  scoreOf: (n: number) => `${n} of 4`,
+  notScored: (cats: string) => `Not scored: ${cats}. No evidence for these could be found in your transcript.`,
+  checked: (removed: number, downgraded: number) =>
+    `Every quote was checked against your transcript. The second review removed ${removed} and lowered ${downgraded} ${downgraded === 1 ? 'judgment' : 'judgments'}.`,
+  scoredOn: (engine: string) => `Scored on the transcript from ${engine}.`,
+  notesHeading: 'Interviewer’s notes',
+  transcriptHeading: 'Your transcript, marked up',
+  costHeading: 'Session cost',
+  costLine: (amount: string) => `${amount}, actual`,
+  costTokens: (tokens: string) => `${tokens}, prices unknown`,
+  costBreakdown: 'Breakdown',
+  speechCost: 'Speech recognition',
+  jumpTo: (time: string) => `Go to ${time}`,
+  silence: (duration: string) => `(${duration} of silence)`,
+  missedLabel: 'Missed:',
+  notSaid: (what: string) => `Not said: ${what}`,
+  droppedLive: (n: number) => `${n} live ${n === 1 ? 'note was' : 'notes were'} removed because the more accurate transcript didn’t contain the quoted words.`,
+};
+
 export const history = {
   title: 'History',
   emptyTitle: 'No interviews yet.',

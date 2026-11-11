@@ -47,6 +47,8 @@ interface Leader {
   kind: MarkKind;
   x1: number;
   y1: number;
+  /** Right edge of the text column: the leader runs level until here. */
+  xm: number;
   x2: number;
   y2: number;
 }
@@ -84,6 +86,7 @@ export function MarkedTranscript({
       for (const row of Array.from(list.querySelectorAll<HTMLElement>('[data-row]'))) {
         const rowId = row.dataset.row!;
         const rowBox = row.getBoundingClientRect();
+        const textBox = row.querySelector<HTMLElement>('[data-text]')?.getBoundingClientRect();
         const lines: Leader[] = [];
         for (const note of Array.from(row.querySelectorAll<HTMLElement>('[data-note]'))) {
           const markId = note.dataset.note!;
@@ -93,11 +96,13 @@ export function MarkedTranscript({
           const last = rects[rects.length - 1];
           const noteBox = note.getBoundingClientRect();
           if (!last || noteBox.left < last.right + 8) continue; // stacked layout: no leader
+          const x1 = last.right - rowBox.left + 2;
           lines.push({
             id: markId,
             kind: (note.dataset.kind as MarkKind) ?? 'neutral',
-            x1: last.right - rowBox.left + 2,
-            y1: last.bottom - rowBox.top - 4,
+            x1,
+            y1: last.bottom - rowBox.top - 3,
+            xm: Math.max(x1, (textBox ? textBox.right : last.right) - rowBox.left + 12),
             x2: noteBox.left - rowBox.left - 6,
             y2: noteBox.top - rowBox.top + 11,
           });
@@ -134,11 +139,11 @@ export function MarkedTranscript({
             key={row.id}
             data-row={row.id}
             style={rowStyle}
-            className={`relative grid grid-cols-1 gap-x-8 gap-y-2 py-1 @min-[560px]:grid-cols-[minmax(0,1fr)_minmax(10rem,15rem)] ${
+            className={`relative grid grid-cols-1 gap-x-8 gap-y-2 py-1 @min-[560px]:grid-cols-[minmax(0,42rem)_minmax(10rem,15rem)] ${
               selected ? 'border-l-[3px] border-blue bg-blue-wash pl-3' : 'pl-[15px]'
             }`}
           >
-            <div className="min-w-0">
+            <div className="min-w-0" data-text>
               <RowHeader row={row} />
               <RowText row={row} marks={rowMarks} onSelect={onSelect} />
             </div>
@@ -154,7 +159,7 @@ export function MarkedTranscript({
                 {leaders[row.id].map((l) => (
                   <path
                     key={l.id}
-                    d={`M ${l.x1} ${l.y1} C ${l.x1 + 24} ${l.y1}, ${l.x2 - 24} ${l.y2}, ${l.x2} ${l.y2}`}
+                    d={`M ${l.x1} ${l.y1} L ${l.xm} ${l.y1} C ${l.xm + 16} ${l.y1}, ${l.x2 - 16} ${l.y2}, ${l.x2} ${l.y2}`}
                     stroke={lineColor[l.kind]}
                     strokeWidth="1"
                     fill="none"
