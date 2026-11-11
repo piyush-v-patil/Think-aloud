@@ -198,6 +198,22 @@ export const interview = {
   interviewerLabel: 'Interviewer',
   you: 'You',
   trySaying: 'Try saying:',
+  status: { idle: 'Listening', thinking: 'Thinking', speaking: 'Speaking' } as Record<string, string>,
+  micOn: 'Microphone on. Speak as you would to a real interviewer.',
+  micStarting: 'Starting the microphone. Your browser may ask for permission.',
+  micBlocked: 'The microphone is blocked, so type what you would say. To use your voice, allow the microphone for this site and reload.',
+  micUnsupported: 'This browser has no speech recognition, so type what you would say. Voice works in Chrome, Edge and Safari.',
+  micOff: 'Speech recognition stopped, so type what you would say.',
+  typeLabel: 'What you would say',
+  typePlaceholder: 'Type what you would say out loud, then press Enter',
+  typeSend: 'Say this',
+  switchToTyping: 'Type instead',
+  headphones: 'Headphones help: the interviewer won’t hear its own voice.',
+  youSaying: 'You:',
+  interviewerError: 'The interviewer couldn’t reply just now.',
+  retryInterviewer: 'Ask the interviewer again',
+  ending: 'Saving your interview',
+  phaseLabel: (p: string) => `Now: ${p}`,
 };
 
 export const settings = {

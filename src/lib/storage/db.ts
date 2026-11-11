@@ -61,7 +61,7 @@ export async function listSessions(): Promise<Session[]> {
 export async function deleteSession(id: string): Promise<void> {
   const d = await db();
   const s = await d.get('sessions', id);
-  if (s?.audioId) await d.delete('audio', s.audioId);
+  if (s?.audio) await d.delete('audio', s.audio.id);
   await d.delete('sessions', id);
 }
 

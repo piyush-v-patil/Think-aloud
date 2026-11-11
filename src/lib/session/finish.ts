@@ -1,45 +1,53 @@
-import type { CodeSnapshot, Session, TestRun } from '../types';
-import type { InterviewDraft } from '../../state/draft';
-import type { Settings } from '../../state/settings';
+import type { Session } from '../types';
 import { newId } from '../id';
-import { saveSession } from '../storage/db';
+import { saveAudio, saveSession } from '../storage/db';
+import type { InterviewController } from './controller';
 
-/** Milestone 1: saves the code and test history. Later milestones add the transcript and feedback. */
-export async function finishSession(args: {
-  draft: InterviewDraft;
-  settings: Settings;
-  endedAtMs: number;
-  code: CodeSnapshot[];
-  testRuns: TestRun[];
-}): Promise<string> {
-  const { draft, settings } = args;
-  const session: Session = {
-    id: newId('s-'),
-    createdAt: Date.now() - args.endedAtMs,
+/**
+ * Builds the session record from a stopped controller and saves it with its
+ * recording. Feedback and scores are added afterwards by the replay pipeline.
+ */
+export async function buildSession(c: InterviewController): Promise<Session> {
+  const state = c.store.get();
+  const id = newId('s-');
+  let audio: Session['audio'];
+  if (c.recording) {
+    const audioId = `${id}-audio`;
+    await saveAudio(audioId, c.recording.blob);
+    audio = { id: audioId, offsetMs: c.recording.offsetMs, mimeType: c.recording.mimeType };
+  }
+  const endedMs = Math.max(c.clock.now(), c.snapshots[c.snapshots.length - 1].t);
+  const liveEngine = state.utterances.find((u) => u.speaker === 'user')?.source ?? c.deps.config.liveSpeechEngine;
+  return {
+    id,
+    createdAt: Date.now() - endedMs,
     endedAt: Date.now(),
-    problem: draft.problem,
-    language: draft.language,
-    persona: draft.persona,
-    feedbackMode: draft.feedbackMode,
-    plannedMinutes: draft.minutes,
-    config: {
-      provider: settings.provider,
-      preset: settings.preset,
-      models: { interviewer: '', reactions: '', debrief: '' },
-      liveSpeechEngine: 'text',
+    problem: c.problem,
+    language: c.language,
+    persona: c.draft.persona,
+    feedbackMode: c.draft.feedbackMode,
+    plannedMinutes: c.draft.minutes,
+    config: c.deps.config,
+    transcripts: {
+      live: { engine: liveEngine === 'model' ? 'text' : liveEngine, utterances: state.utterances },
     },
-    transcripts: { live: { engine: 'text', utterances: [] } },
-    code: args.code,
-    testRuns: args.testRuns,
-    phases: [],
-    hintsGiven: [],
+    code: c.snapshots,
+    testRuns: c.runs,
+    phases: c.phases,
+    hintsGiven: c.hints,
     reactions: [],
     missed: [],
     rerecords: [],
-    usage: [...(draft.prepUsage ?? [])],
+    usage: [...(c.draft.prepUsage ?? []), ...c.usage],
     speechUsage: [],
-    notices: [],
+    audio,
+    notices: state.notices,
   };
+}
+
+export async function finishSession(c: InterviewController): Promise<string> {
+  await c.stop();
+  const session = await buildSession(c);
   await saveSession(session);
   return session.id;
 }

@@ -377,8 +377,7 @@ export interface Session {
   rerecords: Rerecord[];
   usage: UsageRecord[];
   speechUsage: SpeechUsageRecord[];
-  /** Key of the recorded audio blob in the audio store. */
-  audioId?: string;
-  /** Notices shown in the debrief, e.g. a speech engine fallback. */
+  /** The recorded microphone audio, stored separately; offsetMs is its start on the session clock. */
+  audio?: { id: string; offsetMs: number; mimeType: string };
   notices: string[];
 }
