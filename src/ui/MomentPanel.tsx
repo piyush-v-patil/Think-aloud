@@ -10,7 +10,7 @@ import { providerConfig } from '../config/providers';
 import { usageRecord } from '../lib/ai/usage';
 import { rescore, type MomentContext } from '../lib/feedback/rescore';
 import { ProviderError } from '../lib/ai/errors';
-import { useSettings } from '../state/settings';
+import { settingsStore, useSettings } from '../state/settings';
 import { pointsLabel } from '../lib/transcript/rows';
 import { Button } from './Button';
 
@@ -22,7 +22,7 @@ export interface Moment extends MomentContext {
   sayInstead?: string;
 }
 
-const voice = new BrowserVoice();
+const voice = new BrowserVoice(() => settingsStore.get().speech.voice);
 
 /** The selected moment: what happened, a stronger version to hear, and a chance to try it again. */
 export function MomentPanel({ moment, session, onRerecord }: { moment: Moment | null; session: Session; onRerecord: (r: Rerecord) => void }) {

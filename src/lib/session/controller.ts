@@ -69,6 +69,8 @@ export interface LiveState {
 export const STALL_MS = 30_000;
 /** Minimum gap between two stall prompts. */
 export const STALL_REPEAT_MS = 75_000;
+/** Speech that starts this soon after the interviewer stops may still be its echo. */
+const ECHO_TAIL_MS = 1500;
 const TIME_MARKS_MIN = [10, 5];
 
 export interface ControllerDeps {
@@ -359,19 +361,38 @@ export class InterviewController {
   }
 
   private lastInterviewerEnd = 0;
+  /** What the interviewer said last, for recognizing its echo just after it stops. */
+  private lastSpokenText = '';
 
   // ---------------------------------------------------------------- speech
 
+  /**
+   * True when recognized speech is probably the interviewer's own voice
+   * coming back through the speakers. Speech recognition delivers its final
+   * text a moment after the voice stops, so speech that started while the
+   * interviewer was talking, or just after, is checked against what it said.
+   */
+  private isEcho(text: string, startedAt: number): boolean {
+    const recent = this.deps.voice.speaking || startedAt <= this.lastInterviewerEnd + ECHO_TAIL_MS;
+    return recent && looksLikeEcho(text, `${this.lastSpokenText} ${this.speakingText}`);
+  }
+
+  private interimStartedAt: number | null = null;
+
   private onInterim(text: string) {
     if (!text) {
+      this.interimStartedAt = null;
       this.patch({ interim: '' });
       return;
     }
-    if (this.deps.voice.speaking && looksLikeEcho(text, this.speakingText)) return;
+    this.interimStartedAt ??= this.clock.now();
+    if (this.isEcho(text, this.interimStartedAt)) return;
     this.lastUserActivity = this.clock.now();
     this.turns.activity(true, this.lastUserActivity);
     // Barge-in: the candidate started talking, so the interviewer stops.
-    if (this.deps.voice.speaking && text.split(/\s+/).length >= 2) {
+    // Three words, so a misheard bit of the interviewer's own voice doesn't
+    // cut it off.
+    if (this.deps.voice.speaking && text.split(/\s+/).length >= 3) {
       this.deps.voice.cancel();
       this.finishSpeaking();
     }
@@ -379,7 +400,8 @@ export class InterviewController {
   }
 
   private onPhrase(p: Phrase) {
-    if (this.deps.voice.speaking && looksLikeEcho(p.text, this.speakingText)) return;
+    this.interimStartedAt = null;
+    if (this.isEcho(p.text, p.t0)) return;
     this.lastUserActivity = p.t1;
     this.turns.phrase(p);
     this.patch({ interim: '' });
@@ -513,6 +535,7 @@ export class InterviewController {
     u.t1 = this.clock.now();
     u.text = this.speakingText.trim();
     this.lastInterviewerEnd = u.t1;
+    this.lastSpokenText = u.text;
     if (u.text) {
       this.addUtterance(u);
       this.emit({ type: 'interviewer-turn', utterance: u });

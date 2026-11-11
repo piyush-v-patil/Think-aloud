@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { interview as copy, languageName, phaseName, ai as aiCopy } from '../copy/strings';
 import { useDraft, type InterviewDraft } from '../state/draft';
 import { navigate } from '../state/router';
-import { useSettings, type Settings } from '../state/settings';
+import { settingsStore, useSettings, type Settings } from '../state/settings';
 import { useStore } from '../state/store';
 import { formatClock } from '../lib/time';
 import { PHASES, type SessionConfig } from '../lib/types';
@@ -54,7 +54,7 @@ export function makeController(draft: InterviewDraft, settings: Settings): Inter
     providerConfig: config,
     models,
     config: sessionConfig,
-    voice: new BrowserVoice(),
+    voice: new BrowserVoice(() => settingsStore.get().speech.voice),
     transcriber: (clock) =>
       live === 'deepgram' ? new DeepgramLiveTranscriber(speechKey('deepgram', settings)!, clock) : live === 'browser' ? new BrowserTranscriber(clock) : null,
     fallbackTranscriber: browserFallback,

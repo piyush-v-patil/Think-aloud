@@ -11,26 +11,56 @@ const PACE: Record<Persona, { rate: number; pitch: number }> = {
   'stone-faced': { rate: 0.95, pitch: 0.92 },
 };
 
-function pickVoice(): SpeechSynthesisVoice | null {
+export interface VoiceOption {
+  uri: string;
+  name: string;
+  lang: string;
+  /** Runs on this device. Online voices (Chrome's "Google" voices, Edge's "Online") can take seconds to start. */
+  local: boolean;
+}
+
+/** English voices this browser offers, best first. May be empty until the browser loads its voices. */
+export function listVoices(): VoiceOption[] {
+  if (typeof speechSynthesis === 'undefined') return [];
+  return speechSynthesis
+    .getVoices()
+    .filter((v) => v.lang.startsWith('en'))
+    .sort((a, b) => score(b) - score(a))
+    .map((v) => ({ uri: v.voiceURI, name: v.name, lang: v.lang, local: v.localService }));
+}
+
+function pickVoice(preferred: string): SpeechSynthesisVoice | null {
   if (typeof speechSynthesis === 'undefined') return null;
-  const voices = speechSynthesis.getVoices().filter((v) => v.lang.startsWith('en'));
-  // Prefer natural-sounding voices when the platform offers them.
-  const ranked = [...voices].sort((a, b) => score(b) - score(a));
+  const all = speechSynthesis.getVoices();
+  const chosen = preferred ? all.find((v) => v.voiceURI === preferred) : undefined;
+  if (chosen) return chosen;
+  const ranked = all.filter((v) => v.lang.startsWith('en')).sort((a, b) => score(b) - score(a));
   return ranked[0] ?? null;
 }
 
+/**
+ * Voices that run on this device come first: an interviewer who starts
+ * talking at once matters more than a nicer voice that starts seconds late.
+ * Among those, natural-sounding ones win.
+ */
 function score(v: SpeechSynthesisVoice): number {
   let s = 0;
+  if (v.localService) s += 8;
   if (/natural|neural|enhanced|premium/i.test(v.name)) s += 4;
-  if (/google|samantha|daniel|aria|jenny/i.test(v.name)) s += 2;
+  if (/samantha|daniel|aria|jenny|zira|david|mark/i.test(v.name)) s += 1;
   if (v.lang === 'en-US') s += 1;
-  if (v.localService) s += 1;
   return s;
 }
 
 export class BrowserVoice implements Voice {
   readonly id = 'browser';
   private active = 0;
+  /** Returns the chosen voice's URI, or '' for automatic. */
+  private preferred: () => string;
+
+  constructor(preferred: () => string = () => '') {
+    this.preferred = preferred;
+  }
   /**
    * Utterances being spoken. Chrome can garbage-collect an utterance nobody
    * holds a reference to, and then its end event never fires.
@@ -52,7 +82,7 @@ export class BrowserVoice implements Voice {
       return;
     }
     const u = new SpeechSynthesisUtterance(text);
-    const voice = pickVoice();
+    const voice = pickVoice(this.preferred());
     if (voice) u.voice = voice;
     u.rate = PACE[opts.persona].rate;
     u.pitch = PACE[opts.persona].pitch;

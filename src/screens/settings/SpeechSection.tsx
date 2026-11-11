@@ -1,3 +1,4 @@
+import { useEffect, useMemo, useState } from 'react';
 import { speech as copy } from '../../copy/strings';
 import { SPEECH_ENGINES } from '../../config/speech';
 import { updateSettings, useSettings, type PaidSpeechEngine, type Settings } from '../../state/settings';
@@ -8,6 +9,10 @@ import { formatUsd } from '../../lib/cost/pricing';
 import { Segmented } from '../../ui/Segmented';
 import { Toggle } from '../../ui/Toggle';
 import { KeyEditor } from './AiSection';
+import { Select } from '../../ui/Field';
+import { Button } from '../../ui/Button';
+import { BrowserVoice, listVoices, type VoiceOption } from '../../lib/voice/browser';
+import type { Persona } from '../../lib/types';
 import { speechKeyName } from '../../lib/speech/choose';
 
 type Accurate = 'off' | 'paid' | 'device';
@@ -44,6 +49,8 @@ export function SpeechSection() {
         ]}
         help={browserOk ? copy.browserNote : copy.unsupportedNote}
       />
+
+      <VoicePicker voice={sp.voice} onChange={(voice) => patch({ voice })} persona={settings.persona} />
 
       <div className="flex flex-col gap-4">
         <Segmented<Accurate>
@@ -106,5 +113,41 @@ export function SpeechSection() {
         )}
       </div>
     </section>
+  );
+}
+
+/** The interviewer's voice. Browsers load their voices asynchronously, so the list fills in when ready. */
+function VoicePicker({ voice, onChange, persona }: { voice: string; onChange: (uri: string) => void; persona: Persona }) {
+  const [voices, setVoices] = useState<VoiceOption[]>(() => listVoices());
+  useEffect(() => {
+    if (typeof speechSynthesis === 'undefined' || typeof speechSynthesis.addEventListener !== 'function') return;
+    const update = () => setVoices(listVoices());
+    speechSynthesis.addEventListener('voiceschanged', update);
+    update();
+    return () => speechSynthesis.removeEventListener('voiceschanged', update);
+  }, []);
+  const sample = useMemo(() => new BrowserVoice(() => voice), [voice]);
+  if (!voices.length) return null;
+  return (
+    <div className="flex max-w-[560px] flex-col gap-3">
+      <Select
+        label={copy.voiceLabel}
+        help={copy.voiceHelp}
+        value={voices.some((v) => v.uri === voice) ? voice : ''}
+        onChange={(e) => onChange(e.target.value)}
+        options={[{ value: '', label: copy.voiceAuto }, ...voices.map((v) => ({ value: v.uri, label: v.local ? copy.voiceLocal(v.name) : copy.voiceOnline(v.name) }))]}
+      />
+      <div>
+        <Button
+          variant="secondary"
+          onClick={() => {
+            sample.cancel();
+            sample.speak(copy.voiceSampleText, { persona });
+          }}
+        >
+          {copy.voiceSample}
+        </Button>
+      </div>
+    </div>
   );
 }

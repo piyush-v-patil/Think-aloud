@@ -38,6 +38,8 @@ export interface Settings {
     reuseOpenAIKey: boolean;
     /** Transcribe the recording on this device with Whisper (free, private). */
     onDevice: boolean;
+    /** The interviewer's voice (a speechSynthesis voiceURI), or '' to pick the fastest automatically. */
+    voice: string;
   };
   custom: CustomEndpointSettings;
   /** Address of the local Claude Code bridge (npm run claude-bridge). */
@@ -55,7 +57,7 @@ export const DEFAULT_SETTINGS: Settings = {
   feedbackMode: 'training',
   language: 'python',
   sessionMinutes: DEFAULT_SESSION_MINUTES,
-  speech: { liveEngine: 'browser', paidEngine: null, accuratePass: true, paidLive: false, reuseOpenAIKey: false, onDevice: false },
+  speech: { liveEngine: 'browser', paidEngine: null, accuratePass: true, paidLive: false, reuseOpenAIKey: false, onDevice: false, voice: '' },
   custom: { baseUrl: 'http://localhost:11434/v1', models: { small: '', mid: '', top: '' } },
   claudeCodeUrl: CLAUDE_CODE_DEFAULT_URL,
   monthlyLimitUsd: null,
