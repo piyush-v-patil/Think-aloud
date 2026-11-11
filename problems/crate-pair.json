@@ -1,0 +1,141 @@
+{
+  "schemaVersion": 1,
+  "id": "crate-pair",
+  "title": "Crate pair",
+  "difficulty": "easy",
+  "topics": [
+    "arrays-hashing"
+  ],
+  "statement": "A loading dock lists the weights of crates waiting to ship, in the order they arrived. A truck has exactly `capacity` kilograms of space left.\n\nReturn the positions of two different crates whose weights add up to exactly `capacity`, smaller position first. Exactly one such pair exists.",
+  "examples": [
+    {
+      "input": "weights = [4, 9, 2, 7], capacity = 11",
+      "output": "[1, 2]",
+      "explanation": "9 + 2 = 11."
+    },
+    {
+      "input": "weights = [5, 5], capacity = 10",
+      "output": "[0, 1]"
+    }
+  ],
+  "signature": {
+    "name": "crate_pair",
+    "params": [
+      {
+        "name": "weights",
+        "type": "int[]"
+      },
+      {
+        "name": "capacity",
+        "type": "int"
+      }
+    ],
+    "returns": "int[]"
+  },
+  "starterCode": {
+    "python": "def crate_pair(weights, capacity):\n    pass\n",
+    "javascript": "function crate_pair(weights, capacity) {\n\n}\n"
+  },
+  "tests": [
+    {
+      "name": "example 1",
+      "args": [
+        [
+          4,
+          9,
+          2,
+          7
+        ],
+        11
+      ],
+      "expected": [
+        1,
+        2
+      ]
+    },
+    {
+      "name": "equal weights",
+      "args": [
+        [
+          5,
+          5
+        ],
+        10
+      ],
+      "expected": [
+        0,
+        1
+      ]
+    },
+    {
+      "name": "negative weights",
+      "args": [
+        [
+          -3,
+          8,
+          1,
+          6
+        ],
+        5
+      ],
+      "expected": [
+        0,
+        1
+      ]
+    },
+    {
+      "name": "pair at the end",
+      "args": [
+        [
+          1,
+          2,
+          3,
+          40,
+          60
+        ],
+        100
+      ],
+      "expected": [
+        3,
+        4
+      ]
+    },
+    {
+      "name": "zero capacity with zeros",
+      "args": [
+        [
+          0,
+          4,
+          0
+        ],
+        0
+      ],
+      "expected": [
+        0,
+        2
+      ],
+      "hidden": true
+    },
+    {
+      "name": "longer list",
+      "args": [
+        [
+          12,
+          3,
+          8,
+          19,
+          4,
+          30,
+          6
+        ],
+        34
+      ],
+      "expected": [
+        4,
+        5
+      ],
+      "hidden": true
+    }
+  ],
+  "source": "built-in"
+}

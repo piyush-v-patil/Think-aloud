@@ -1,0 +1,198 @@
+/* Design tokens. See DESIGN.md for the reasoning behind each value. */
+@import 'tailwindcss';
+
+@import '@fontsource/atkinson-hyperlegible-next/400.css';
+@import '@fontsource/atkinson-hyperlegible-next/600.css';
+@import '@fontsource/atkinson-hyperlegible-next/700.css';
+@import '@fontsource/atkinson-hyperlegible-next/400-italic.css';
+@import '@fontsource/atkinson-hyperlegible-mono/400.css';
+@import '@fontsource/atkinson-hyperlegible-mono/600.css';
+
+@custom-variant dark (&:where([data-theme='dark'], [data-theme='dark'] *));
+
+:root {
+  --board: #f7f9f8;
+  --paper: #ffffff;
+  --ink: #1b1d22;
+  --ink-soft: #5a6168;
+  --blue: #1f4fd8;
+  --red: #c8322b;
+  --green: #0e7a55;
+  --smudge: #d5dbdd;
+  --smudge-mark: #6f797e;
+  --blue-wash: #e4ebfb;
+  --red-wash: #fbeeec;
+  --green-wash: #e1f0ea;
+  --backdrop: rgb(27 29 34 / 0.38);
+  color-scheme: light;
+}
+
+[data-theme='dark'] {
+  --board: #18201e;
+  --paper: #202a27;
+  --ink: #e6ebe8;
+  --ink-soft: #9aa6a2;
+  --blue: #a8c1ff;
+  --red: #e8746a;
+  --green: #5fd1a0;
+  --smudge: #33403c;
+  --smudge-mark: #7f8c88;
+  --blue-wash: #24324a;
+  --red-wash: #3d2624;
+  --green-wash: #1d3a2f;
+  --backdrop: rgb(0 0 0 / 0.55);
+  color-scheme: dark;
+}
+
+@theme inline {
+  --color-board: var(--board);
+  --color-paper: var(--paper);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-blue: var(--blue);
+  --color-red: var(--red);
+  --color-green: var(--green);
+  --color-smudge: var(--smudge);
+  --color-smudge-mark: var(--smudge-mark);
+  --color-blue-wash: var(--blue-wash);
+  --color-red-wash: var(--red-wash);
+  --color-green-wash: var(--green-wash);
+
+  --font-sans: 'Atkinson Hyperlegible Next', ui-sans-serif, sans-serif;
+  --font-mono: 'Atkinson Hyperlegible Mono', ui-monospace, monospace;
+
+  /* Five sizes only. */
+  --text-xs: 13px;
+  --text-xs--line-height: 18px;
+  --text-sm: 15px;
+  --text-sm--line-height: 22px;
+  --text-md: 18px;
+  --text-md--line-height: 26px;
+  --text-lg: 24px;
+  --text-lg--line-height: 30px;
+  --text-xl: 32px;
+  --text-xl--line-height: 38px;
+
+  /* Radius by role. */
+  --radius-control: 3px;
+  --radius-editor: 6px;
+  --radius-dialog: 10px;
+}
+
+@layer base {
+  html {
+    background: var(--board);
+    color: var(--ink);
+    font-family: var(--font-sans);
+    font-size: 15px;
+    line-height: 22px;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  body {
+    margin: 0;
+    min-height: 100vh;
+  }
+  :focus-visible {
+    outline: 2px solid var(--blue);
+    outline-offset: 2px;
+  }
+  ::selection {
+    background: var(--blue-wash);
+  }
+  h1,
+  h2,
+  h3 {
+    margin: 0;
+  }
+  button,
+  input,
+  select,
+  textarea {
+    font: inherit;
+    color: inherit;
+  }
+}
+
+/* The one deliberate motion: a marker stroke drawing under quoted words. */
+@keyframes marker-draw {
+  from {
+    stroke-dashoffset: var(--stroke-length, 400);
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+.marker-draw {
+  stroke-dasharray: var(--stroke-length, 400);
+  animation: marker-draw 320ms ease-out both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .marker-draw {
+    animation: none;
+    stroke-dasharray: none;
+  }
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/*
+ * Marker underlines. Each signal has its own stroke shape so meaning never
+ * rides on color alone: solid (strong), thin (neutral), zigzag (negative),
+ * dashed (missed). The patterns are SVG tiles with the theme color baked in.
+ */
+:root {
+  --mark-strong: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='7'%3E%3Cpath d='M0 4.2 C 10 3.2, 20 5, 30 3.8 S 40 4.2, 40 4.2' stroke='%231F4FD8' stroke-width='2.8' fill='none'/%3E%3C/svg%3E");
+  --mark-neutral: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='7'%3E%3Cpath d='M0 4 H10' stroke='%236F797E' stroke-width='1.6'/%3E%3C/svg%3E");
+  --mark-negative: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='6' height='7'%3E%3Cpath d='M0 5.5 L3 1.8 L6 5.5' stroke='%23C8322B' stroke-width='1.9' fill='none' stroke-linejoin='round'/%3E%3C/svg%3E");
+  --mark-missed: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='9' height='7'%3E%3Cpath d='M0 4 H5' stroke='%236F797E' stroke-width='2.2' stroke-linecap='round'/%3E%3C/svg%3E");
+}
+[data-theme='dark'] {
+  --mark-strong: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='7'%3E%3Cpath d='M0 4.2 C 10 3.2, 20 5, 30 3.8 S 40 4.2, 40 4.2' stroke='%23A8C1FF' stroke-width='2.8' fill='none'/%3E%3C/svg%3E");
+  --mark-neutral: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='7'%3E%3Cpath d='M0 4 H10' stroke='%237F8C88' stroke-width='1.6'/%3E%3C/svg%3E");
+  --mark-negative: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='6' height='7'%3E%3Cpath d='M0 5.5 L3 1.8 L6 5.5' stroke='%23E8746A' stroke-width='1.9' fill='none' stroke-linejoin='round'/%3E%3C/svg%3E");
+  --mark-missed: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='9' height='7'%3E%3Cpath d='M0 4 H5' stroke='%237F8C88' stroke-width='2.2' stroke-linecap='round'/%3E%3C/svg%3E");
+}
+
+.mark {
+  --cover: var(--row-bg, var(--board));
+  background-image: linear-gradient(var(--cover), var(--cover)), var(--pattern);
+  background-repeat: no-repeat, repeat-x;
+  background-position: right bottom, left bottom;
+  background-size: 0% 7px, auto 7px;
+  padding-bottom: 5px;
+  cursor: pointer;
+}
+.mark-strong { --pattern: var(--mark-strong); }
+.mark-neutral { --pattern: var(--mark-neutral); }
+.mark-negative { --pattern: var(--mark-negative); }
+.mark-missed { --pattern: var(--mark-missed); }
+
+/* The arrival stroke: a cover shrinks to the right, revealing the mark left to right. */
+@keyframes mark-reveal {
+  from { background-size: 100% 7px, auto 7px; }
+  to { background-size: 0% 7px, auto 7px; }
+}
+.mark-new {
+  animation: mark-reveal 340ms ease-out both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .mark-new { animation: none; }
+}

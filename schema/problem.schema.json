@@ -1,0 +1,482 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "schemaVersion": {
+      "type": "number",
+      "const": 1
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9-]+$"
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1
+    },
+    "difficulty": {
+      "type": "string",
+      "enum": [
+        "easy",
+        "medium",
+        "hard"
+      ]
+    },
+    "topics": {
+      "minItems": 1,
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "arrays-hashing",
+          "two-pointers",
+          "sliding-window",
+          "stack",
+          "binary-search",
+          "linked-list",
+          "trees",
+          "graphs",
+          "heaps",
+          "intervals",
+          "backtracking",
+          "dynamic-programming"
+        ]
+      }
+    },
+    "statement": {
+      "type": "string",
+      "minLength": 1
+    },
+    "examples": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "input": {
+            "type": "string"
+          },
+          "output": {
+            "type": "string"
+          },
+          "explanation": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "input",
+          "output"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "signature": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "pattern": "^[A-Za-z_][A-Za-z0-9_]*$"
+        },
+        "params": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string",
+                "pattern": "^[A-Za-z_][A-Za-z0-9_]*$"
+              },
+              "type": {
+                "type": "string",
+                "enum": [
+                  "int",
+                  "float",
+                  "bool",
+                  "string",
+                  "int[]",
+                  "float[]",
+                  "string[]",
+                  "bool[]",
+                  "int[][]",
+                  "string[][]",
+                  "ListNode",
+                  "TreeNode",
+                  "any"
+                ]
+              }
+            },
+            "required": [
+              "name",
+              "type"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "returns": {
+          "type": "string",
+          "enum": [
+            "int",
+            "float",
+            "bool",
+            "string",
+            "int[]",
+            "float[]",
+            "string[]",
+            "bool[]",
+            "int[][]",
+            "string[][]",
+            "ListNode",
+            "TreeNode",
+            "any"
+          ]
+        }
+      },
+      "required": [
+        "name",
+        "params",
+        "returns"
+      ],
+      "additionalProperties": false
+    },
+    "starterCode": {
+      "type": "object",
+      "properties": {
+        "python": {
+          "type": "string"
+        },
+        "javascript": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "python",
+        "javascript"
+      ],
+      "additionalProperties": false
+    },
+    "tests": {
+      "minItems": 1,
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Plain-language name, e.g. \"empty input\""
+          },
+          "args": {
+            "type": "array",
+            "items": {},
+            "description": "Positional arguments as JSON"
+          },
+          "expected": {},
+          "compare": {
+            "type": "string",
+            "enum": [
+              "exact",
+              "unordered",
+              "unordered-deep",
+              "float"
+            ]
+          },
+          "hidden": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "name",
+          "args",
+          "expected"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "analysis": {
+      "type": "object",
+      "properties": {
+        "clarifyingQuestions": {
+          "minItems": 2,
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "question": {
+                "type": "string"
+              },
+              "answer": {
+                "type": "string"
+              },
+              "why": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "question",
+              "answer",
+              "why"
+            ],
+            "additionalProperties": false
+          },
+          "description": "Questions a strong candidate asks, with the answer the interviewer gives"
+        },
+        "hiddenConstraints": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Facts the interviewer reveals only when asked"
+        },
+        "edgeCases": {
+          "minItems": 2,
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "input": {
+                "type": "string"
+              },
+              "why": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "input",
+              "why"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "approaches": {
+          "minItems": 1,
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "idea": {
+                "type": "string"
+              },
+              "time": {
+                "type": "string"
+              },
+              "space": {
+                "type": "string"
+              },
+              "tradeoffs": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "name",
+              "idea",
+              "time",
+              "space",
+              "tradeoffs"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "optimal": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "explanation": {
+              "type": "string"
+            },
+            "time": {
+              "type": "string"
+            },
+            "space": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "name",
+            "explanation",
+            "time",
+            "space"
+          ],
+          "additionalProperties": false
+        },
+        "hintLadder": {
+          "minItems": 3,
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Hints from vague to specific"
+        },
+        "expectedMentions": {
+          "minItems": 3,
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "what": {
+                "type": "string"
+              },
+              "category": {
+                "type": "string",
+                "enum": [
+                  "clarification",
+                  "planning",
+                  "reasoning",
+                  "narration",
+                  "testing",
+                  "hint-handling"
+                ]
+              }
+            },
+            "required": [
+              "id",
+              "what",
+              "category"
+            ],
+            "additionalProperties": false
+          },
+          "description": "Things a strong candidate says aloud; used for missed-opportunity markers"
+        },
+        "followUps": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "vocabulary": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Technical terms for speech-recognition hints"
+        },
+        "referenceSolution": {
+          "type": "object",
+          "properties": {
+            "python": {
+              "type": "string"
+            },
+            "javascript": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "python",
+            "javascript"
+          ],
+          "additionalProperties": false
+        },
+        "walkthrough": {
+          "minItems": 5,
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "phase": {
+                "type": "string",
+                "enum": [
+                  "clarify",
+                  "plan",
+                  "code",
+                  "test",
+                  "wrap-up"
+                ]
+              },
+              "say": {
+                "type": "string"
+              },
+              "code": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "phase",
+              "say"
+            ],
+            "additionalProperties": false
+          },
+          "description": "A full think-aloud by a strong candidate, in order"
+        },
+        "generatedBy": {
+          "type": "object",
+          "properties": {
+            "provider": {
+              "type": "string"
+            },
+            "model": {
+              "type": "string"
+            },
+            "date": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "provider",
+            "model",
+            "date"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "clarifyingQuestions",
+        "hiddenConstraints",
+        "edgeCases",
+        "approaches",
+        "optimal",
+        "hintLadder",
+        "expectedMentions",
+        "followUps",
+        "vocabulary",
+        "referenceSolution",
+        "walkthrough"
+      ],
+      "additionalProperties": false
+    },
+    "source": {
+      "type": "string",
+      "enum": [
+        "built-in",
+        "pasted",
+        "variation",
+        "custom"
+      ]
+    },
+    "variationOf": {
+      "type": "object",
+      "properties": {
+        "problemId": {
+          "type": "string"
+        },
+        "change": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "problemId",
+        "change"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "required": [
+    "schemaVersion",
+    "id",
+    "title",
+    "difficulty",
+    "topics",
+    "statement",
+    "examples",
+    "signature",
+    "starterCode",
+    "tests",
+    "source"
+  ],
+  "additionalProperties": false
+}

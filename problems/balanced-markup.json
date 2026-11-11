@@ -1,0 +1,94 @@
+{
+  "schemaVersion": 1,
+  "id": "balanced-markup",
+  "title": "Balanced markup",
+  "difficulty": "easy",
+  "topics": [
+    "stack"
+  ],
+  "statement": "A note-taking app lets people nest three kinds of brackets: `()`, `[]` and `{}`. Any other character is ordinary text.\n\nReturn true if every bracket in `text` is closed by the matching kind, in the right order. Text with no brackets is balanced.",
+  "examples": [
+    {
+      "input": "text = \"f(a[1]) {ok}\"",
+      "output": "true"
+    },
+    {
+      "input": "text = \"(]\"",
+      "output": "false"
+    },
+    {
+      "input": "text = \"([)]\"",
+      "output": "false",
+      "explanation": "The square bracket closes after the round one that opened later."
+    }
+  ],
+  "signature": {
+    "name": "is_balanced",
+    "params": [
+      {
+        "name": "text",
+        "type": "string"
+      }
+    ],
+    "returns": "bool"
+  },
+  "starterCode": {
+    "python": "def is_balanced(text):\n    pass\n",
+    "javascript": "function is_balanced(text) {\n\n}\n"
+  },
+  "tests": [
+    {
+      "name": "nested with text",
+      "args": [
+        "f(a[1]) {ok}"
+      ],
+      "expected": true
+    },
+    {
+      "name": "wrong kind",
+      "args": [
+        "(]"
+      ],
+      "expected": false
+    },
+    {
+      "name": "crossed",
+      "args": [
+        "([)]"
+      ],
+      "expected": false
+    },
+    {
+      "name": "empty text",
+      "args": [
+        ""
+      ],
+      "expected": true
+    },
+    {
+      "name": "only opening",
+      "args": [
+        "((("
+      ],
+      "expected": false,
+      "hidden": true
+    },
+    {
+      "name": "closing first",
+      "args": [
+        ")("
+      ],
+      "expected": false,
+      "hidden": true
+    },
+    {
+      "name": "plain text",
+      "args": [
+        "no brackets here"
+      ],
+      "expected": true,
+      "hidden": true
+    }
+  ],
+  "source": "built-in"
+}
