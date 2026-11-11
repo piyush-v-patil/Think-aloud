@@ -3,10 +3,12 @@ import { settings as copy } from '../copy/strings';
 import { updateSettings, useSettings, resetSettings, type ThemeSetting } from '../state/settings';
 import { clearAll } from '../lib/storage/db';
 import { clearLocal } from '../lib/storage/local';
+import { clearAllKeys } from '../state/keys';
 import { Segmented } from '../ui/Segmented';
 import { Button } from '../ui/Button';
 import { Dialog } from '../ui/Dialog';
 import { Rule } from '../ui/Rule';
+import { AiSection } from './settings/AiSection';
 
 export function SettingsScreen({ section }: { section?: string }) {
   void section;
@@ -17,6 +19,7 @@ export function SettingsScreen({ section }: { section?: string }) {
   async function deleteEverything() {
     await clearAll();
     clearLocal();
+    clearAllKeys();
     resetSettings();
     setConfirmDelete(false);
     setMessage(copy.deleted);
@@ -26,11 +29,16 @@ export function SettingsScreen({ section }: { section?: string }) {
     <div className="flex max-w-[720px] flex-col gap-10 pt-8">
       <h1 className="text-lg font-bold">{copy.title}</h1>
 
+      <AiSection />
+
+      <Rule />
+
       <section aria-labelledby="appearance-h" className="flex flex-col gap-4">
         <h2 id="appearance-h" className="text-md font-semibold">
           {copy.appearanceHeading}
         </h2>
         <Segmented<ThemeSetting>
+          size="sm"
           label={copy.theme}
           value={settings.theme}
           onChange={(theme) => updateSettings({ theme })}

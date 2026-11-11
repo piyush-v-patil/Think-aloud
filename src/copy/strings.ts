@@ -220,6 +220,85 @@ export const history = {
   watchDemo: 'Watch the demo session',
 };
 
+export const ai = {
+  heading: 'AI provider',
+  intro:
+    'The interviewer and your feedback are written by an AI model you choose, using your own key. Requests go straight from this browser to the provider.',
+  provider: 'Provider',
+  providerName: { anthropic: 'Anthropic', openai: 'OpenAI', gemini: 'Google Gemini', custom: 'Custom endpoint' } as Record<string, string>,
+  keyLabel: (provider: string) => `${provider} API key`,
+  keyHelp: 'Paste the whole key. It is stored only in this browser.',
+  getKey: 'Get a key',
+  rememberDevice: 'Remember on this device',
+  sessionOnly: 'This session only',
+  storageLabel: 'Where to keep the key',
+  storageHelpDevice: 'Kept in this browser until you clear it. Anyone using this browser profile could use it.',
+  storageHelpSession: 'Forgotten when you close or reload this tab.',
+  saveAndCheck: 'Save and check key',
+  checking: 'Checking',
+  clearKey: 'Clear key',
+  keySaved: 'Key saved. It works.',
+  keyStored: (masked: string) => `Saved key: ${masked}`,
+  noKey: 'No key saved.',
+  keyCleared: 'Key cleared from this browser.',
+  checkCost: 'Checking sends one tiny request, which costs a fraction of a cent.',
+  errors: {
+    'invalid-key': 'That key was rejected. Check that you copied the whole key.',
+    'no-credit': 'That key works, but the account has no credit. Add credit in the provider’s billing settings, then check again.',
+    'rate-limit': 'The provider is limiting requests right now. Wait a minute, then check again.',
+    overloaded: 'The provider is busy right now. Try again in a minute.',
+    network: 'Couldn’t reach the provider. Check your connection, and allow the provider’s site if you use an ad blocker or firewall.',
+    'not-found': 'The provider doesn’t recognize that model. Choose another model under Advanced.',
+    refused: 'The model declined to answer this request.',
+    'bad-request': 'The provider rejected the request.',
+    'bad-output': 'The model’s answer came back incomplete. Try again.',
+    aborted: 'The request was cancelled.',
+    unknown: 'Something went wrong talking to the provider. Try again.',
+  } as Record<string, string>,
+};
+
+export const quality = {
+  heading: 'Quality',
+  help: 'Better models write a more natural interviewer and sharper feedback, and cost more.',
+  presetHelp: {
+    economy: 'The fastest, cheapest model for everything.',
+    balanced: 'A strong model live, and the top model for your feedback.',
+    best: 'The top models throughout.',
+    advanced: 'Choose the model for each part yourself.',
+  } as Record<string, string>,
+  roleName: { interviewer: 'Interviewer', reactions: 'Live feedback', debrief: 'Replay and scores' } as Record<string, string>,
+  modelFor: (role: string) => `Model for ${role.toLowerCase()}`,
+};
+
+export const cost = {
+  heading: 'Session cost',
+  estimate: 'estimate',
+  actual: 'actual',
+  about: (amount: string) => `About ${amount}`,
+  tokensOnly: 'Prices for this endpoint are unknown, so this shows tokens instead.',
+  basisModel: 'Based on a typical session of this length.',
+  basisHistory: (n: number) => `Based on your last ${n} sessions.`,
+  speechLine: 'Speech recognition',
+  aiLine: 'AI',
+  prepLine: 'Preparing the problem',
+  free: 'free',
+  perRole: { interviewer: 'Interviewer', reactions: 'Live feedback', debrief: 'Replay and scores', analysis: 'Preparing the problem' } as Record<string, string>,
+  amount: (amount: string, kind: 'estimate' | 'actual') => `${amount}, ${kind}`,
+};
+
+export const onboarding = {
+  title: 'Before your first interview',
+  intro: `This app is free. The AI that plays the interviewer runs on your own account with an AI provider, so you pay the provider directly for what you use.`,
+  step1: 'Create an account with an AI provider. Anthropic is the default.',
+  step2: 'Add a small amount of credit. $5 covers many sessions.',
+  step3: 'Create an API key and paste it in Settings.',
+  costIntro: 'What a 45 minute interview costs with Anthropic:',
+  keyStays: 'Your key stays in this browser. It is sent only to the provider you choose.',
+  addKey: 'Add an AI key',
+  demoFirst: 'Watch the demo session first',
+  dismiss: 'Close this guide',
+};
+
 export const common = {
   cancel: 'Cancel',
   close: 'Close',

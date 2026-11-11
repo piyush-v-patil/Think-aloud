@@ -11,6 +11,7 @@ export function Segmented<T extends string>({
   onChange,
   help,
   hideLabel = false,
+  size = 'md',
 }: {
   label: string;
   value: T;
@@ -18,11 +19,13 @@ export function Segmented<T extends string>({
   onChange: (value: T) => void;
   help?: string;
   hideLabel?: boolean;
+  /** Legend size: "md" for a top-level question, "sm" inside a section. */
+  size?: 'md' | 'sm';
 }) {
   const id = useId();
   return (
     <fieldset className="m-0 border-0 p-0" aria-describedby={help ? `${id}-help` : undefined}>
-      <legend className={hideLabel ? 'sr-only' : 'mb-2 text-md font-semibold'}>{label}</legend>
+      <legend className={hideLabel ? 'sr-only' : `mb-1 font-semibold ${size === 'md' ? 'text-md' : 'text-sm'}`}>{label}</legend>
       <div className="flex flex-wrap gap-x-6 gap-y-1">
         {options.map((opt) => {
           const selected = opt.value === value;

@@ -1,9 +1,15 @@
-import { useMemo, useState } from 'react';
-import { setup as copy, difficultyName, topicName, personaName, personaHelp, feedbackModeName, feedbackModeHelp, languageName } from '../copy/strings';
+import { useEffect, useMemo, useState } from 'react';
+import { setup as copy, quality as qualityCopy, presetName, difficultyName, topicName, personaName, personaHelp, feedbackModeName, feedbackModeHelp, languageName } from '../copy/strings';
 import { BANK, filterBank, pickRandom } from '../lib/problems/bank';
 import { draftFromPaste } from '../lib/problems/paste';
 import { newId } from '../lib/id';
-import { TOPICS, PERSONAS, FEEDBACK_MODES, LANGUAGES, type Difficulty, type Topic, type Problem } from '../lib/types';
+import { TOPICS, PERSONAS, FEEDBACK_MODES, LANGUAGES, MODEL_ROLES, type Difficulty, type Topic, type Problem, type PresetId, type Session } from '../lib/types';
+import { providerConfig, modelsFor } from '../config/providers';
+import { estimateSession } from '../lib/cost/estimate';
+import { listSessions } from '../lib/storage/db';
+import { useKeys } from '../state/keys';
+import { CostEstimate } from '../ui/CostEstimate';
+import { Onboarding } from '../ui/Onboarding';
 import { updateSettings, useSettings } from '../state/settings';
 import { draftStore } from '../state/draft';
 import { navigate } from '../state/router';
@@ -24,7 +30,29 @@ export function SetupScreen() {
   const [picked, setPicked] = useState<Problem | undefined>(() => pickRandom(BANK));
   const current = picked && matches.includes(picked) ? picked : matches[0];
 
-  const canStart = source === 'random' ? !!current : pasted.trim().length > 20;
+  const keys = useKeys();
+  const hasKey = !!keys[settings.provider]?.value || settings.provider === 'custom';
+  const provider = providerConfig(settings.provider, settings.custom);
+  const models = modelsFor(provider, settings.preset, settings.advancedModels);
+  const [history, setHistory] = useState<Session[]>([]);
+  useEffect(() => {
+    listSessions().then(setHistory).catch(() => setHistory([]));
+  }, []);
+  const estimate = useMemo(
+    () =>
+      estimateSession({
+        provider,
+        models,
+        feedbackMode: settings.feedbackMode,
+        minutes: settings.sessionMinutes,
+        needsAnalysis: source === 'paste',
+        speech: { liveEngine: 'browser' },
+        history,
+      }),
+    [provider, models, settings.feedbackMode, settings.sessionMinutes, source, history],
+  );
+
+  const canStart = hasKey && (source === 'random' ? !!current : pasted.trim().length > 20);
 
   function start() {
     const problem = source === 'random' ? current! : draftFromPaste(pasted, newId('paste-'));
@@ -45,6 +73,7 @@ export function SetupScreen() {
           <h1 className="text-xl font-bold">{copy.title}</h1>
           <p className="mt-3 text-md text-ink-soft">{copy.intro}</p>
         </div>
+        {!settings.onboarded && !hasKey && <Onboarding />}
 
         <section aria-labelledby="problem-heading" className="flex flex-col gap-4">
           <h2 id="problem-heading" className="text-md font-semibold">
@@ -129,6 +158,7 @@ export function SetupScreen() {
           onChange={(language) => updateSettings({ language })}
           options={LANGUAGES.map((l) => ({ value: l, label: languageName[l] }))}
         />
+        <QualityPicker />
         <div className="max-w-[200px]">
           <TextField
             label={copy.lengthLabel}
@@ -144,6 +174,14 @@ export function SetupScreen() {
           />
         </div>
 
+        {!hasKey && (
+          <p className="text-sm">
+            {copy.needKey}{' '}
+            <a href="#/settings" className="text-blue underline underline-offset-4">
+              {copy.addKey}
+            </a>
+          </p>
+        )}
         <div className="flex flex-wrap items-center gap-6">
           <Button variant="primary" onClick={start} disabled={!canStart}>
             {copy.start}
@@ -154,7 +192,46 @@ export function SetupScreen() {
         </div>
       </div>
 
-      <aside aria-label={copy.costHeading} className="lg:border-l lg:border-smudge lg:pl-8" />
+      <aside aria-label={copy.costHeading} className="flex flex-col gap-10 lg:border-l lg:border-smudge lg:pl-8">
+        <div className="lg:sticky lg:top-8">
+          <CostEstimate estimate={estimate} />
+        </div>
+      </aside>
+    </div>
+  );
+}
+
+function QualityPicker() {
+  const settings = useSettings();
+  const provider = providerConfig(settings.provider, settings.custom);
+  const models = modelsFor(provider, settings.preset, settings.advancedModels);
+  const label = (id: string) => provider.models.find((m) => m.id === id)?.label ?? id;
+  return (
+    <div className="flex flex-col gap-4">
+      <Segmented<PresetId>
+        label={qualityCopy.heading}
+        value={settings.preset}
+        onChange={(preset) => updateSettings({ preset })}
+        options={(['economy', 'balanced', 'best', 'advanced'] as PresetId[]).map((p) => ({ value: p, label: presetName[p] }))}
+        help={`${qualityCopy.presetHelp[settings.preset]} ${MODEL_ROLES.map((r) => `${qualityCopy.roleName[r]}: ${label(models[r])}.`).join(' ')}`}
+      />
+      {settings.preset === 'advanced' && (
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+          {MODEL_ROLES.map((role) => (
+            <Select
+              key={role}
+              label={qualityCopy.roleName[role]}
+              value={models[role]}
+              onChange={(e) =>
+                updateSettings({
+                  advancedModels: { ...settings.advancedModels, [provider.id]: { ...models, [role]: e.target.value } },
+                })
+              }
+              options={provider.models.map((m) => ({ value: m.id, label: m.label }))}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 }
