@@ -426,7 +426,7 @@ export const ai = {
     tokenHelp: 'Shown in the terminal running the bridge. Only this site and that terminal know it.',
     checkCost: 'Checking sends one tiny request through Claude Code.',
     notRunning: 'Couldn’t reach the bridge. Check that npm run claude-bridge is running, then try again.',
-    slower: 'Each reply starts Claude Code afresh, so the interviewer answers a second or two slower than with an API key.',
+    slower: 'The first reply of an interview takes a few seconds while Claude Code starts. After that, the bridge keeps Claude Code running, so replies start in about a second.',
   },
   keyLabel: (provider: string) => `${provider} API key`,
   keyHelp: 'Paste the whole key. It is stored only in this browser.',

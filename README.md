@@ -235,16 +235,28 @@ How the bridge stays safe and private:
 
 - It listens on `127.0.0.1` only, needs the token on every request, and
   refuses web pages from sites other than this app's.
-- Each request runs `claude -p` with no tools, no MCP servers, no hooks,
+- Each `claude -p` process runs with no tools, no MCP servers, no hooks,
   no slash commands, no `CLAUDE.md` files and no saved session, in an empty
   temporary folder. Prompts and replies are never logged.
 - The token is saved in `~/.config/think-aloud/bridge-token`.
   `npm run claude-bridge -- --new-token` replaces it, `--port` changes the
   port, and `--origin` allows another site.
 
-Each reply starts Claude Code afresh, so the interviewer answers a second or
-two slower than with an API key. The cost panel shows tokens instead of
-dollars.
+The bridge is built for a live conversation:
+
+- **It keeps Claude Code running.** Each conversation (the interviewer, the
+  live feedback) stays in one running `claude` process, and later turns
+  send only the new message. The first word of a reply arrives in about
+  1.2 seconds, against about 2.4 seconds when starting `claude` each time.
+- **It keeps a warm spare.** If the conversation can't continue (say you
+  interrupted the interviewer, so its last reply was dropped), a spare
+  process that's already started takes over.
+- **It answers as soon as the reply ends.** Claude Code can do some
+  follow-up work of its own after a reply; the bridge doesn't wait for it.
+- Idle processes close after 10 minutes, and all of them close when you
+  stop the bridge.
+
+The cost panel shows tokens instead of dollars.
 
 ## What a session costs
 
@@ -420,8 +432,8 @@ relative paths and hash routing, so no server configuration is needed.
 - OpenAI live transcription needs a WebRTC session, and AssemblyAI live
   transcription needs a server-issued token, so those two engines are used
   after the interview only. Deepgram works live.
-- With Claude Code, every call starts a new `claude` process, which adds
-  about 1.5 seconds before the interviewer starts to answer.
+- With Claude Code, the first reply of an interview takes 2 to 3 seconds
+  while `claude` starts.
 - The replay's audio is your microphone; the interviewer's lines appear as
   text in the transcript but aren't in the recording.
 - The built-in bank's analyses were written by the maintainers. Run
