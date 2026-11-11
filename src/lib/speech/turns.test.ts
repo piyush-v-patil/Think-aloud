@@ -18,13 +18,31 @@ describe('TurnTracker', () => {
     const turns: Turn[] = [];
     const t = new TurnTracker((x) => turns.push(x), 1000);
     t.phrase({ text: 'so first', t0: 0, t1: 500 });
-    t.activity(true, 600);
-    t.tick(5000);
+    // Partial results keep arriving while they talk.
+    for (let now = 600; now <= 5000; now += 300) {
+      t.activity(true, now);
+      t.tick(now);
+    }
     expect(turns).toHaveLength(0);
     expect(t.inProgress).toBe(true);
     t.activity(false, 5000);
     t.tick(6100);
     expect(turns).toHaveLength(1);
+    expect(t.inProgress).toBe(false);
+  });
+  it('ends the turn when the recognizer never says speech ended', () => {
+    // Chrome: a last partial result arrives after its speech-end event, and
+    // no second speech-end follows.
+    const turns: Turn[] = [];
+    const t = new TurnTracker((x) => turns.push(x), 1600);
+    t.activity(true, 0);
+    t.activity(false, 2000);
+    t.activity(true, 2100);
+    t.phrase({ text: 'can the list be empty', t0: 0, t1: 2200 });
+    t.tick(3900);
+    expect(turns).toHaveLength(0);
+    t.tick(4700);
+    expect(turns).toEqual([{ text: 'can the list be empty', t0: 0, t1: 2200 }]);
     expect(t.inProgress).toBe(false);
   });
   it('keeps word timings when every phrase has them', () => {

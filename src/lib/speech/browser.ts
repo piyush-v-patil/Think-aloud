@@ -65,6 +65,8 @@ export class BrowserTranscriber implements LiveTranscriber {
   /** Sessions in a row that ended in an error before any words came through. */
   private failedSessions = 0;
   private sessionError: string | null = null;
+  /** The recognizer's own voice-activity state (speech start/end events). */
+  private vadSpeaking = false;
 
   constructor(clock: ClockFn, lang = 'en-US') {
     this.clock = clock;
@@ -101,8 +103,14 @@ export class BrowserTranscriber implements LiveTranscriber {
       }
     }
     this.sessionError = null;
-    rec.onspeechstart = () => this.events.onActivity?.(true);
-    rec.onspeechend = () => this.events.onActivity?.(false);
+    rec.onspeechstart = () => {
+      this.vadSpeaking = true;
+      this.events.onActivity?.(true);
+    };
+    rec.onspeechend = () => {
+      this.vadSpeaking = false;
+      this.events.onActivity?.(false);
+    };
     rec.onresult = (e) => {
       let interim = '';
       for (let i = e.resultIndex; i < e.results.length; i++) {
@@ -119,6 +127,10 @@ export class BrowserTranscriber implements LiveTranscriber {
           if (clean) this.events.onPhrase?.({ text: clean, t0: this.phraseStart ?? t1, t1 });
           this.phraseStart = null;
           interim = '';
+          // Chrome sends the final text after its speech-end event; partial
+          // results in between marked the speaker as talking again. If the
+          // recognizer already heard the speech end, they've stopped.
+          if (!this.vadSpeaking) this.events.onActivity?.(false);
         } else interim += text;
       }
       this.events.onInterim?.(interim.trim());
@@ -145,6 +157,7 @@ export class BrowserTranscriber implements LiveTranscriber {
       } else this.events.onError?.(new SpeechError('unknown', e.error), false);
     };
     rec.onend = () => {
+      this.vadSpeaking = false;
       this.events.onActivity?.(false);
       if (!this.running) return;
       if (this.sessionError) {

@@ -2,8 +2,19 @@
  * Groups recognized phrases into turns. A turn ends after a natural pause:
  * no speech activity and no new phrase for `pauseMs`. The interviewer only
  * ever responds to a finished turn, so it never talks over you.
+ *
+ * "Speaking" comes from the recognizer's speech start/end events and from
+ * partial results. Chrome can deliver a last partial result after its
+ * speech-end event and then never send another end, which would leave
+ * "speaking" on until the recognizer restarts (a minute or more). While
+ * someone really talks, partial results keep arriving several times a
+ * second, so "speaking" with nothing new for a while means they stopped.
  */
+
 import type { Phrase } from './types';
+
+/** How long "speaking" may go without any new speech before it's treated as over. */
+export const STALE_SPEAKING_MS = 900;
 
 export interface Turn {
   text: string;
@@ -41,8 +52,10 @@ export class TurnTracker {
 
   /** Call periodically with the session clock. Emits the turn once the pause has passed. */
   tick(now: number) {
+    const quiet = now - this.lastActivity;
+    if (this.speaking && quiet >= this.pauseMs + STALE_SPEAKING_MS) this.speaking = false;
     if (!this.phrases.length || this.speaking) return;
-    if (now - this.lastActivity < this.pauseMs) return;
+    if (quiet < this.pauseMs) return;
     this.flush();
   }
 
