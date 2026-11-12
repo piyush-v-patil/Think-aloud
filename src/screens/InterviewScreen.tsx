@@ -13,7 +13,7 @@ import { providerConfig, modelsFor } from '../config/providers';
 import { BrowserTranscriber, browserSpeechSupported } from '../lib/speech/browser';
 import { DeepgramLiveTranscriber } from '../lib/speech/deepgram-live';
 import { chooseAccurateEngine, chooseLiveEngine, speechKey } from '../lib/speech/choose';
-import { BrowserVoice } from '../lib/voice/browser';
+import { createVoice } from '../lib/voice/natural';
 import { AudioRecorder } from '../lib/audio/recorder';
 import { CodeEditor } from '../ui/CodeEditor';
 import { ProblemText } from '../ui/ProblemText';
@@ -54,7 +54,7 @@ export function makeController(draft: InterviewDraft, settings: Settings): Inter
     providerConfig: config,
     models,
     config: sessionConfig,
-    voice: new BrowserVoice(() => settingsStore.get().speech.voice),
+    voice: createVoice(() => settingsStore.get().speech.voice),
     transcriber: (clock) =>
       live === 'deepgram' ? new DeepgramLiveTranscriber(speechKey('deepgram', settings)!, clock) : live === 'browser' ? new BrowserTranscriber(clock) : null,
     fallbackTranscriber: browserFallback,

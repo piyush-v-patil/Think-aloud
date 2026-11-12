@@ -496,6 +496,17 @@ export const speech = {
   voiceOnline: (name: string) => `${name} (online, can start slowly)`,
   voiceHelp: 'Voices on this device start speaking at once. Online voices can sound more natural but may take a few seconds to start each time. Headphones stop the interviewer’s voice from reaching your microphone.',
   voiceSample: 'Play a sample',
+  voiceNatural: (name: string, gender: string) => `Natural: ${name}, ${gender} (made on this device)`,
+  naturalAbout: (cpuMb: number, gpuMb: number) =>
+    `Natural voices sound much more human. They’re made on this computer, so nothing is sent anywhere. The first time, a voice model is downloaded from Hugging Face: about ${gpuMb} MB on computers with a graphics card that supports WebGPU, or ${cpuMb} MB without one. They need a computer fast enough to make speech without a delay, which usually means that graphics card.`,
+  naturalRecheck: 'Check this computer again',
+  naturalLoading: (percent: number) =>
+    percent > 0 && percent < 100 ? `Downloading the natural voice: ${percent}%. This happens once; your browser keeps it.` : 'Loading the natural voice and checking how fast this computer makes it.',
+  naturalReady: (times: string) => `Ready. This computer makes the natural voice ${times} times faster than it’s spoken, so the interviewer starts talking without a delay.`,
+  naturalSlow: (times: string) =>
+    `This computer makes the natural voice only ${times} times as fast as it’s spoken, and it needs to be at least 4 times faster to start without a delay. So the interview will use the fast voice instead.`,
+  naturalFailed: 'The natural voice couldn’t load, so the interview will use the fast voice.',
+  naturalLateNote: 'If a reply’s first sentence isn’t ready in time, the interviewer says that reply in the fast voice, so it never waits.',
   voiceSampleText: 'Thanks for joining. Take a moment to read the problem, and tell me how you’d like to start.',
   unsupportedNote: 'This browser has no speech recognition, so you’ll type during the interview.',
   accurateHeading: 'A more accurate transcript (optional)',
@@ -531,6 +542,8 @@ export const privacy = {
   onDevice: 'After the interview, your recording is transcribed on this device. It is not sent anywhere. The speech model is downloaded from Hugging Face the first time; no data of yours is sent with that download.',
   stays: 'Everything else stays in this browser: recordings, sessions, your list, settings, and keys if you chose to remember them. Clearing this site’s data or using Delete all data removes them.',
   browserVendor: 'your browser’s speech service (Google for Chrome and Edge, Apple for Safari)',
+  voiceNatural: 'The interviewer’s voice is made on this device, so its words aren’t sent anywhere to be spoken. The voice model was downloaded once from Hugging Face; no data of yours is sent with that download.',
+  voiceOnline: 'The interviewer’s words are sent to your browser’s online voice service to be spoken.',
 };
 
 export const quality = {

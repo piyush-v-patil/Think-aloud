@@ -4,6 +4,8 @@ import { SPEECH_ENGINES } from '../../config/speech';
 import { useSettings } from '../../state/settings';
 import { useKeys } from '../../state/keys';
 import { chooseAccurateEngine, chooseLiveEngine } from '../../lib/speech/choose';
+import { listVoices } from '../../lib/voice/browser';
+import { NATURAL_PREFIX } from '../../lib/voice/kokoro-config';
 
 /**
  * The privacy statement, built from the current settings so it always says
@@ -30,6 +32,8 @@ export function PrivacySection() {
         <li>{liveLine}</li>
         {accurate && accurate !== 'whisper-local' && <li>{copy.accurate(SPEECH_ENGINES[accurate].audioGoesTo)}</li>}
         {accurate === 'whisper-local' && <li>{copy.onDevice}</li>}
+        {settings.speech.voice.startsWith(NATURAL_PREFIX) && <li>{copy.voiceNatural}</li>}
+        {listVoices().some((v) => v.uri === settings.speech.voice && !v.local) && <li>{copy.voiceOnline}</li>}
       </ul>
       <p className="text-sm text-ink-soft">{copy.stays}</p>
     </section>

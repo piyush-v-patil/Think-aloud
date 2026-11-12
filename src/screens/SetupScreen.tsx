@@ -21,6 +21,8 @@ import { useKeys } from '../state/keys';
 import { CostEstimate } from '../ui/CostEstimate';
 import { chooseAccurateEngine, chooseLiveEngine } from '../lib/speech/choose';
 import { Onboarding } from '../ui/Onboarding';
+import { naturalEngine } from '../lib/voice/natural';
+import { NATURAL_PREFIX } from '../lib/voice/kokoro-config';
 import { updateSettings, useSettings } from '../state/settings';
 import { draftStore } from '../state/draft';
 import { navigate } from '../state/router';
@@ -38,6 +40,12 @@ function listFromHash(): string | null {
 
 export function SetupScreen() {
   const settings = useSettings();
+  // Load the natural voice (from the browser's cache after the first time)
+  // while the candidate picks a problem, so it's ready for the first reply.
+  const chosenVoice = settings.speech.voice;
+  useEffect(() => {
+    if (chosenVoice.startsWith(NATURAL_PREFIX)) void naturalEngine.load(chosenVoice.slice(NATURAL_PREFIX.length));
+  }, [chosenVoice]);
   const [listId, setListId] = useState<string | null>(() => listFromHash());
   const [source, setSource] = useState<Source>(() => (listFromHash() ? 'list' : 'random'));
   const [entries, setEntries] = useState<ListEntry[]>([]);

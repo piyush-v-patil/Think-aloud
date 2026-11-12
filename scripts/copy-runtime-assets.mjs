@@ -1,9 +1,9 @@
 // Copies runtime files that must be served from our own origin (no CDN):
 // the Pyodide core used by the Python code runner.
 // Runs on `npm install` (postinstall). Output is git-ignored.
-import { cpSync, existsSync, mkdirSync } from 'node:fs';
+import { cpSync, existsSync, mkdirSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const out = join(root, 'public', 'vendor', 'pyodide');
@@ -39,4 +39,19 @@ if (existsSync(ortSrc)) {
     }
   }
   console.log('[copy-runtime-assets] ONNX Runtime copied to public/vendor/ort');
+}
+
+// Pronunciation lexicon for the natural (Kokoro) voice: the CMU Pronouncing
+// Dictionary, one "word ARPABET" line per word, first pronunciation only.
+// Loaded by the browser only when the natural voice is turned on.
+const cmuPath = join(root, 'node_modules', 'cmu-pronouncing-dictionary', 'index.js');
+if (existsSync(cmuPath)) {
+  const { dictionary } = await import(pathToFileURL(cmuPath).href);
+  const lines = Object.entries(dictionary)
+    .filter(([word]) => /^[a-z][a-z']*$/.test(word))
+    .map(([word, arpabet]) => `${word} ${arpabet}`);
+  const kokoroOut = join(root, 'public', 'vendor', 'kokoro');
+  mkdirSync(kokoroOut, { recursive: true });
+  writeFileSync(join(kokoroOut, 'lexicon.txt'), `${lines.join('\n')}\n`);
+  console.log(`[copy-runtime-assets] Pronunciation lexicon (${lines.length} words) written to public/vendor/kokoro`);
 }

@@ -11,7 +11,9 @@ import { Toggle } from '../../ui/Toggle';
 import { KeyEditor } from './AiSection';
 import { Select } from '../../ui/Field';
 import { Button } from '../../ui/Button';
-import { BrowserVoice, listVoices, type VoiceOption } from '../../lib/voice/browser';
+import { listVoices, type VoiceOption } from '../../lib/voice/browser';
+import { createVoice, naturalEngine, type NaturalStatus } from '../../lib/voice/natural';
+import { NATURAL_DOWNLOAD_MB, NATURAL_PREFIX, NATURAL_VOICES } from '../../lib/voice/kokoro-config';
 import type { Persona } from '../../lib/types';
 import { speechKeyName } from '../../lib/speech/choose';
 
@@ -116,7 +118,18 @@ export function SpeechSection() {
   );
 }
 
-/** The interviewer's voice. Browsers load their voices asynchronously, so the list fills in when ready. */
+/** Follows the natural voice's loading and speed check. */
+function useNaturalStatus(): NaturalStatus {
+  const [status, setStatus] = useState(naturalEngine.status);
+  useEffect(() => naturalEngine.subscribe(setStatus), []);
+  return status;
+}
+
+/**
+ * The interviewer's voice: natural voices made on this device, or the
+ * browser's own. Browsers load their voices asynchronously, so the list
+ * fills in when ready.
+ */
 function VoicePicker({ voice, onChange, persona }: { voice: string; onChange: (uri: string) => void; persona: Persona }) {
   const [voices, setVoices] = useState<VoiceOption[]>(() => listVoices());
   useEffect(() => {
@@ -126,17 +139,52 @@ function VoicePicker({ voice, onChange, persona }: { voice: string; onChange: (u
     update();
     return () => speechSynthesis.removeEventListener('voiceschanged', update);
   }, []);
-  const sample = useMemo(() => new BrowserVoice(() => voice), [voice]);
-  if (!voices.length) return null;
+  const status = useNaturalStatus();
+  const natural = voice.startsWith(NATURAL_PREFIX);
+  // Choosing a natural voice starts its download and speed check right away.
+  useEffect(() => {
+    if (natural) void naturalEngine.load(voice.slice(NATURAL_PREFIX.length));
+  }, [natural, voice]);
+  const sample = useMemo(() => createVoice(() => voice), [voice]);
+  const naturalSupported = typeof Worker !== 'undefined' && typeof AudioContext !== 'undefined';
+  if (!voices.length && !naturalSupported) return null;
+  const times = status.state === 'ready' ? status.realTime.toFixed(1) : '';
+  const options = [
+    { value: '', label: copy.voiceAuto },
+    ...(naturalSupported ? NATURAL_VOICES.map((v) => ({ value: NATURAL_PREFIX + v.id, label: copy.voiceNatural(v.name, v.gender) })) : []),
+    ...voices.map((v) => ({ value: v.uri, label: v.local ? copy.voiceLocal(v.name) : copy.voiceOnline(v.name) })),
+  ];
   return (
     <div className="flex max-w-[560px] flex-col gap-3">
       <Select
         label={copy.voiceLabel}
         help={copy.voiceHelp}
-        value={voices.some((v) => v.uri === voice) ? voice : ''}
+        value={options.some((o) => o.value === voice) ? voice : ''}
         onChange={(e) => onChange(e.target.value)}
-        options={[{ value: '', label: copy.voiceAuto }, ...voices.map((v) => ({ value: v.uri, label: v.local ? copy.voiceLocal(v.name) : copy.voiceOnline(v.name) }))]}
+        options={options}
       />
+      {natural && (
+        <div className="flex flex-col gap-2 text-sm">
+          <p className="text-ink-soft">{copy.naturalAbout(NATURAL_DOWNLOAD_MB.wasm, NATURAL_DOWNLOAD_MB.webgpu)}</p>
+          <p role="status" className={status.state === 'ready' && status.fastEnough ? 'text-green' : status.state === 'ready' || status.state === 'failed' ? 'text-red' : ''}>
+            {status.state === 'loading' || status.state === 'idle'
+              ? copy.naturalLoading(Math.round(status.state === 'loading' ? status.progress : 0))
+              : status.state === 'failed'
+                ? copy.naturalFailed
+                : status.fastEnough
+                  ? copy.naturalReady(times)
+                  : copy.naturalSlow(times)}
+          </p>
+          {status.state === 'ready' && status.fastEnough && <p className="text-ink-soft">{copy.naturalLateNote}</p>}
+          {status.state === 'ready' && !status.fastEnough && (
+            <div>
+              <Button variant="quiet" onClick={() => void naturalEngine.load(voice.slice(NATURAL_PREFIX.length), { recheck: true })}>
+                {copy.naturalRecheck}
+              </Button>
+            </div>
+          )}
+        </div>
+      )}
       <div>
         <Button
           variant="secondary"

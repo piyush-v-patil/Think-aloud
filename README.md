@@ -170,6 +170,34 @@ The scoring is built to be trusted:
 The problem's own vocabulary is passed as keyword hints, so `heapq` and
 `memoize` come through as words, not noise.
 
+### A natural interviewer voice, without the wait
+
+Pick a **Natural** voice in Settings → Speech and the interviewer speaks
+with [Kokoro](https://huggingface.co/hexgrad/Kokoro-82M), a small neural
+voice model that runs on your computer, on the graphics card through
+WebGPU. It sounds far more human than the voices built into browsers, and
+nothing you hear is sent anywhere to be made.
+
+Speed comes first, so it's guarded twice:
+
+- **A speed check on your computer.** The first time, the model is
+  downloaded (about 330 MB with WebGPU, 95 MB without) and timed. It's used
+  only if your computer makes speech at least 4 times faster than it's
+  spoken; otherwise the interview keeps the fast built-in voice, and
+  Settings says so.
+- **A deadline for every reply.** If a reply's first sentence isn't ready in
+  0.9 seconds, the whole reply is spoken by the fast voice instead (never
+  half and half). Later sentences are made while earlier ones play.
+
+Pronunciation comes from the CMU Pronouncing Dictionary rather than eSpeak
+(which is GPL), with the unstressed small words of natural speech ("happens
+*tə* the") and the way people read code aloud (`O(n log n)` is "O of n log
+n", `merge_bookings` is "merge bookings"). A round trip through Whisper
+understood it as well as eSpeak's version.
+
+Prefer a voice built into your browser? The list marks which ones run on
+your computer (start at once) and which are online (can start slowly).
+
 ### Also
 
 - **A dark theme** designed on its own: a slate chalkboard where all three
@@ -318,6 +346,9 @@ What leaves your device:
     Safari).
   - On-device Whisper: nowhere. The speech model is downloaded from Hugging
     Face the first time; none of your data is sent with that download.
+- **The interviewer's words, to be spoken:** nowhere with a natural voice or
+  a voice that runs on your computer. An online browser voice (such as
+  Chrome's "Google" voices) sends them to your browser's voice service.
   - A paid engine (Deepgram, AssemblyAI or OpenAI): your audio goes to the
     engine you chose, using your key.
   - Typing instead of speaking: no audio at all.
@@ -378,6 +409,7 @@ src/config/           app name, CSP, models and prices, speech engines, usage mo
 src/copy/strings.ts   all interface text, in one place
 src/lib/ai/           provider interface and adapters (Anthropic, OpenAI, Gemini, compatible)
 src/lib/speech/       speech-to-text engines, turn-taking, alignment, Whisper
+src/lib/voice/        the interviewer's voice: browser voices, Kokoro, pronunciation
 src/lib/runner/       sandboxed code runner (Pyodide and JS in Web Workers)
 src/lib/interview/    the interviewer and the event log it reads
 src/lib/feedback/     metrics, reactions, scoring, evidence checks, verification
@@ -449,6 +481,11 @@ relative paths and hash routing, so no server configuration is needed.
   after the interview only. Deepgram works live.
 - With Claude Code, the first reply of an interview takes 2 to 3 seconds
   while `claude` starts.
+- The natural voice's speed was measured only without a graphics card
+  (about 0.4 times real time in a browser, 1.3 times in Node), where the
+  speed check rightly keeps the fast voice. On a WebGPU graphics card,
+  Kokoro is usually many times faster than real time, but that path hasn't
+  been timed in this project yet; the speed check decides on your computer.
 - The replay's audio is your microphone; the interviewer's lines appear as
   text in the transcript but aren't in the recording.
 - The built-in bank's analyses were written by the maintainers. Run
@@ -463,6 +500,21 @@ for problems: write them yourself. This repository never contains text from
 LeetCode or any other site.
 
 The app name is a working name. It lives in one place, `src/config/app.ts`.
+
+## Credits
+
+- [Kokoro-82M](https://huggingface.co/hexgrad/Kokoro-82M) by hexgrad, and its
+  [ONNX conversion](https://huggingface.co/onnx-community/Kokoro-82M-v1.0-ONNX)
+  (Apache-2.0), for the natural voice. Downloaded at run time, not stored
+  in this repository.
+- The [CMU Pronouncing Dictionary](https://github.com/cmusphinx/cmudict)
+  (BSD-2-Clause), through
+  [cmu-pronouncing-dictionary](https://github.com/words/cmu-pronouncing-dictionary)
+  (ISC), for pronunciation.
+- [Transformers.js](https://github.com/huggingface/transformers.js) and ONNX
+  Runtime Web (Apache-2.0, MIT), [Pyodide](https://pyodide.org) (MPL-2.0),
+  [Monaco](https://github.com/microsoft/monaco-editor) (MIT), and the
+  Atkinson Hyperlegible fonts (SIL OFL).
 
 ## License
 

@@ -2,7 +2,8 @@ import { useEffect, useRef, useState } from 'react';
 import { replay as copy, ai as aiCopy } from '../copy/strings';
 import type { Rerecord, Session } from '../lib/types';
 import { formatClock } from '../lib/time';
-import { BrowserVoice } from '../lib/voice/browser';
+import { createVoice } from '../lib/voice/natural';
+import type { Voice } from '../lib/voice/types';
 import { BrowserTranscriber, browserSpeechSupported } from '../lib/speech/browser';
 import { AudioRecorder } from '../lib/audio/recorder';
 import { createProvider } from '../lib/ai/factory';
@@ -22,13 +23,14 @@ export interface Moment extends MomentContext {
   sayInstead?: string;
 }
 
-const voice = new BrowserVoice(() => settingsStore.get().speech.voice);
-
 /** The selected moment: what happened, a stronger version to hear, and a chance to try it again. */
 export function MomentPanel({ moment, session, onRerecord }: { moment: Moment | null; session: Session; onRerecord: (r: Rerecord) => void }) {
   const [speaking, setSpeaking] = useState(false);
   // The parent remounts this panel per moment, so stopping on unmount is enough.
-  useEffect(() => () => voice.cancel(), []);
+  // Created on first use, so opening a replay doesn't start loading a voice.
+  const voiceRef = useRef<Voice | null>(null);
+  const voice = () => (voiceRef.current ??= createVoice(() => settingsStore.get().speech.voice));
+  useEffect(() => () => voiceRef.current?.cancel(), []);
 
   if (!moment) return <p className="text-sm text-ink-soft">{copy.pickMoment}</p>;
   const weak = moment.kind === 'negative' || moment.kind === 'missed';
@@ -56,12 +58,12 @@ export function MomentPanel({ moment, session, onRerecord }: { moment: Moment | 
             <Button
               onClick={() => {
                 if (speaking) {
-                  voice.cancel();
+                  voice().cancel();
                   setSpeaking(false);
                   return;
                 }
                 setSpeaking(true);
-                voice.speak(moment.narration, { persona: 'neutral', onEnd: () => setSpeaking(false) });
+                voice().speak(moment.narration, { persona: 'neutral', onEnd: () => setSpeaking(false) });
               }}
             >
               {speaking ? copy.stopNarration : copy.playNarration}
