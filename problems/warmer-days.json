@@ -291,5 +291,11 @@
       "date": "2026-11-11"
     }
   },
-  "source": "built-in"
+  "source": "built-in",
+  "leetcode": {
+    "number": 739,
+    "title": "Daily Temperatures",
+    "slug": "daily-temperatures",
+    "relation": "same"
+  }
 }

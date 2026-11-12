@@ -354,5 +354,11 @@
       "date": "2026-11-11"
     }
   },
-  "source": "built-in"
+  "source": "built-in",
+  "leetcode": {
+    "number": 973,
+    "title": "K Closest Points to Origin",
+    "slug": "k-closest-points-to-origin",
+    "relation": "same"
+  }
 }

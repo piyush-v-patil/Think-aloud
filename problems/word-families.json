@@ -321,5 +321,11 @@
       "date": "2026-11-11"
     }
   },
-  "source": "built-in"
+  "source": "built-in",
+  "leetcode": {
+    "number": 49,
+    "title": "Group Anagrams",
+    "slug": "group-anagrams",
+    "relation": "same"
+  }
 }

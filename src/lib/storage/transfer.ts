@@ -2,7 +2,7 @@
  * Export everything to one file and import it again. API keys are never
  * included in an export.
  */
-import { db, type ListEntry } from './db';
+import { db, type ListEntry, type UserList } from './db';
 import type { Problem, Session } from '../types';
 import { readLocal, writeLocal } from './local';
 import { APP_NAME } from '../../config/app';
@@ -14,6 +14,8 @@ export interface ExportFile {
   sessions: Session[];
   audio: { id: string; mimeType: string; base64: string }[];
   list: ListEntry[];
+  /** The user's own named lists (added after the first exports, so optional). */
+  lists?: UserList[];
   problems: Problem[];
   settings: unknown;
 }
@@ -42,6 +44,7 @@ export async function exportAll(): Promise<ExportFile> {
     sessions: await d.getAll('sessions'),
     audio: await Promise.all(audio.map(async (a) => ({ id: a.id, mimeType: a.mimeType, base64: await toBase64(a.blob) }))),
     list: await d.getAll('list'),
+    lists: await d.getAll('lists'),
     problems: await d.getAll('problems'),
     settings: readLocal('settings', {}),
   };
@@ -55,10 +58,11 @@ export async function importAll(raw: unknown): Promise<number> {
     if (typeof s?.id !== 'string' || typeof s.createdAt !== 'number' || !s.problem || !s.transcripts) throw new Error('not-an-export');
   }
   const d = await db();
-  const tx = d.transaction(['sessions', 'audio', 'list', 'problems'], 'readwrite');
+  const tx = d.transaction(['sessions', 'audio', 'list', 'lists', 'problems'], 'readwrite');
   for (const s of f.sessions) await tx.objectStore('sessions').put(s);
   for (const a of f.audio ?? []) await tx.objectStore('audio').put({ id: a.id, mimeType: a.mimeType, blob: fromBase64(a.base64, a.mimeType) });
   for (const e of f.list ?? []) await tx.objectStore('list').put(e);
+  for (const l of f.lists ?? []) await tx.objectStore('lists').put(l);
   for (const p of f.problems ?? []) await tx.objectStore('problems').put(p);
   await tx.done;
   if (f.settings && typeof f.settings === 'object' && !Object.keys(readLocal('settings', {})).length) writeLocal('settings', f.settings);

@@ -13,8 +13,7 @@ import { preparePasted, prepareVariation, type PrepareStage } from '../lib/probl
 import { CodeRunner } from '../lib/runner/runner';
 import type { Language, UsageRecord } from '../lib/types';
 import { estimateSession, type Estimate } from '../lib/cost/estimate';
-import { listEntries, listSessions, saveProblem, type ListEntry } from '../lib/storage/db';
-import { sortForPractice, isWeak } from './ListScreen';
+import { listSessions, saveListEntry, saveProblem } from '../lib/storage/db';
 import { limitState, spend } from '../lib/history/stats';
 import { formatUsd } from '../lib/cost/pricing';
 import { useKeys } from '../state/keys';
@@ -22,6 +21,10 @@ import { CostEstimate } from '../ui/CostEstimate';
 import { chooseAccurateEngine, chooseLiveEngine } from '../lib/speech/choose';
 import { Onboarding } from '../ui/Onboarding';
 import { ReadinessPanel } from '../ui/ReadinessPanel';
+import { ListSource, type ListSelection } from './setup/ListSource';
+import { entryForPractice } from '../lib/lists/store';
+import { leetcodeUrl } from '../lib/lists/lists';
+import { ExternalLink } from '../ui/ExternalLink';
 import { naturalEngine } from '../lib/voice/natural';
 import { NATURAL_PREFIX } from '../lib/voice/kokoro-config';
 import { updateSettings, useSettings } from '../state/settings';
@@ -34,9 +37,10 @@ import { Rule } from '../ui/Rule';
 
 type Source = 'random' | 'paste' | 'list' | 'variation';
 
-function listFromHash(): string | null {
+/** Arriving from the Lists page ("Practice") picks that list and problem. */
+function fromListHash(): boolean {
   const q = window.location.hash.split('?')[1];
-  return q ? new URLSearchParams(q).get('list') : null;
+  return !!q && new URLSearchParams(q).has('from');
 }
 
 export function SetupScreen() {
@@ -47,13 +51,8 @@ export function SetupScreen() {
   useEffect(() => {
     if (chosenVoice.startsWith(NATURAL_PREFIX)) void naturalEngine.load(chosenVoice.slice(NATURAL_PREFIX.length));
   }, [chosenVoice]);
-  const [listId, setListId] = useState<string | null>(() => listFromHash());
-  const [source, setSource] = useState<Source>(() => (listFromHash() ? 'list' : 'random'));
-  const [entries, setEntries] = useState<ListEntry[]>([]);
-  useEffect(() => {
-    listEntries().then((e) => setEntries(sortForPractice(e)));
-  }, []);
-  const entry = entries.find((e) => e.id === listId) ?? entries[0];
+  const [source, setSource] = useState<Source>(() => (fromListHash() ? 'list' : 'random'));
+  const [selection, setSelection] = useState<ListSelection | null>(null);
   const [baseId, setBaseId] = useState<string | null>(null);
   const [difficulty, setDifficulty] = useState<Difficulty | 'any'>('any');
   const [topic, setTopic] = useState<Topic | 'any'>('any');
@@ -78,11 +77,12 @@ export function SetupScreen() {
         models,
         feedbackMode: settings.feedbackMode,
         minutes: settings.sessionMinutes,
-        needsAnalysis: source !== 'random',
+        // The bank, and a list problem practiced with its built-in version, need no preparing.
+        needsAnalysis: source !== 'random' && !(source === 'list' && !!selection?.bankId),
         speech: { liveEngine: chooseLiveEngine(settings), accurateEngine: chooseAccurateEngine(settings), keywordHints: true },
         history,
       }),
-    [provider, models, settings, source, history],
+    [provider, models, settings, source, selection?.bankId, history],
   );
 
   const pastProblems = useMemo(() => {
@@ -101,7 +101,7 @@ export function SetupScreen() {
       : source === 'paste'
         ? pasted.trim().length > 20
         : source === 'list'
-          ? !!entry?.text
+          ? !!selection && (!!selection.bankId || (selection.text?.trim().length ?? 0) > 20)
           : !!base);
 
   const [prep, setPrep] = useState<{ stage: PrepareStage; abort: AbortController } | null>(null);
@@ -127,7 +127,23 @@ export function SetupScreen() {
       if (problem) begin(problem);
       return;
     }
-    const text = source === 'list' ? (entry?.text ?? '') : pasted;
+    // From a list: the entry records progress (created on first practice),
+    // and a statement pasted now is saved for next time.
+    let entryId: string | undefined;
+    if (source === 'list' && selection) {
+      let entry = selection.entry ?? (await entryForPractice(selection.item));
+      if (selection.newText && selection.text) {
+        entry = { ...entry, text: selection.text };
+        await saveListEntry(entry);
+      }
+      entryId = entry.id;
+      if (selection.bankId) {
+        const problem = await loadBankProblem(selection.bankId);
+        if (problem) begin(problem, [], entryId);
+        return;
+      }
+    }
+    const text = source === 'list' ? (selection?.text ?? '') : pasted;
     const ai = createProvider(settings.provider, settings);
     if (!ai) return begin(draftFromPaste(text, newId('paste-')));
     const abort = new AbortController();
@@ -150,7 +166,7 @@ export function SetupScreen() {
         begin(problem, usage);
       } else {
         const { problem } = await preparePasted(text, opts);
-        begin(problem, usage, source === 'list' ? entry?.id : undefined);
+        begin(problem, usage, entryId);
       }
     } catch (err) {
       const kind = err instanceof ProviderError ? err.kind : 'unknown';
@@ -188,19 +204,7 @@ export function SetupScreen() {
           />
           {source === 'list' && (
             <div className="flex flex-col gap-2">
-              {entries.length ? (
-                <>
-                  <Select
-                    label={copy.listPick}
-                    value={entry?.id ?? ''}
-                    onChange={(e) => setListId(e.target.value)}
-                    options={entries.map((e) => ({ value: e.id, label: isWeak(e) ? `${e.title} (${listCopy.weak.toLowerCase()})` : e.title }))}
-                  />
-                  {entry && !entry.text && <p className="text-sm text-red">{copy.listNeedsText}</p>}
-                </>
-              ) : (
-                <p className="text-sm text-ink-soft">{copy.listEmpty}</p>
-              )}
+              <ListSource onChange={setSelection} />
               <a href="#/list" className="text-sm text-blue underline underline-offset-4">
                 {listCopy.manage}
               </a>
@@ -247,6 +251,14 @@ export function SetupScreen() {
                       {' '}
                       · {difficultyName[current.difficulty]}, {current.topics.map((t) => topicName[t].toLowerCase()).join(', ')}
                     </span>
+                    {current.leetcode && (
+                      <span className="text-ink-soft">
+                        {' · '}
+                        <ExternalLink href={leetcodeUrl(current.leetcode.slug)}>
+                          {(current.leetcode.relation === 'same' ? copy.sameAs : copy.similarTo)(current.leetcode.number, current.leetcode.title)}
+                        </ExternalLink>
+                      </span>
+                    )}
                   </p>
                   <Button variant="quiet" onClick={() => setPicked(pickRandom(matches, (p) => p.id === current.id))}>
                     {copy.pickAnother}

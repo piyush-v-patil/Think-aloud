@@ -140,8 +140,20 @@ The scoring is built to be trusted:
   walkthrough.
 - **Paste any problem.** It's analyzed once, its tests are checked against a
   generated reference solution, and the result is cached on your device.
-- **Your problem list.** Keep links to problems you want to practice. It
-  sorts them so the ones you scored lowest on come up first.
+- **Each one names its LeetCode twin.** "Same as LeetCode 56, Merge
+  Intervals" (or "Similar to", for the two that differ), with a link, on
+  setup and in the replay. The statements are this app's own words.
+- **Problem lists, including Blind 75, NeetCode 150 and NeetCode 250.**
+  The study lists come bundled as titles, numbers and links (never
+  LeetCode's text), with difficulty and pattern filters. Make your own
+  lists, add problems by pasting LeetCode links, numbers or titles, and
+  copy problems between lists; duplicates are skipped. Progress belongs to
+  the problem, so practicing Two Sum from Blind 75 shows in NeetCode 150
+  too, and the ones you scored lowest on come up first.
+- **Practice any LeetCode problem.** Pick it from a list and either use the
+  built-in version (26 of the Blind 75 have one, with tests ready) or paste
+  its statement once. The statement stays on your device, your AI turns it
+  into tests, and it's saved for next time.
 - **Variations.** Get a fresh twist on a problem you've already done.
 
 ### Your keys, your choice of models
@@ -530,6 +542,10 @@ next.
   still shows as the test's error, by name).
 - The replay's audio is your microphone; the interviewer's lines appear as
   text in the transcript but aren't in the recording.
+- The bundled lists come from NeetCode's site and are a snapshot
+  (`scripts/build-leetcode-lists.mjs` refreshes them). This repository
+  never contains LeetCode's problem text: to practice a LeetCode problem
+  you paste its statement on your own device.
 - The built-in bank's analyses were written by the maintainers. Run
   `npm run problems:analyze -- --all --force` with your own key to
   regenerate them with the strongest model.
@@ -553,6 +569,10 @@ The app name is a working name. It lives in one place, `src/config/app.ts`.
   (BSD-2-Clause), through
   [cmu-pronouncing-dictionary](https://github.com/words/cmu-pronouncing-dictionary)
   (ISC), for pronunciation.
+- The Blind 75, NeetCode 150 and NeetCode 250 lists, from
+  [NeetCode](https://neetcode.io) and
+  [neetcode-gh/leetcode](https://github.com/neetcode-gh/leetcode) (MIT).
+  Problem titles and numbers belong to LeetCode.
 - [TeaVM](https://teavm.org) and
   [teavm-javac](https://github.com/konsoletyper/teavm-javac) by Alexey
   Andreev (Apache-2.0), with OpenJDK's `javac` and API signatures (GPLv2

@@ -264,5 +264,11 @@
       "date": "2026-11-11"
     }
   },
-  "source": "built-in"
+  "source": "built-in",
+  "leetcode": {
+    "number": 19,
+    "title": "Remove Nth Node From End of List",
+    "slug": "remove-nth-node-from-end-of-list",
+    "relation": "same"
+  }
 }

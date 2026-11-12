@@ -267,5 +267,11 @@
       "date": "2026-11-11"
     }
   },
-  "source": "built-in"
+  "source": "built-in",
+  "leetcode": {
+    "number": 98,
+    "title": "Validate Binary Search Tree",
+    "slug": "validate-binary-search-tree",
+    "relation": "same"
+  }
 }

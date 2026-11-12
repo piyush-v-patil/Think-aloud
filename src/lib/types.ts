@@ -157,6 +157,13 @@ export interface ProblemAnalysis {
   generatedBy?: { provider: string; model: string; date: string };
 }
 
+export interface LeetCodeRef {
+  number: number;
+  title: string;
+  slug: string;
+  relation: 'same' | 'similar';
+}
+
 export type ProblemSource = 'built-in' | 'pasted' | 'variation' | 'custom';
 
 export interface Problem {
@@ -175,6 +182,8 @@ export interface Problem {
   /** Missing until generated for pasted problems. */
   analysis?: ProblemAnalysis;
   source: ProblemSource;
+  /** The LeetCode problem this one practices (number, title, link slug); "similar" when it's a variant. */
+  leetcode?: LeetCodeRef;
   /** For variations: the problem this one was derived from, and what changed. */
   variationOf?: { problemId: string; change: string };
 }

@@ -15,6 +15,13 @@ export interface BankEntry {
   topics: Topic[];
   /** Rubric categories of the analysis's expected mentions. */
   mentions?: import('../types').RubricCategory[];
+  /** The LeetCode problem it practices. */
+  leetcode?: import('../types').LeetCodeRef;
+}
+
+/** The built-in problem that practices a LeetCode problem, if there is one. */
+export function bankForSlug(slug: string): BankEntry | undefined {
+  return BANK.find((b) => b.leetcode?.slug === slug);
 }
 
 

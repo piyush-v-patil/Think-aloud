@@ -38,6 +38,9 @@ A problem needs:
 - `signature`: the function name and parameter types. Value types are
   listed in the schema; linked lists (`ListNode`) and trees (`TreeNode`)
   are written in tests as arrays, trees in level order with nulls.
+- `leetcode` (optional): the LeetCode problem this one practices, as
+  `{ "number", "title", "slug", "relation": "same" | "similar" }`. Only
+  the name and link: the statement must still be your own words.
 - `starterCode` for Python and JavaScript. (Java starter code is generated
   from the signature.)
 - `tests`: at least one visible, a few `hidden`, covering the edge cases.
@@ -135,3 +138,10 @@ Read `DESIGN.md` before changing how anything looks. The marked-up
 transcript is the one bold element; everything else stays quiet. All
 interface text is in `src/copy/strings.ts`: second person, plain words,
 sentence case, digits for numbers, buttons that say what happens.
+
+## Refreshing the LeetCode study lists
+
+`src/data/leetcode-lists.json` (Blind 75, NeetCode 150, NeetCode 250) is
+built by `node scripts/build-leetcode-lists.mjs` from NeetCode's practice
+data, cross-checked against the neetcode-gh repository. It holds titles,
+numbers, difficulty and pattern only.

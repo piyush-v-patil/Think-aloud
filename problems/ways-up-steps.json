@@ -231,5 +231,11 @@
       "date": "2026-11-11"
     }
   },
-  "source": "built-in"
+  "source": "built-in",
+  "leetcode": {
+    "number": 70,
+    "title": "Climbing Stairs",
+    "slug": "climbing-stairs",
+    "relation": "same"
+  }
 }

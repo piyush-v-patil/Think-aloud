@@ -72,6 +72,7 @@ function Header({ route }: { route: Route }) {
       </a>
       <nav aria-label="Main" className="flex gap-6">
         {link('#/', nav.practice, route.name === 'setup')}
+        {link('#/list', nav.lists, route.name === 'list')}
         {link('#/history', nav.history, route.name === 'history' || route.name === 'replay')}
         {link('#/settings', nav.settings, route.name === 'settings')}
       </nav>

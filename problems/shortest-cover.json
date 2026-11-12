@@ -274,5 +274,11 @@
       "date": "2026-11-11"
     }
   },
-  "source": "built-in"
+  "source": "built-in",
+  "leetcode": {
+    "number": 76,
+    "title": "Minimum Window Substring",
+    "slug": "minimum-window-substring",
+    "relation": "same"
+  }
 }

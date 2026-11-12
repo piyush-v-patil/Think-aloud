@@ -308,5 +308,11 @@
       "date": "2026-11-11"
     }
   },
-  "source": "built-in"
+  "source": "built-in",
+  "leetcode": {
+    "number": 207,
+    "title": "Course Schedule",
+    "slug": "course-schedule",
+    "relation": "same"
+  }
 }

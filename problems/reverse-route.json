@@ -253,5 +253,11 @@
       "date": "2026-11-11"
     }
   },
-  "source": "built-in"
+  "source": "built-in",
+  "leetcode": {
+    "number": 206,
+    "title": "Reverse Linked List",
+    "slug": "reverse-linked-list",
+    "relation": "same"
+  }
 }

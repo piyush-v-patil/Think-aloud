@@ -1,4 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
+import { setup as setupCopy } from '../copy/strings';
+import { leetcodeUrl } from '../lib/lists/lists';
+import { ExternalLink } from '../ui/ExternalLink';
 import { replay as copy, errors, common, hireSignalName, rubricName, ai as aiCopy, phaseName } from '../copy/strings';
 import { SPEECH_ENGINES } from '../config/speech';
 import { getAudio, getSession, saveSession } from '../lib/storage/db';
@@ -188,6 +191,13 @@ function Debrief({ session, onChange }: { session: Session; onChange: (s: Sessio
     <div className="flex flex-col gap-12 pt-8">
       <header className="flex flex-col gap-2">
         <h1 className="text-lg font-bold">{session.demo ? copy.demoTitle(session.problem.title) : copy.title(session.problem.title)}</h1>
+        {session.problem.leetcode && (
+          <p className="text-sm text-ink-soft">
+            <ExternalLink href={leetcodeUrl(session.problem.leetcode.slug)}>
+              {(session.problem.leetcode.relation === 'same' ? setupCopy.sameAs : setupCopy.similarTo)(session.problem.leetcode.number, session.problem.leetcode.title)}
+            </ExternalLink>
+          </p>
+        )}
         {session.demo && <p className="max-w-[680px] text-sm text-ink-soft">{copy.demoNote}</p>}
       </header>
 

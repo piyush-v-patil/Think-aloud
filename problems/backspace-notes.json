@@ -235,5 +235,11 @@
       "date": "2026-11-11"
     }
   },
-  "source": "built-in"
+  "source": "built-in",
+  "leetcode": {
+    "number": 844,
+    "title": "Backspace String Compare",
+    "slug": "backspace-string-compare",
+    "relation": "same"
+  }
 }

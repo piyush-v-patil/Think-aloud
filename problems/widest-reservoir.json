@@ -263,5 +263,11 @@
       "date": "2026-11-11"
     }
   },
-  "source": "built-in"
+  "source": "built-in",
+  "leetcode": {
+    "number": 11,
+    "title": "Container With Most Water",
+    "slug": "container-with-most-water",
+    "relation": "same"
+  }
 }

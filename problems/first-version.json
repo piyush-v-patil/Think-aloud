@@ -259,5 +259,11 @@
       "date": "2026-11-11"
     }
   },
-  "source": "built-in"
+  "source": "built-in",
+  "leetcode": {
+    "number": 35,
+    "title": "Search Insert Position",
+    "slug": "search-insert-position",
+    "relation": "same"
+  }
 }

@@ -262,5 +262,11 @@
       "date": "2026-11-11"
     }
   },
-  "source": "built-in"
+  "source": "built-in",
+  "leetcode": {
+    "number": 121,
+    "title": "Best Time to Buy And Sell Stock",
+    "slug": "best-time-to-buy-and-sell-stock",
+    "relation": "same"
+  }
 }

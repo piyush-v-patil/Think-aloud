@@ -239,5 +239,11 @@
       "date": "2026-11-11"
     }
   },
-  "source": "built-in"
+  "source": "built-in",
+  "leetcode": {
+    "number": 125,
+    "title": "Valid Palindrome",
+    "slug": "valid-palindrome",
+    "relation": "same"
+  }
 }

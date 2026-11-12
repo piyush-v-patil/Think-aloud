@@ -98,6 +98,15 @@ export const problemSchema = z.object({
   tests: z.array(testCaseSchema).min(1),
   analysis: analysisSchema.optional(),
   source: z.enum(['built-in', 'pasted', 'variation', 'custom']),
+  leetcode: z
+    .object({
+      number: z.number().int().positive(),
+      title: z.string().min(1),
+      slug: z.string().regex(/^[a-z0-9-]+$/),
+      relation: z.enum(['same', 'similar']),
+    })
+    .optional()
+    .describe('The LeetCode problem this one practices: its number, title and link only, never its text'),
   variationOf: z.object({ problemId: z.string(), change: z.string() }).optional(),
 }) satisfies z.ZodType<Problem>;
 

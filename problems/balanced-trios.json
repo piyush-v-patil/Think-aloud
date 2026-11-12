@@ -361,5 +361,11 @@
       "date": "2026-11-11"
     }
   },
-  "source": "built-in"
+  "source": "built-in",
+  "leetcode": {
+    "number": 15,
+    "title": "3Sum",
+    "slug": "3sum",
+    "relation": "same"
+  }
 }

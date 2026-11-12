@@ -39,7 +39,9 @@ for (const file of readdirSync(dir).filter((f) => f.endsWith('.json')).sort()) {
     if (!p.tests.some((t) => !t.hidden)) errors.push('at least one test must be visible');
     if (!p.analysis) errors.push('built-in problems need an analysis (run npm run problems:analyze)');
     else if (!p.analysis.referenceSolution.java) errors.push('built-in problems need a Java reference solution');
-    const text = JSON.stringify(p);
+    // The leetcode field names the problem this one practices (number, title,
+    // link). Everything else must be original wording.
+    const text = JSON.stringify({ ...p, leetcode: undefined });
     for (const re of FORBIDDEN) if (re.test(text)) errors.push(`mentions ${re.source}; bank problems must be original`);
     const names = new Set(p.analysis?.expectedMentions.map((m) => m.id));
     if (names.size !== (p.analysis?.expectedMentions.length ?? 0)) errors.push('expectedMentions ids must be unique');

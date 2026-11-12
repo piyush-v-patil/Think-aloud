@@ -288,5 +288,11 @@
       "date": "2026-11-11"
     }
   },
-  "source": "built-in"
+  "source": "built-in",
+  "leetcode": {
+    "number": 875,
+    "title": "Koko Eating Bananas",
+    "slug": "koko-eating-bananas",
+    "relation": "same"
+  }
 }

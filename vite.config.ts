@@ -50,6 +50,7 @@ function problemIndexPlugin(): Plugin {
             difficulty: p.difficulty,
             topics: p.topics,
             mentions: (p.analysis?.expectedMentions ?? []).map((m: { category: string }) => m.category),
+            leetcode: p.leetcode,
           };
         });
       return `export default ${JSON.stringify(entries)};`;
