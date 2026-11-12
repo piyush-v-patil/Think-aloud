@@ -4,8 +4,11 @@
  * audio share one clock.
  */
 
-export type Language = 'python' | 'javascript';
-export const LANGUAGES: Language[] = ['python', 'javascript'];
+export type Language = 'python' | 'javascript' | 'java';
+export const LANGUAGES: Language[] = ['python', 'javascript', 'java'];
+
+/** Code per language. Java was added later, so problems saved before it don't have it. */
+export type CodeByLanguage = { python: string; javascript: string; java?: string };
 
 export type Difficulty = 'easy' | 'medium' | 'hard';
 
@@ -149,7 +152,7 @@ export interface ProblemAnalysis {
   followUps: string[];
   /** Technical terms to pass as speech-recognition hints. */
   vocabulary: string[];
-  referenceSolution: Record<Language, string>;
+  referenceSolution: CodeByLanguage;
   walkthrough: WalkthroughStep[];
   generatedBy?: { provider: string; model: string; date: string };
 }
@@ -166,7 +169,8 @@ export interface Problem {
   statement: string;
   examples: { input: string; output: string; explanation?: string }[];
   signature: FunctionSignature;
-  starterCode: Record<Language, string>;
+  /** Java starter code is generated from the signature when it isn't stored (see starterCodeFor). */
+  starterCode: CodeByLanguage;
   tests: TestCase[];
   /** Missing until generated for pasted problems. */
   analysis?: ProblemAnalysis;

@@ -219,7 +219,8 @@
     ],
     "referenceSolution": {
       "python": "def drop_from_end(head, n):\n    dummy = ListNode(0, head)\n    fast = slow = dummy\n    for _ in range(n):\n        fast = fast.next\n    while fast.next:\n        fast = fast.next\n        slow = slow.next\n    slow.next = slow.next.next\n    return dummy.next\n",
-      "javascript": "function drop_from_end(head, n) {\n  const dummy = new ListNode(0, head);\n  let fast = dummy;\n  let slow = dummy;\n  for (let i = 0; i < n; i++) fast = fast.next;\n  while (fast.next) {\n    fast = fast.next;\n    slow = slow.next;\n  }\n  slow.next = slow.next.next;\n  return dummy.next;\n}\n"
+      "javascript": "function drop_from_end(head, n) {\n  const dummy = new ListNode(0, head);\n  let fast = dummy;\n  let slow = dummy;\n  for (let i = 0; i < n; i++) fast = fast.next;\n  while (fast.next) {\n    fast = fast.next;\n    slow = slow.next;\n  }\n  slow.next = slow.next.next;\n  return dummy.next;\n}\n",
+      "java": "class Solution {\n    public ListNode dropFromEnd(ListNode head, int n) {\n        ListNode dummy = new ListNode(0, head);\n        ListNode fast = dummy, slow = dummy;\n        for (int i = 0; i < n; i++) fast = fast.next;\n        while (fast.next != null) {\n            fast = fast.next;\n            slow = slow.next;\n        }\n        slow.next = slow.next.next;\n        return dummy.next;\n    }\n}\n"
     },
     "walkthrough": [
       {

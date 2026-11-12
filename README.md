@@ -59,8 +59,9 @@ alone.
   change, after a test run, at a phase change or a time mark. What it says
   is always the model's own words.
 - **Three personas.** Friendly, Neutral, or Stone-faced.
-- **A shared editor.** Python or JavaScript in a full Monaco editor, run
-  in your browser against real tests, including hidden ones.
+- **A shared editor.** Python, JavaScript or Java in a full Monaco editor,
+  run in your browser against real tests, including hidden ones. Java is
+  compiled in the browser too ([more below](#java-in-the-browser)).
 - **"Stuck? You could say".** In Training mode, when you stall, it offers
   one sentence you could say out loud to get moving again.
 - **An impression meter** shows how the interviewer reads you so far.
@@ -135,7 +136,8 @@ The scoring is built to be trusted:
   backtracking and dynamic programming. Every one is written
   for this project, with its own scenario and tests, and comes with a
   precomputed analysis: clarifying questions, edge cases, approaches, a hint
-  ladder, reference solutions in both languages, and the walkthrough.
+  ladder, reference solutions in Python, JavaScript and Java, and the
+  walkthrough.
 - **Paste any problem.** It's analyzed once, its tests are checked against a
   generated reference solution, and the result is cached on your device.
 - **Your problem list.** Keep links to problems you want to practice. It
@@ -410,7 +412,8 @@ src/copy/strings.ts   all interface text, in one place
 src/lib/ai/           provider interface and adapters (Anthropic, OpenAI, Gemini, compatible)
 src/lib/speech/       speech-to-text engines, turn-taking, alignment, Whisper
 src/lib/voice/        the interviewer's voice: browser voices, Kokoro, pronunciation
-src/lib/runner/       sandboxed code runner (Pyodide and JS in Web Workers)
+src/lib/runner/       sandboxed code runner (Pyodide, JS and Java on TeaVM, in Web Workers)
+vendor/teavm/         the in-browser Java compiler, with its sources and licenses
 src/lib/interview/    the interviewer and the event log it reads
 src/lib/feedback/     metrics, reactions, scoring, evidence checks, verification
 src/lib/session/      the live interview controller and post-session processing
@@ -447,7 +450,7 @@ and rebuild.
 npm test                         # unit and integration tests
 npm run lint && npm run typecheck
 npm run problems:validate        # problem JSON schema
-npm run problems:check-solutions # every reference solution, both languages
+npm run problems:check-solutions # every reference solution, all three languages
 npm run build                    # static site in dist/
 ```
 
@@ -474,6 +477,34 @@ push to `main` (enable Pages with "GitHub Actions" as the source). The build
 is a plain static site in `dist/` that works on any static host. It uses
 relative paths and hash routing, so no server configuration is needed.
 
+### Java in the browser
+
+Java code is compiled and run on your device, like Python and JavaScript.
+The compiler is [TeaVM's in-browser javac](https://github.com/konsoletyper/teavm-javac):
+OpenJDK's `javac` and TeaVM in one WebAssembly module (about 6.5 MB, served
+from this site). It turns your code into a small WebAssembly program, and
+each test runs on a fresh copy of it, so one crashing test can't affect the
+next.
+
+- **Fast after the first run.** The first run loads the compiler (about 2
+  seconds); after that a run takes well under a second.
+- **Write it like an interview platform.** A `class Solution` with a
+  camelCase method (`merge_bookings` becomes `mergeBookings`); `java.util`,
+  `java.util.function` and `java.util.stream` are already imported, and
+  `ListNode` and `TreeNode` are already defined. Return whatever's natural:
+  `int[][]` or `List<List<Integer>>` both work.
+- **The real Java API.** `javac` compiles against the JDK's own API
+  signatures (`vendor/teavm/java-api.bin`, built from a JDK by
+  `scripts/build-java-api.mjs`) instead of the incomplete one TeaVM ships,
+  so `Map.Entry`, `getMessage()` and friends work.
+- **Checked against a real JDK.** 95 of 102 everyday interview snippets
+  (collections, streams, `TreeMap` navigation, records, `switch`
+  expressions...) printed exactly what JDK 21 prints. Of the rest,
+  `Integer::sum`, `Long::sum` and `Collectors.counting()` are rewritten to
+  equivalents in the compiled copy (your code isn't touched), and the
+  others are listed under Known limits. CI runs every Java reference
+  solution on both TeaVM and a JDK.
+
 ## Known limits
 
 - OpenAI live transcription needs a WebRTC session, and AssemblyAI live
@@ -486,6 +517,12 @@ relative paths and hash routing, so no server configuration is needed.
   speed check rightly keeps the fast voice. On a WebGPU graphics card,
   Kokoro is usually many times faster than real time, but that path hasn't
   been timed in this project yet; the speed check decides on your computer.
+- Java runs on TeaVM's class library, which covers almost everything
+  interview code uses. Known gaps: `String.format` with `%f` stops the
+  program, `.clone()` of an array written as a literal in the same method
+  fails (`Arrays.copyOf` works), and an `ArrayIndexOutOfBoundsException` or
+  `NullPointerException` can't be caught by your own `try`/`catch` (it
+  still shows as the test's error, by name).
 - The replay's audio is your microphone; the interviewer's lines appear as
   text in the transcript but aren't in the recording.
 - The built-in bank's analyses were written by the maintainers. Run
@@ -511,6 +548,10 @@ The app name is a working name. It lives in one place, `src/config/app.ts`.
   (BSD-2-Clause), through
   [cmu-pronouncing-dictionary](https://github.com/words/cmu-pronouncing-dictionary)
   (ISC), for pronunciation.
+- [TeaVM](https://teavm.org) and
+  [teavm-javac](https://github.com/konsoletyper/teavm-javac) by Alexey
+  Andreev (Apache-2.0), with OpenJDK's `javac` and API signatures (GPLv2
+  with the Classpath Exception), for Java. See `vendor/teavm/README.md`.
 - [Transformers.js](https://github.com/huggingface/transformers.js) and ONNX
   Runtime Web (Apache-2.0, MIT), [Pyodide](https://pyodide.org) (MPL-2.0),
   [Monaco](https://github.com/microsoft/monaco-editor) (MIT), and the

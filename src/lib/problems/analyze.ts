@@ -3,7 +3,8 @@
  * script (built-in bank) and the app (pasted problems and variations).
  */
 import { z } from 'zod';
-import type { Language, Problem, ProblemAnalysis, TestCase, TestRun } from '../types';
+import type { CodeByLanguage, Language, Problem, ProblemAnalysis, TestCase, TestRun } from '../types';
+import { javaStarter } from '../runner/java-harness';
 import { analysisSchema, compareSchema, signatureSchema, topicSchema } from './schema';
 import type { AIProvider } from '../ai/types';
 import type { TokenUsage } from '../cost/pricing';
@@ -50,12 +51,19 @@ export function problemForPrompt(p: Problem): string {
   );
 }
 
-export function starterFor(signature: Problem['signature']): Record<Language, string> {
+export function starterFor(signature: Problem['signature'], tests: TestCase[] = []): CodeByLanguage {
   const params = signature.params.map((p) => p.name).join(', ');
   return {
     python: `def ${signature.name}(${params}):\n    pass\n`,
     javascript: `function ${signature.name}(${params}) {\n\n}\n`,
+    java: javaStarter(signature, tests),
   };
+}
+
+/** The starter code for a language; Java is generated from the signature when not stored. */
+export function starterCodeFor(problem: Pick<Problem, 'starterCode' | 'signature' | 'tests'>, language: Language): string {
+  if (language === 'java') return problem.starterCode.java ?? javaStarter(problem.signature, problem.tests);
+  return problem.starterCode[language];
 }
 
 /** Converts the model's string-encoded tests into real tests, dropping any that don't parse. */
@@ -86,7 +94,12 @@ export async function checkReference(problem: Problem, analysis: Pick<ProblemAna
   const failures: string[] = [];
   const failedTests = new Set<string>();
   for (const lang of languages) {
-    const res = await run(lang, analysis.referenceSolution[lang], problem, problem.tests);
+    const code = analysis.referenceSolution[lang];
+    if (!code) {
+      failures.push(`${lang}: no reference solution`);
+      continue;
+    }
+    const res = await run(lang, code, problem, problem.tests);
     if (res.error) {
       failures.push(`${lang}: ${res.error}`);
       problem.tests.forEach((t) => failedTests.add(t.name));

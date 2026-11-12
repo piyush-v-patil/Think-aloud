@@ -280,7 +280,8 @@
     ],
     "referenceSolution": {
       "python": "def crate_pair(weights, capacity):\n    seen = {}\n    for i, w in enumerate(weights):\n        need = capacity - w\n        if need in seen:\n            return [seen[need], i]\n        seen[w] = i\n    return []\n",
-      "javascript": "function crate_pair(weights, capacity) {\n  const seen = new Map();\n  for (let i = 0; i < weights.length; i++) {\n    const need = capacity - weights[i];\n    if (seen.has(need)) return [seen.get(need), i];\n    seen.set(weights[i], i);\n  }\n  return [];\n}\n"
+      "javascript": "function crate_pair(weights, capacity) {\n  const seen = new Map();\n  for (let i = 0; i < weights.length; i++) {\n    const need = capacity - weights[i];\n    if (seen.has(need)) return [seen.get(need), i];\n    seen.set(weights[i], i);\n  }\n  return [];\n}\n",
+      "java": "import java.util.*;\n\nclass Solution {\n    public int[] cratePair(int[] weights, int capacity) {\n        Map<Integer, Integer> seen = new HashMap<>();\n        for (int i = 0; i < weights.length; i++) {\n            Integer j = seen.get(capacity - weights[i]);\n            if (j != null) return new int[]{j, i};\n            seen.put(weights[i], i);\n        }\n        return new int[0];\n    }\n}\n"
     },
     "walkthrough": [
       {

@@ -315,7 +315,8 @@
     ],
     "referenceSolution": {
       "python": "def all_playlists(songs):\n    out = []\n    current = []\n    def build(i):\n        if i == len(songs):\n            out.append(current[:])\n            return\n        current.append(songs[i])\n        build(i + 1)\n        current.pop()\n        build(i + 1)\n    build(0)\n    return out\n",
-      "javascript": "function all_playlists(songs) {\n  const out = [[]];\n  for (const s of songs) {\n    const size = out.length;\n    for (let i = 0; i < size; i++) out.push([...out[i], s]);\n  }\n  return out;\n}\n"
+      "javascript": "function all_playlists(songs) {\n  const out = [[]];\n  for (const s of songs) {\n    const size = out.length;\n    for (let i = 0; i < size; i++) out.push([...out[i], s]);\n  }\n  return out;\n}\n",
+      "java": "import java.util.*;\n\nclass Solution {\n    public List<List<Integer>> allPlaylists(int[] songs) {\n        List<List<Integer>> out = new ArrayList<>();\n        build(songs, 0, new ArrayList<>(), out);\n        return out;\n    }\n\n    private void build(int[] songs, int i, List<Integer> current, List<List<Integer>> out) {\n        if (i == songs.length) {\n            out.add(new ArrayList<>(current));\n            return;\n        }\n        current.add(songs[i]);\n        build(songs, i + 1, current, out);\n        current.remove(current.size() - 1);\n        build(songs, i + 1, current, out);\n    }\n}\n"
     },
     "walkthrough": [
       {

@@ -227,7 +227,8 @@
     ],
     "referenceSolution": {
       "python": "def is_balanced(text):\n    pairs = {')': '(', ']': '[', '}': '{'}\n    stack = []\n    for ch in text:\n        if ch in '([{':\n            stack.append(ch)\n        elif ch in pairs:\n            if not stack or stack.pop() != pairs[ch]:\n                return False\n    return not stack\n",
-      "javascript": "function is_balanced(text) {\n  const pairs = { ')': '(', ']': '[', '}': '{' };\n  const stack = [];\n  for (const ch of text) {\n    if ('([{'.includes(ch)) stack.push(ch);\n    else if (ch in pairs) {\n      if (!stack.length || stack.pop() !== pairs[ch]) return false;\n    }\n  }\n  return stack.length === 0;\n}\n"
+      "javascript": "function is_balanced(text) {\n  const pairs = { ')': '(', ']': '[', '}': '{' };\n  const stack = [];\n  for (const ch of text) {\n    if ('([{'.includes(ch)) stack.push(ch);\n    else if (ch in pairs) {\n      if (!stack.length || stack.pop() !== pairs[ch]) return false;\n    }\n  }\n  return stack.length === 0;\n}\n",
+      "java": "import java.util.*;\n\nclass Solution {\n    public boolean isBalanced(String text) {\n        Deque<Character> stack = new ArrayDeque<>();\n        for (char ch : text.toCharArray()) {\n            if (ch == '(' || ch == '[' || ch == '{') {\n                stack.push(ch);\n            } else if (ch == ')' || ch == ']' || ch == '}') {\n                char open = ch == ')' ? '(' : ch == ']' ? '[' : '{';\n                if (stack.isEmpty() || stack.pop() != open) return false;\n            }\n        }\n        return stack.isEmpty();\n    }\n}\n"
     },
     "walkthrough": [
       {

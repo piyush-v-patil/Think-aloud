@@ -70,10 +70,21 @@ Eight to fifteen short terms.
 
 ## Reference solution
 
-A correct, clean solution in Python and in JavaScript. Each defines a
-top-level function with exactly the name and parameters in the given
-signature. Python: a plain function, standard library only. JavaScript: a
-plain function declaration, no imports. Both must pass every test.
+A correct, clean solution in Python, in JavaScript and in Java. Python and
+JavaScript each define a top-level function with exactly the name and
+parameters in the given signature. Python: a plain function, standard
+library only. JavaScript: a plain function declaration, no imports.
+
+Java: a `class Solution` with one public method named in camelCase after the
+signature (`merge_bookings` becomes `mergeBookings`). Parameter types:
+`int`, `double` (float), `boolean` (bool), `String`, `int[]`, `double[]`,
+`String[]`, `boolean[]`, `int[][]`, `String[][]`, `ListNode`, `TreeNode`
+(both already defined, with `int val` and `next`, or `left` and `right`).
+Return whatever type is natural: arrays or `List`s both work. Standard
+library only (`java.util` is imported). It runs in the browser on TeaVM, so
+avoid `String.format` with `%f`.
+
+All three must pass every test.
 
 ## Walkthrough
 

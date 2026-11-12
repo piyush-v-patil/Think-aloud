@@ -1,12 +1,13 @@
 /**
  * Monaco, bundled with the app. @monaco-editor/react loads Monaco from a CDN
  * by default; pointing its loader at this local copy keeps every byte on our
- * own origin. Only the Python and JavaScript grammars are included.
+ * own origin. Only the Python, JavaScript and Java grammars are included.
  */
 import * as monaco from 'monaco-editor/editor/editor.api';
 import 'monaco-editor/features/register.all';
 import 'monaco-editor/languages/definitions/python/register';
 import 'monaco-editor/languages/definitions/javascript/register';
+import 'monaco-editor/languages/definitions/java/register';
 import EditorWorker from 'monaco-editor/editor/editor.worker?worker';
 import { loader } from '@monaco-editor/react';
 

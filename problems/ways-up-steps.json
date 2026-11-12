@@ -195,7 +195,8 @@
     ],
     "referenceSolution": {
       "python": "def ways_up(n):\n    a, b = 1, 1\n    for _ in range(n):\n        a, b = b, a + b\n    return a\n",
-      "javascript": "function ways_up(n) {\n  let a = 1;\n  let b = 1;\n  for (let i = 0; i < n; i++) [a, b] = [b, a + b];\n  return a;\n}\n"
+      "javascript": "function ways_up(n) {\n  let a = 1;\n  let b = 1;\n  for (let i = 0; i < n; i++) [a, b] = [b, a + b];\n  return a;\n}\n",
+      "java": "class Solution {\n    public int waysUp(int n) {\n        int a = 1, b = 1;\n        for (int i = 0; i < n; i++) {\n            int next = a + b;\n            a = b;\n            b = next;\n        }\n        return a;\n    }\n}\n"
     },
     "walkthrough": [
       {

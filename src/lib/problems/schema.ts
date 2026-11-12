@@ -77,7 +77,7 @@ export const analysisSchema = z.object({
     .describe('Things a strong candidate says aloud; used for missed-opportunity markers'),
   followUps: z.array(z.string()),
   vocabulary: z.array(z.string()).describe('Technical terms for speech-recognition hints'),
-  referenceSolution: z.object({ python: z.string(), javascript: z.string() }),
+  referenceSolution: z.object({ python: z.string(), javascript: z.string(), java: z.string().optional() }),
   walkthrough: z
     .array(z.object({ phase: phaseSchema, say: z.string(), code: z.string().optional() }))
     .min(5)
@@ -94,7 +94,7 @@ export const problemSchema = z.object({
   statement: z.string().min(1),
   examples: z.array(z.object({ input: z.string(), output: z.string(), explanation: z.string().optional() })),
   signature: signatureSchema,
-  starterCode: z.object({ python: z.string(), javascript: z.string() }),
+  starterCode: z.object({ python: z.string(), javascript: z.string(), java: z.string().optional() }),
   tests: z.array(testCaseSchema).min(1),
   analysis: analysisSchema.optional(),
   source: z.enum(['built-in', 'pasted', 'variation', 'custom']),

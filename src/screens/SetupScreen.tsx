@@ -285,6 +285,7 @@ export function SetupScreen() {
           value={settings.language}
           onChange={(language) => updateSettings({ language })}
           options={LANGUAGES.map((l) => ({ value: l, label: languageName[l] }))}
+          help={settings.language === 'java' ? copy.javaHelp : undefined}
         />
         <QualityPicker />
         <div className="max-w-[200px]">

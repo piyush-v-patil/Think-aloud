@@ -235,7 +235,8 @@
     ],
     "referenceSolution": {
       "python": "def fewest_coins(coins, amount):\n    INF = amount + 1\n    best = [0] + [INF] * amount\n    for a in range(1, amount + 1):\n        for c in coins:\n            if c <= a and best[a - c] + 1 < best[a]:\n                best[a] = best[a - c] + 1\n    return best[amount] if best[amount] <= amount else -1\n",
-      "javascript": "function fewest_coins(coins, amount) {\n  const INF = amount + 1;\n  const best = new Array(amount + 1).fill(INF);\n  best[0] = 0;\n  for (let a = 1; a <= amount; a++) {\n    for (const c of coins) {\n      if (c <= a && best[a - c] + 1 < best[a]) best[a] = best[a - c] + 1;\n    }\n  }\n  return best[amount] <= amount ? best[amount] : -1;\n}\n"
+      "javascript": "function fewest_coins(coins, amount) {\n  const INF = amount + 1;\n  const best = new Array(amount + 1).fill(INF);\n  best[0] = 0;\n  for (let a = 1; a <= amount; a++) {\n    for (const c of coins) {\n      if (c <= a && best[a - c] + 1 < best[a]) best[a] = best[a - c] + 1;\n    }\n  }\n  return best[amount] <= amount ? best[amount] : -1;\n}\n",
+      "java": "import java.util.*;\n\nclass Solution {\n    public int fewestCoins(int[] coins, int amount) {\n        int inf = amount + 1;\n        int[] best = new int[amount + 1];\n        Arrays.fill(best, inf);\n        best[0] = 0;\n        for (int a = 1; a <= amount; a++) {\n            for (int c : coins) {\n                if (c <= a && best[a - c] + 1 < best[a]) best[a] = best[a - c] + 1;\n            }\n        }\n        return best[amount] <= amount ? best[amount] : -1;\n    }\n}\n"
     },
     "walkthrough": [
       {

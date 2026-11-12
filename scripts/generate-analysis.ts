@@ -62,7 +62,7 @@ for (const file of readdirSync(dir).filter((f) => f.endsWith('.json')).sort()) {
       { provider, model, system, onUsage: (usage) => (spent += costOfRequest(info, usage) ?? 0) },
       feedback,
     );
-    const check = await checkReference(problem, analysis, runTests);
+    const check = await checkReference(problem, analysis, runTests, ['python', 'javascript', 'java']);
     if (!check.ok) {
       feedback = check.failures.join('\n');
       console.warn(`  attempt ${attempt}: reference solution failed\n  ${check.failures.join('\n  ')}`);

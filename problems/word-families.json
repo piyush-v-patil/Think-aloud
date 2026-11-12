@@ -277,7 +277,8 @@
     ],
     "referenceSolution": {
       "python": "def word_families(words):\n    groups = {}\n    for word in words:\n        key = ''.join(sorted(word))\n        groups.setdefault(key, []).append(word)\n    return list(groups.values())\n",
-      "javascript": "function word_families(words) {\n  const groups = new Map();\n  for (const word of words) {\n    const key = [...word].sort().join('');\n    if (!groups.has(key)) groups.set(key, []);\n    groups.get(key).push(word);\n  }\n  return [...groups.values()];\n}\n"
+      "javascript": "function word_families(words) {\n  const groups = new Map();\n  for (const word of words) {\n    const key = [...word].sort().join('');\n    if (!groups.has(key)) groups.set(key, []);\n    groups.get(key).push(word);\n  }\n  return [...groups.values()];\n}\n",
+      "java": "import java.util.*;\n\nclass Solution {\n    public List<List<String>> wordFamilies(String[] words) {\n        Map<String, List<String>> groups = new LinkedHashMap<>();\n        for (String word : words) {\n            char[] letters = word.toCharArray();\n            Arrays.sort(letters);\n            groups.computeIfAbsent(new String(letters), key -> new ArrayList<>()).add(word);\n        }\n        return new ArrayList<>(groups.values());\n    }\n}\n"
     },
     "walkthrough": [
       {

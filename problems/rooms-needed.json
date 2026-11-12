@@ -272,7 +272,8 @@
     ],
     "referenceSolution": {
       "python": "import heapq\n\ndef rooms_needed(meetings):\n    ends = []\n    for start, end in sorted(meetings):\n        if ends and ends[0] <= start:\n            heapq.heapreplace(ends, end)\n        else:\n            heapq.heappush(ends, end)\n    return len(ends)\n",
-      "javascript": "function rooms_needed(meetings) {\n  const starts = meetings.map((m) => m[0]).sort((a, b) => a - b);\n  const ends = meetings.map((m) => m[1]).sort((a, b) => a - b);\n  let rooms = 0;\n  let best = 0;\n  let j = 0;\n  for (let i = 0; i < starts.length; i++) {\n    while (j < ends.length && ends[j] <= starts[i]) {\n      j++;\n      rooms--;\n    }\n    rooms++;\n    best = Math.max(best, rooms);\n  }\n  return best;\n}\n"
+      "javascript": "function rooms_needed(meetings) {\n  const starts = meetings.map((m) => m[0]).sort((a, b) => a - b);\n  const ends = meetings.map((m) => m[1]).sort((a, b) => a - b);\n  let rooms = 0;\n  let best = 0;\n  let j = 0;\n  for (let i = 0; i < starts.length; i++) {\n    while (j < ends.length && ends[j] <= starts[i]) {\n      j++;\n      rooms--;\n    }\n    rooms++;\n    best = Math.max(best, rooms);\n  }\n  return best;\n}\n",
+      "java": "import java.util.*;\n\nclass Solution {\n    public int roomsNeeded(int[][] meetings) {\n        int[][] sorted = Arrays.copyOf(meetings, meetings.length);\n        Arrays.sort(sorted, (a, b) -> a[0] != b[0] ? Integer.compare(a[0], b[0]) : Integer.compare(a[1], b[1]));\n        PriorityQueue<Integer> ends = new PriorityQueue<>();\n        for (int[] m : sorted) {\n            if (!ends.isEmpty() && ends.peek() <= m[0]) ends.poll();\n            ends.add(m[1]);\n        }\n        return ends.size();\n    }\n}\n"
     },
     "walkthrough": [
       {

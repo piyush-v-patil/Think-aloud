@@ -30,6 +30,7 @@ import { takeSentences } from '../voice/browser';
 import { TurnTracker, looksLikeEcho, type Turn } from '../speech/turns';
 import { CodeRunner } from '../runner/runner';
 import { hasTests } from '../problems/paste';
+import { starterCodeFor } from '../problems/analyze';
 import { SessionClock } from './clock';
 import { createStore } from '../../state/store';
 import { Interviewer, type Trigger } from '../interview/interviewer';
@@ -135,7 +136,7 @@ export class InterviewController {
     this.language = draft.language;
     this.clock = deps.clock ?? new SessionClock();
     this.testable = hasTests(draft.problem);
-    const starter = draft.problem.starterCode[draft.language];
+    const starter = starterCodeFor(draft.problem, draft.language);
     this.snapshots = [{ t: 0, code: starter }];
     this.lastCodeSent = starter;
     this.store = createStore<LiveState>({

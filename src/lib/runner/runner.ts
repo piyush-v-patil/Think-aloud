@@ -8,8 +8,15 @@ import type { RunRequest, RunResponse, WorkerMessage } from './protocol';
 import { valuesMatch } from './compare';
 
 export const DEFAULT_TIMEOUT_MS = 6000;
+/** Java compiles first; the run's own time limit starts once it has compiled. */
+export const JAVA_COMPILE_TIMEOUT_MS = 60_000;
 
-type Pending = { resolve: (r: RunResponse) => void; reject: (e: Error) => void; timer?: ReturnType<typeof setTimeout> };
+type Pending = {
+  resolve: (r: RunResponse) => void;
+  reject: (e: Error) => void;
+  timer?: ReturnType<typeof setTimeout>;
+  restartTimer?: () => void;
+};
 
 class LanguageWorker {
   private worker: Worker | null = null;
@@ -26,7 +33,9 @@ class LanguageWorker {
     const worker =
       this.language === 'python'
         ? new Worker(new URL('./python.worker.ts', import.meta.url), { type: 'module' })
-        : new Worker(new URL('./js.worker.ts', import.meta.url), { type: 'module' });
+        : this.language === 'java'
+          ? new Worker(new URL('./java.worker.ts', import.meta.url), { type: 'module' })
+          : new Worker(new URL('./js.worker.ts', import.meta.url), { type: 'module' });
     this.worker = worker;
     this.readyPromise = new Promise<void>((resolveReady) => {
       worker.onmessage = (event: MessageEvent<WorkerMessage>) => {
@@ -36,6 +45,7 @@ class LanguageWorker {
           this.onStatus?.(null);
           resolveReady();
         }
+        if (msg.type === 'compiled') this.pending.get(msg.id)?.restartTimer?.();
         if (msg.type === 'result') {
           const p = this.pending.get(msg.response.id);
           if (p) {
@@ -55,6 +65,8 @@ class LanguageWorker {
     });
     if (this.language === 'python') {
       worker.postMessage({ init: new URL('vendor/pyodide/', document.baseURI).href });
+    } else if (this.language === 'java') {
+      worker.postMessage({ init: new URL('vendor/teavm/', document.baseURI).href });
     }
     return this.readyPromise;
   }
@@ -67,16 +79,19 @@ class LanguageWorker {
     await this.warm();
     return new Promise<RunResponse>((resolve, reject) => {
       const pending: Pending = { resolve, reject };
-      pending.timer = setTimeout(() => {
+      const stop = (fatal: string) => () => {
         this.pending.delete(req.id);
         this.restart();
-        resolve({
-          id: req.id,
-          fatal: `Your code ran for more than ${Math.round(timeoutMs / 1000)} seconds, so it was stopped. Check for a loop that never ends.`,
-          outcomes: [],
-          stdout: '',
-        });
-      }, timeoutMs);
+        resolve({ id: req.id, fatal, outcomes: [], stdout: '' });
+      };
+      const tooLong = stop(`Your code ran for more than ${Math.round(timeoutMs / 1000)} seconds, so it was stopped. Check for a loop that never ends.`);
+      if (this.language === 'java') {
+        pending.timer = setTimeout(stop('Compiling took too long, so it was stopped. Try again.'), JAVA_COMPILE_TIMEOUT_MS);
+        pending.restartTimer = () => {
+          clearTimeout(pending.timer);
+          pending.timer = setTimeout(tooLong, timeoutMs);
+        };
+      } else pending.timer = setTimeout(tooLong, timeoutMs);
       this.pending.set(req.id, pending);
       this.worker!.postMessage(req);
     });

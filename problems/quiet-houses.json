@@ -212,7 +212,8 @@
     ],
     "referenceSolution": {
       "python": "def most_gifts(gifts):\n    take, skip = 0, 0\n    for g in gifts:\n        take, skip = skip + g, max(take, skip)\n    return max(take, skip)\n",
-      "javascript": "function most_gifts(gifts) {\n  let take = 0;\n  let skip = 0;\n  for (const g of gifts) [take, skip] = [skip + g, Math.max(take, skip)];\n  return Math.max(take, skip);\n}\n"
+      "javascript": "function most_gifts(gifts) {\n  let take = 0;\n  let skip = 0;\n  for (const g of gifts) [take, skip] = [skip + g, Math.max(take, skip)];\n  return Math.max(take, skip);\n}\n",
+      "java": "class Solution {\n    public int mostGifts(int[] gifts) {\n        int take = 0, skip = 0;\n        for (int g : gifts) {\n            int newTake = skip + g;\n            skip = Math.max(take, skip);\n            take = newTake;\n        }\n        return Math.max(take, skip);\n    }\n}\n"
     },
     "walkthrough": [
       {

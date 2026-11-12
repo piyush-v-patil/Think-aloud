@@ -219,7 +219,8 @@
     ],
     "referenceSolution": {
       "python": "def widest_reservoir(heights):\n    i, j = 0, len(heights) - 1\n    best = 0\n    while i < j:\n        h = min(heights[i], heights[j])\n        best = max(best, h * (j - i))\n        if heights[i] < heights[j]:\n            i += 1\n        else:\n            j -= 1\n    return best\n",
-      "javascript": "function widest_reservoir(heights) {\n  let i = 0;\n  let j = heights.length - 1;\n  let best = 0;\n  while (i < j) {\n    const h = Math.min(heights[i], heights[j]);\n    best = Math.max(best, h * (j - i));\n    if (heights[i] < heights[j]) i++;\n    else j--;\n  }\n  return best;\n}\n"
+      "javascript": "function widest_reservoir(heights) {\n  let i = 0;\n  let j = heights.length - 1;\n  let best = 0;\n  while (i < j) {\n    const h = Math.min(heights[i], heights[j]);\n    best = Math.max(best, h * (j - i));\n    if (heights[i] < heights[j]) i++;\n    else j--;\n  }\n  return best;\n}\n",
+      "java": "class Solution {\n    public int widestReservoir(int[] heights) {\n        int i = 0, j = heights.length - 1;\n        int best = 0;\n        while (i < j) {\n            int h = Math.min(heights[i], heights[j]);\n            best = Math.max(best, h * (j - i));\n            if (heights[i] < heights[j]) i++;\n            else j--;\n        }\n        return best;\n    }\n}\n"
     },
     "walkthrough": [
       {

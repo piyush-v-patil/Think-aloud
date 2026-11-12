@@ -195,7 +195,8 @@
     ],
     "referenceSolution": {
       "python": "def same_notes(a, b):\n    def final(s):\n        out = []\n        for ch in s:\n            if ch == '#':\n                if out:\n                    out.pop()\n            else:\n                out.append(ch)\n        return out\n    return final(a) == final(b)\n",
-      "javascript": "function same_notes(a, b) {\n  const final = (s) => {\n    const out = [];\n    for (const ch of s) {\n      if (ch === '#') out.pop();\n      else out.push(ch);\n    }\n    return out.join('');\n  };\n  return final(a) === final(b);\n}\n"
+      "javascript": "function same_notes(a, b) {\n  const final = (s) => {\n    const out = [];\n    for (const ch of s) {\n      if (ch === '#') out.pop();\n      else out.push(ch);\n    }\n    return out.join('');\n  };\n  return final(a) === final(b);\n}\n",
+      "java": "import java.util.*;\n\nclass Solution {\n    public boolean sameNotes(String a, String b) {\n        return finalText(a).equals(finalText(b));\n    }\n\n    private String finalText(String s) {\n        StringBuilder out = new StringBuilder();\n        for (char ch : s.toCharArray()) {\n            if (ch == '#') {\n                if (out.length() > 0) out.deleteCharAt(out.length() - 1);\n            } else {\n                out.append(ch);\n            }\n        }\n        return out.toString();\n    }\n}\n"
     },
     "walkthrough": [
       {

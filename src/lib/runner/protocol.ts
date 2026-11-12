@@ -29,4 +29,6 @@ export interface RunResponse {
 export type WorkerMessage =
   | { type: 'ready' }
   | { type: 'loading'; message: string }
-  | { type: 'result'; response: RunResponse };
+  | { type: 'result'; response: RunResponse }
+  /** Java: compiling is done and the code starts running; the time limit restarts. */
+  | { type: 'compiled'; id: number };

@@ -210,7 +210,8 @@
     ],
     "referenceSolution": {
       "python": "def longest_calm(readings):\n    last = {}\n    start = 0\n    best = 0\n    for i, ch in enumerate(readings):\n        if ch in last and last[ch] >= start:\n            start = last[ch] + 1\n        last[ch] = i\n        best = max(best, i - start + 1)\n    return best\n",
-      "javascript": "function longest_calm(readings) {\n  const last = new Map();\n  let start = 0;\n  let best = 0;\n  for (let i = 0; i < readings.length; i++) {\n    const ch = readings[i];\n    if (last.has(ch) && last.get(ch) >= start) start = last.get(ch) + 1;\n    last.set(ch, i);\n    best = Math.max(best, i - start + 1);\n  }\n  return best;\n}\n"
+      "javascript": "function longest_calm(readings) {\n  const last = new Map();\n  let start = 0;\n  let best = 0;\n  for (let i = 0; i < readings.length; i++) {\n    const ch = readings[i];\n    if (last.has(ch) && last.get(ch) >= start) start = last.get(ch) + 1;\n    last.set(ch, i);\n    best = Math.max(best, i - start + 1);\n  }\n  return best;\n}\n",
+      "java": "import java.util.*;\n\nclass Solution {\n    public int longestCalm(String readings) {\n        Map<Character, Integer> last = new HashMap<>();\n        int start = 0;\n        int best = 0;\n        for (int i = 0; i < readings.length(); i++) {\n            char ch = readings.charAt(i);\n            Integer seen = last.get(ch);\n            if (seen != null && seen >= start) start = seen + 1;\n            last.put(ch, i);\n            best = Math.max(best, i - start + 1);\n        }\n        return best;\n    }\n}\n"
     },
     "walkthrough": [
       {

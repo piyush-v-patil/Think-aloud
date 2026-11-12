@@ -34,7 +34,7 @@ export function CodeEditor({
           lineHeight: 22,
           minimap: { enabled: false },
           scrollBeyondLastLine: false,
-          tabSize: language === 'python' ? 4 : 2,
+          tabSize: language === 'javascript' ? 2 : 4,
           insertSpaces: true,
           renderLineHighlight: 'line',
           overviewRulerLanes: 0,

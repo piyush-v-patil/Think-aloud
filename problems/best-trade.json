@@ -218,7 +218,8 @@
     ],
     "referenceSolution": {
       "python": "def best_trade(prices):\n    lowest = float('inf')\n    best = 0\n    for p in prices:\n        lowest = min(lowest, p)\n        best = max(best, p - lowest)\n    return best\n",
-      "javascript": "function best_trade(prices) {\n  let lowest = Infinity;\n  let best = 0;\n  for (const p of prices) {\n    lowest = Math.min(lowest, p);\n    best = Math.max(best, p - lowest);\n  }\n  return best;\n}\n"
+      "javascript": "function best_trade(prices) {\n  let lowest = Infinity;\n  let best = 0;\n  for (const p of prices) {\n    lowest = Math.min(lowest, p);\n    best = Math.max(best, p - lowest);\n  }\n  return best;\n}\n",
+      "java": "class Solution {\n    public int bestTrade(int[] prices) {\n        int lowest = Integer.MAX_VALUE;\n        int best = 0;\n        for (int p : prices) {\n            lowest = Math.min(lowest, p);\n            best = Math.max(best, p - lowest);\n        }\n        return best;\n    }\n}\n"
     },
     "walkthrough": [
       {

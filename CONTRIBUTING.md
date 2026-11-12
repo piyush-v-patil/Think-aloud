@@ -38,7 +38,8 @@ A problem needs:
 - `signature`: the function name and parameter types. Value types are
   listed in the schema; linked lists (`ListNode`) and trees (`TreeNode`)
   are written in tests as arrays, trees in level order with nulls.
-- `starterCode` for Python and JavaScript.
+- `starterCode` for Python and JavaScript. (Java starter code is generated
+  from the signature.)
 - `tests`: at least one visible, a few `hidden`, covering the edge cases.
   Use `compare: "unordered"` when any order is accepted,
   `"unordered-deep"` when inner lists are unordered too, `"float"` for
@@ -47,7 +48,10 @@ A problem needs:
   cases, approaches with complexities, the optimal approach, a hint ladder
   from vague to specific, expected mentions (these become
   missed-opportunity markers), follow-ups, speech vocabulary, reference
-  solutions in both languages, and a full think-aloud walkthrough.
+  solutions in Python, JavaScript and Java, and a full think-aloud
+  walkthrough. The Java solution is a `class Solution` with the camelCase
+  method; `npm run problems:check-solutions` runs it on TeaVM (as the
+  browser does) and, if a JDK is installed, on the JDK too.
 
 To generate the analysis with a model, write the problem without
 `analysis` and run, with your own key:

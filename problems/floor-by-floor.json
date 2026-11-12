@@ -234,7 +234,8 @@
     ],
     "referenceSolution": {
       "python": "def floors(root):\n    if root is None:\n        return []\n    out = []\n    level = [root]\n    while level:\n        out.append([n.val for n in level])\n        nxt = []\n        for n in level:\n            if n.left:\n                nxt.append(n.left)\n            if n.right:\n                nxt.append(n.right)\n        level = nxt\n    return out\n",
-      "javascript": "function floors(root) {\n  if (!root) return [];\n  const out = [];\n  let level = [root];\n  while (level.length) {\n    out.push(level.map((n) => n.val));\n    const next = [];\n    for (const n of level) {\n      if (n.left) next.push(n.left);\n      if (n.right) next.push(n.right);\n    }\n    level = next;\n  }\n  return out;\n}\n"
+      "javascript": "function floors(root) {\n  if (!root) return [];\n  const out = [];\n  let level = [root];\n  while (level.length) {\n    out.push(level.map((n) => n.val));\n    const next = [];\n    for (const n of level) {\n      if (n.left) next.push(n.left);\n      if (n.right) next.push(n.right);\n    }\n    level = next;\n  }\n  return out;\n}\n",
+      "java": "import java.util.*;\n\nclass Solution {\n    public List<List<Integer>> floors(TreeNode root) {\n        List<List<Integer>> out = new ArrayList<>();\n        if (root == null) return out;\n        Deque<TreeNode> queue = new ArrayDeque<>();\n        queue.add(root);\n        while (!queue.isEmpty()) {\n            List<Integer> level = new ArrayList<>();\n            for (int size = queue.size(); size > 0; size--) {\n                TreeNode node = queue.poll();\n                level.add(node.val);\n                if (node.left != null) queue.add(node.left);\n                if (node.right != null) queue.add(node.right);\n            }\n            out.add(level);\n        }\n        return out;\n    }\n}\n"
     },
     "walkthrough": [
       {

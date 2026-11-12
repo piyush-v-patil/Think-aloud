@@ -244,7 +244,8 @@
     ],
     "referenceSolution": {
       "python": "def longest_streak(days):\n    present = set(days)\n    best = 0\n    for d in present:\n        if d - 1 not in present:\n            length = 1\n            while d + length in present:\n                length += 1\n            best = max(best, length)\n    return best\n",
-      "javascript": "function longest_streak(days) {\n  const present = new Set(days);\n  let best = 0;\n  for (const d of present) {\n    if (!present.has(d - 1)) {\n      let length = 1;\n      while (present.has(d + length)) length++;\n      best = Math.max(best, length);\n    }\n  }\n  return best;\n}\n"
+      "javascript": "function longest_streak(days) {\n  const present = new Set(days);\n  let best = 0;\n  for (const d of present) {\n    if (!present.has(d - 1)) {\n      let length = 1;\n      while (present.has(d + length)) length++;\n      best = Math.max(best, length);\n    }\n  }\n  return best;\n}\n",
+      "java": "import java.util.*;\n\nclass Solution {\n    public int longestStreak(int[] days) {\n        Set<Integer> present = new HashSet<>();\n        for (int d : days) present.add(d);\n        int best = 0;\n        for (int d : present) {\n            if (present.contains(d - 1)) continue;\n            int length = 1;\n            while (present.contains(d + length)) length++;\n            best = Math.max(best, length);\n        }\n        return best;\n    }\n}\n"
     },
     "walkthrough": [
       {

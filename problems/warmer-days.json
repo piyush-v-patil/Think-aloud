@@ -251,7 +251,8 @@
     ],
     "referenceSolution": {
       "python": "def days_until_warmer(temps):\n    out = [0] * len(temps)\n    stack = []\n    for i, t in enumerate(temps):\n        while stack and temps[stack[-1]] < t:\n            j = stack.pop()\n            out[j] = i - j\n        stack.append(i)\n    return out\n",
-      "javascript": "function days_until_warmer(temps) {\n  const out = new Array(temps.length).fill(0);\n  const stack = [];\n  for (let i = 0; i < temps.length; i++) {\n    while (stack.length && temps[stack[stack.length - 1]] < temps[i]) {\n      const j = stack.pop();\n      out[j] = i - j;\n    }\n    stack.push(i);\n  }\n  return out;\n}\n"
+      "javascript": "function days_until_warmer(temps) {\n  const out = new Array(temps.length).fill(0);\n  const stack = [];\n  for (let i = 0; i < temps.length; i++) {\n    while (stack.length && temps[stack[stack.length - 1]] < temps[i]) {\n      const j = stack.pop();\n      out[j] = i - j;\n    }\n    stack.push(i);\n  }\n  return out;\n}\n",
+      "java": "import java.util.*;\n\nclass Solution {\n    public int[] daysUntilWarmer(int[] temps) {\n        int[] out = new int[temps.length];\n        Deque<Integer> stack = new ArrayDeque<>();\n        for (int i = 0; i < temps.length; i++) {\n            while (!stack.isEmpty() && temps[stack.peek()] < temps[i]) {\n                int j = stack.pop();\n                out[j] = i - j;\n            }\n            stack.push(i);\n        }\n        return out;\n    }\n}\n"
     },
     "walkthrough": [
       {

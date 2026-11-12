@@ -18,6 +18,11 @@ jobs:
         with:
           node-version: 22
           cache: npm
+      # Java solutions run on TeaVM (as in the browser) and, as a cross-check, on a real JDK.
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
       - run: npm ci
       - name: Lint
         run: npm run lint
@@ -27,7 +32,7 @@ jobs:
         run: npm test
       - name: Problem JSON schema
         run: npm run problems:validate
-      - name: Reference solutions pass their tests (Python and JavaScript)
+      - name: Reference solutions pass their tests (Python, JavaScript, Java)
         run: npm run problems:check-solutions
       - name: Build
         run: npm run build

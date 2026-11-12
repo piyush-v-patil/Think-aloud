@@ -227,7 +227,8 @@
     ],
     "referenceSolution": {
       "python": "def is_search_tree(root):\n    def ok(node, low, high):\n        if node is None:\n            return True\n        if not (low < node.val < high):\n            return False\n        return ok(node.left, low, node.val) and ok(node.right, node.val, high)\n    return ok(root, float('-inf'), float('inf'))\n",
-      "javascript": "function is_search_tree(root) {\n  const ok = (node, low, high) => {\n    if (!node) return true;\n    if (!(low < node.val && node.val < high)) return false;\n    return ok(node.left, low, node.val) && ok(node.right, node.val, high);\n  };\n  return ok(root, -Infinity, Infinity);\n}\n"
+      "javascript": "function is_search_tree(root) {\n  const ok = (node, low, high) => {\n    if (!node) return true;\n    if (!(low < node.val && node.val < high)) return false;\n    return ok(node.left, low, node.val) && ok(node.right, node.val, high);\n  };\n  return ok(root, -Infinity, Infinity);\n}\n",
+      "java": "class Solution {\n    public boolean isSearchTree(TreeNode root) {\n        return ok(root, Long.MIN_VALUE, Long.MAX_VALUE);\n    }\n\n    // Bounds are long so node values at the int limits still fit strictly inside.\n    private boolean ok(TreeNode node, long low, long high) {\n        if (node == null) return true;\n        if (node.val <= low || node.val >= high) return false;\n        return ok(node.left, low, node.val) && ok(node.right, node.val, high);\n    }\n}\n"
     },
     "walkthrough": [
       {

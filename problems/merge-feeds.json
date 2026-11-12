@@ -226,7 +226,8 @@
     ],
     "referenceSolution": {
       "python": "def merge_feeds(a, b):\n    dummy = ListNode()\n    tail = dummy\n    while a and b:\n        if a.val <= b.val:\n            tail.next, a = a, a.next\n        else:\n            tail.next, b = b, b.next\n        tail = tail.next\n    tail.next = a or b\n    return dummy.next\n",
-      "javascript": "function merge_feeds(a, b) {\n  const dummy = new ListNode();\n  let tail = dummy;\n  while (a && b) {\n    if (a.val <= b.val) {\n      tail.next = a;\n      a = a.next;\n    } else {\n      tail.next = b;\n      b = b.next;\n    }\n    tail = tail.next;\n  }\n  tail.next = a || b;\n  return dummy.next;\n}\n"
+      "javascript": "function merge_feeds(a, b) {\n  const dummy = new ListNode();\n  let tail = dummy;\n  while (a && b) {\n    if (a.val <= b.val) {\n      tail.next = a;\n      a = a.next;\n    } else {\n      tail.next = b;\n      b = b.next;\n    }\n    tail = tail.next;\n  }\n  tail.next = a || b;\n  return dummy.next;\n}\n",
+      "java": "class Solution {\n    public ListNode mergeFeeds(ListNode a, ListNode b) {\n        ListNode dummy = new ListNode();\n        ListNode tail = dummy;\n        while (a != null && b != null) {\n            if (a.val <= b.val) {\n                tail.next = a;\n                a = a.next;\n            } else {\n                tail.next = b;\n                b = b.next;\n            }\n            tail = tail.next;\n        }\n        tail.next = a != null ? a : b;\n        return dummy.next;\n    }\n}\n"
     },
     "walkthrough": [
       {

@@ -204,7 +204,8 @@
     ],
     "referenceSolution": {
       "python": "def chart_depth(root):\n    if root is None:\n        return 0\n    return 1 + max(chart_depth(root.left), chart_depth(root.right))\n",
-      "javascript": "function chart_depth(root) {\n  if (!root) return 0;\n  return 1 + Math.max(chart_depth(root.left), chart_depth(root.right));\n}\n"
+      "javascript": "function chart_depth(root) {\n  if (!root) return 0;\n  return 1 + Math.max(chart_depth(root.left), chart_depth(root.right));\n}\n",
+      "java": "class Solution {\n    public int chartDepth(TreeNode root) {\n        if (root == null) return 0;\n        return 1 + Math.max(chartDepth(root.left), chartDepth(root.right));\n    }\n}\n"
     },
     "walkthrough": [
       {

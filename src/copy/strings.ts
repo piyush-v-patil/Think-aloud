@@ -30,6 +30,7 @@ export const nav = {
 export const languageName: Record<Language, string> = {
   python: 'Python',
   javascript: 'JavaScript',
+  java: 'Java',
 };
 
 export const difficultyName: Record<Difficulty, string> = {
@@ -139,6 +140,8 @@ export const setup = {
   interviewerHeading: 'Interviewer',
   feedbackHeading: 'Feedback',
   languageHeading: 'Language',
+  javaHelp:
+    'Java is compiled and run in your browser. The first run loads about 6.5 MB, and each run takes a second or two to compile. Write a class Solution; java.util is already imported. A few library calls don’t work in the browser’s Java, such as String.format with %f.',
   qualityHeading: 'Quality',
   lengthLabel: 'Length in minutes',
   start: 'Start interview',

@@ -38,7 +38,7 @@ export function preparedToProblem(out: PreparedOutput, id: string, source: Probl
     statement: out.statement,
     examples: out.examples,
     signature: out.signature,
-    starterCode: starterFor(out.signature),
+    starterCode: starterFor(out.signature, decodeTests(out.tests, out.signature.params.length)),
     tests: decodeTests(out.tests, out.signature.params.length),
     analysis: out.analysis,
     source,

@@ -287,7 +287,8 @@
     ],
     "referenceSolution": {
       "python": "def merge_bookings(bookings):\n    out = []\n    for start, end in sorted(bookings):\n        if out and start <= out[-1][1]:\n            out[-1][1] = max(out[-1][1], end)\n        else:\n            out.append([start, end])\n    return out\n",
-      "javascript": "function merge_bookings(bookings) {\n  const sorted = [...bookings].sort((a, b) => a[0] - b[0] || a[1] - b[1]);\n  const out = [];\n  for (const [start, end] of sorted) {\n    if (out.length && start <= out[out.length - 1][1]) {\n      out[out.length - 1][1] = Math.max(out[out.length - 1][1], end);\n    } else out.push([start, end]);\n  }\n  return out;\n}\n"
+      "javascript": "function merge_bookings(bookings) {\n  const sorted = [...bookings].sort((a, b) => a[0] - b[0] || a[1] - b[1]);\n  const out = [];\n  for (const [start, end] of sorted) {\n    if (out.length && start <= out[out.length - 1][1]) {\n      out[out.length - 1][1] = Math.max(out[out.length - 1][1], end);\n    } else out.push([start, end]);\n  }\n  return out;\n}\n",
+      "java": "import java.util.*;\n\nclass Solution {\n    public int[][] mergeBookings(int[][] bookings) {\n        int[][] sorted = Arrays.copyOf(bookings, bookings.length);\n        Arrays.sort(sorted, (a, b) -> Integer.compare(a[0], b[0]));\n        List<int[]> out = new ArrayList<>();\n        for (int[] b : sorted) {\n            if (!out.isEmpty() && b[0] <= out.get(out.size() - 1)[1]) {\n                int[] last = out.get(out.size() - 1);\n                last[1] = Math.max(last[1], b[1]);\n            } else {\n                out.add(new int[]{b[0], b[1]});\n            }\n        }\n        return out.toArray(new int[0][]);\n    }\n}\n"
     },
     "walkthrough": [
       {

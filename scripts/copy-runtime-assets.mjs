@@ -55,3 +55,15 @@ if (existsSync(cmuPath)) {
   writeFileSync(join(kokoroOut, 'lexicon.txt'), `${lines.join('\n')}\n`);
   console.log(`[copy-runtime-assets] Pronunciation lexicon (${lines.length} words) written to public/vendor/kokoro`);
 }
+
+// The in-browser Java compiler (TeaVM), committed under vendor/teavm with
+// its provenance and licenses. Loaded only when someone runs Java code.
+const teavmSrc = join(root, 'vendor', 'teavm');
+if (existsSync(teavmSrc)) {
+  const teavmOut = join(root, 'public', 'vendor', 'teavm');
+  mkdirSync(teavmOut, { recursive: true });
+  for (const file of ['compiler.wasm', 'compiler.wasm-runtime.js', 'runtime-classlib-teavm.bin', 'java-api.bin', 'LICENSE']) {
+    cpSync(join(teavmSrc, file), join(teavmOut, file));
+  }
+  console.log('[copy-runtime-assets] Java compiler (TeaVM) copied to public/vendor/teavm');
+}

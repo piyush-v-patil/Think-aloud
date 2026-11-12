@@ -194,7 +194,8 @@
     ],
     "referenceSolution": {
       "python": "def is_mirror(label):\n    i, j = 0, len(label) - 1\n    while i < j:\n        if not label[i].isalnum():\n            i += 1\n        elif not label[j].isalnum():\n            j -= 1\n        elif label[i].lower() != label[j].lower():\n            return False\n        else:\n            i += 1\n            j -= 1\n    return True\n",
-      "javascript": "function is_mirror(label) {\n  const ok = (c) => /[a-z0-9]/i.test(c);\n  let i = 0;\n  let j = label.length - 1;\n  while (i < j) {\n    if (!ok(label[i])) i++;\n    else if (!ok(label[j])) j--;\n    else if (label[i].toLowerCase() !== label[j].toLowerCase()) return false;\n    else {\n      i++;\n      j--;\n    }\n  }\n  return true;\n}\n"
+      "javascript": "function is_mirror(label) {\n  const ok = (c) => /[a-z0-9]/i.test(c);\n  let i = 0;\n  let j = label.length - 1;\n  while (i < j) {\n    if (!ok(label[i])) i++;\n    else if (!ok(label[j])) j--;\n    else if (label[i].toLowerCase() !== label[j].toLowerCase()) return false;\n    else {\n      i++;\n      j--;\n    }\n  }\n  return true;\n}\n",
+      "java": "class Solution {\n    public boolean isMirror(String label) {\n        int i = 0, j = label.length() - 1;\n        while (i < j) {\n            char a = label.charAt(i), b = label.charAt(j);\n            if (!Character.isLetterOrDigit(a)) {\n                i++;\n            } else if (!Character.isLetterOrDigit(b)) {\n                j--;\n            } else if (Character.toLowerCase(a) != Character.toLowerCase(b)) {\n                return false;\n            } else {\n                i++;\n                j--;\n            }\n        }\n        return true;\n    }\n}\n"
     },
     "walkthrough": [
       {

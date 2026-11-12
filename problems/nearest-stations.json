@@ -314,7 +314,8 @@
     ],
     "referenceSolution": {
       "python": "import heapq\n\ndef nearest_stations(stations, k):\n    heap = []\n    for x, y in stations:\n        d = x * x + y * y\n        heapq.heappush(heap, (-d, x, y))\n        if len(heap) > k:\n            heapq.heappop(heap)\n    return [[x, y] for _, x, y in heap]\n",
-      "javascript": "function nearest_stations(stations, k) {\n  const dist = ([x, y]) => x * x + y * y;\n  return [...stations].sort((a, b) => dist(a) - dist(b)).slice(0, k);\n}\n"
+      "javascript": "function nearest_stations(stations, k) {\n  const dist = ([x, y]) => x * x + y * y;\n  return [...stations].sort((a, b) => dist(a) - dist(b)).slice(0, k);\n}\n",
+      "java": "import java.util.*;\n\nclass Solution {\n    public int[][] nearestStations(int[][] stations, int k) {\n        // A max-heap on distance holds the k nearest seen so far.\n        PriorityQueue<int[]> heap = new PriorityQueue<>((a, b) -> Long.compare(dist(b), dist(a)));\n        for (int[] s : stations) {\n            heap.add(s);\n            if (heap.size() > k) heap.poll();\n        }\n        int[][] out = new int[heap.size()][];\n        int i = 0;\n        for (int[] s : heap) out[i++] = new int[]{s[0], s[1]};\n        return out;\n    }\n\n    private long dist(int[] p) {\n        return (long) p[0] * p[0] + (long) p[1] * p[1];\n    }\n}\n"
     },
     "walkthrough": [
       {

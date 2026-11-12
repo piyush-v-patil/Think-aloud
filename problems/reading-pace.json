@@ -239,7 +239,8 @@
     ],
     "referenceSolution": {
       "python": "def slowest_pace(pages, hours):\n    lo, hi = 1, max(pages)\n    while lo < hi:\n        mid = (lo + hi) // 2\n        needed = sum((p + mid - 1) // mid for p in pages)\n        if needed <= hours:\n            hi = mid\n        else:\n            lo = mid + 1\n    return lo\n",
-      "javascript": "function slowest_pace(pages, hours) {\n  let lo = 1;\n  let hi = Math.max(...pages);\n  while (lo < hi) {\n    const mid = Math.floor((lo + hi) / 2);\n    let needed = 0;\n    for (const p of pages) needed += Math.ceil(p / mid);\n    if (needed <= hours) hi = mid;\n    else lo = mid + 1;\n  }\n  return lo;\n}\n"
+      "javascript": "function slowest_pace(pages, hours) {\n  let lo = 1;\n  let hi = Math.max(...pages);\n  while (lo < hi) {\n    const mid = Math.floor((lo + hi) / 2);\n    let needed = 0;\n    for (const p of pages) needed += Math.ceil(p / mid);\n    if (needed <= hours) hi = mid;\n    else lo = mid + 1;\n  }\n  return lo;\n}\n",
+      "java": "class Solution {\n    public int slowestPace(int[] pages, int hours) {\n        int lo = 1, hi = 1;\n        for (int p : pages) hi = Math.max(hi, p);\n        while (lo < hi) {\n            int mid = lo + (hi - lo) / 2;\n            long needed = 0;\n            for (int p : pages) needed += (p + mid - 1) / mid;\n            if (needed <= hours) hi = mid;\n            else lo = mid + 1;\n        }\n        return lo;\n    }\n}\n"
     },
     "walkthrough": [
       {

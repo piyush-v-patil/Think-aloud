@@ -219,7 +219,8 @@
     ],
     "referenceSolution": {
       "python": "def first_at_or_above(versions, target):\n    lo, hi = 0, len(versions)\n    while lo < hi:\n        mid = (lo + hi) // 2\n        if versions[mid] < target:\n            lo = mid + 1\n        else:\n            hi = mid\n    return lo\n",
-      "javascript": "function first_at_or_above(versions, target) {\n  let lo = 0;\n  let hi = versions.length;\n  while (lo < hi) {\n    const mid = (lo + hi) >> 1;\n    if (versions[mid] < target) lo = mid + 1;\n    else hi = mid;\n  }\n  return lo;\n}\n"
+      "javascript": "function first_at_or_above(versions, target) {\n  let lo = 0;\n  let hi = versions.length;\n  while (lo < hi) {\n    const mid = (lo + hi) >> 1;\n    if (versions[mid] < target) lo = mid + 1;\n    else hi = mid;\n  }\n  return lo;\n}\n",
+      "java": "class Solution {\n    public int firstAtOrAbove(int[] versions, int target) {\n        int lo = 0, hi = versions.length;\n        while (lo < hi) {\n            int mid = lo + (hi - lo) / 2;\n            if (versions[mid] < target) lo = mid + 1;\n            else hi = mid;\n        }\n        return lo;\n    }\n}\n"
     },
     "walkthrough": [
       {
