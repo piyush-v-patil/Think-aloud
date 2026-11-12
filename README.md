@@ -156,7 +156,7 @@ The scoring is built to be trusted:
   every session, computed from the usage the API reported, cached tokens
   included.
 
-<img src="docs/screenshots/setup.png" alt="The setup screen: 'Practice thinking out loud.' Problem source, interviewer persona, feedback mode, language, quality preset and length on the left, and the session cost estimate on the right." width="100%">
+<img src="docs/screenshots/setup.png" alt="The setup screen on one page: 'Practice thinking out loud.', the problem source with difficulty and topic filters and the picked problem, then 'Your interview' as compact rows (interviewer, feedback, language, quality with its models, length), a one-line 'Everything is ready.' status, and the Start interview button with the cost estimate beside it." width="100%">
 
 ### Speech your way
 
