@@ -101,6 +101,11 @@ export async function getProblem(id: string): Promise<Problem | undefined> {
   return (await db()).get('problems', id);
 }
 
+/** Ids of every stored problem (pasted, variations, AI-written LeetCode problems). */
+export async function problemIds(): Promise<string[]> {
+  return (await (await db()).getAllKeys('problems')) as string[];
+}
+
 export async function getCachedAnalysis(hash: string): Promise<Problem | undefined> {
   return (await (await db()).get('analysisCache', hash))?.problem;
 }

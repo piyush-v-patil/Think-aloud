@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { list as listCopy, setup as copy } from '../../copy/strings';
-import { listEntries, type ListEntry, type UserList } from '../../lib/storage/db';
+import { getProblem, listEntries, type ListEntry, type UserList } from '../../lib/storage/db';
 import { MY_LIST_ID, entriesIn, findEntry, leetcodeUrl, loadLeetCodeLists, type LeetCodeLists, type NewItem } from '../../lib/lists/lists';
 import { loadUserLists } from '../../lib/lists/store';
 import { bankForSlug } from '../../lib/problems/bank';
@@ -9,6 +9,9 @@ import { Segmented } from '../../ui/Segmented';
 import { TextArea } from '../../ui/Field';
 import { ExternalLink } from '../../ui/ExternalLink';
 import { Button } from '../../ui/Button';
+import { useStore } from '../../state/store';
+import { loadPrepared, queueStore } from '../../lib/lists/prepare-queue';
+import { leetcodeProblemId, type LeetCodeTarget } from '../../lib/problems/prepare';
 
 /** What the candidate picked from a list, and how they'll practice it. */
 export interface ListSelection {
@@ -21,7 +24,13 @@ export interface ListSelection {
   text?: string;
   /** True when the statement was pasted now and should be saved. */
   newText: boolean;
+  /** Have the AI write this LeetCode problem in its own words (prepared already, or at start). */
+  aiTarget?: LeetCodeTarget;
+  /** Set when the AI-written version is already on this device. */
+  aiPrepared?: boolean;
 }
+
+type Mode = 'builtin' | 'ai' | 'statement';
 
 interface Option {
   key: string;
@@ -42,7 +51,13 @@ export function ListSource({ onChange }: { onChange: (s: ListSelection | null) =
   const [entries, setEntries] = useState<ListEntry[]>([]);
   const [listId, setListId] = useState(() => params().get('from') ?? MY_LIST_ID);
   const [key, setKey] = useState<string | null>(() => params().get('problem'));
-  const [mode, setMode] = useState<'builtin' | 'statement'>('builtin');
+  const [chosenMode, setMode] = useState<Mode | null>(null);
+  const [preview, setPreview] = useState(false);
+  const [previewText, setPreviewText] = useState<string | null>(null);
+  const queue = useStore(queueStore);
+  useEffect(() => {
+    void loadPrepared();
+  }, []);
   const [draft, setDraft] = useState('');
   const [replacing, setReplacing] = useState(false);
 
@@ -72,10 +87,31 @@ export function ListSource({ onChange }: { onChange: (s: ListSelection | null) =
   }, [bundled, catalog, entries, listId]);
 
   const picked = options.find((o) => o.key === key) ?? options[0];
-  const bank = picked?.item.slug ? bankForSlug(picked.item.slug) : undefined;
-  const useBank = !!bank && mode === 'builtin';
+  const slug = picked?.item.slug;
+  const bank = slug ? bankForSlug(slug) : undefined;
   const savedText = picked?.entry?.text;
+  // Built-in first, then the AI's version, then pasting. A statement saved
+  // earlier keeps "paste" as the default for that problem.
+  const modes: Mode[] = [...(bank ? (['builtin'] as Mode[]) : []), ...(slug ? (['ai'] as Mode[]) : []), 'statement'];
+  const defaultMode: Mode = bank ? 'builtin' : savedText ? 'statement' : slug ? 'ai' : 'statement';
+  const mode: Mode = chosenMode && modes.includes(chosenMode) ? chosenMode : defaultMode;
+  const useBank = mode === 'builtin' && !!bank;
   const text = savedText && !replacing ? savedText : draft;
+  const catalogEntry = slug ? catalog?.problems[slug] : undefined;
+  const aiTarget = useMemo<LeetCodeTarget | undefined>(
+    () =>
+      mode === 'ai' && slug && picked
+        ? { slug, title: picked.item.title, number: catalogEntry?.number, difficulty: catalogEntry?.difficulty, pattern: catalogEntry?.pattern }
+        : undefined,
+    [mode, slug, picked, catalogEntry],
+  );
+  const aiPrepared = !!slug && queue.prepared.has(slug);
+  const preparing = !!slug && queue.current?.slug === slug;
+
+  useEffect(() => {
+    if (!preview || !slug || !aiPrepared) return;
+    void getProblem(leetcodeProblemId(slug)).then((p) => setPreviewText(p?.statement ?? null));
+  }, [preview, slug, aiPrepared]);
 
   useEffect(() => {
     if (!picked) return onChange(null);
@@ -83,10 +119,12 @@ export function ListSource({ onChange }: { onChange: (s: ListSelection | null) =
       item: picked.item,
       entry: picked.entry,
       bankId: useBank ? bank!.id : undefined,
-      text: useBank ? undefined : text.trim() || undefined,
-      newText: !useBank && (!savedText || replacing) && draft.trim().length > 0,
+      text: mode === 'statement' ? text.trim() || undefined : undefined,
+      newText: mode === 'statement' && (!savedText || replacing) && draft.trim().length > 0,
+      aiTarget,
+      aiPrepared: aiTarget ? aiPrepared : undefined,
     });
-  }, [picked, useBank, bank, text, savedText, replacing, draft, onChange]);
+  }, [picked, useBank, bank, mode, text, savedText, replacing, draft, onChange, aiTarget, aiPrepared]);
 
   const link = picked?.item.slug ? leetcodeUrl(picked.item.slug) : picked?.item.link;
 
@@ -131,6 +169,8 @@ export function ListSource({ onChange }: { onChange: (s: ListSelection | null) =
                 setKey(e.target.value);
                 setDraft('');
                 setReplacing(false);
+                setMode(null);
+                setPreview(false);
               }}
             >
               {options.map((o) => (
@@ -147,20 +187,31 @@ export function ListSource({ onChange }: { onChange: (s: ListSelection | null) =
 
       {picked && (
         <div className="flex flex-col gap-2 border-l-[3px] border-smudge py-0.5 pl-4">
-          {bank && (
+          {modes.length > 1 && (
             <Segmented
               inline
               label={copy.practiceWith}
               value={mode}
               onChange={setMode}
-              options={[
-                { value: 'builtin', label: copy.builtInVersion },
-                { value: 'statement', label: copy.leetcodeStatement },
-              ]}
+              options={modes.map((m) => ({ value: m, label: m === 'builtin' ? copy.builtInVersion : m === 'ai' ? copy.aiVersion : copy.leetcodeStatement }))}
             />
           )}
           {useBank ? (
             <p className="text-sm text-ink-soft">{copy.builtInHelp(bank!.title)}</p>
+          ) : mode === 'ai' ? (
+            <div className="flex flex-col gap-2 text-sm text-ink-soft">
+              {aiPrepared ? (
+                <p className="flex flex-wrap items-baseline gap-x-3">
+                  {copy.aiReady}
+                  <Button variant="quiet" aria-expanded={preview} onClick={() => setPreview(!preview)}>
+                    {preview ? copy.hidePreview : copy.showPreview}
+                  </Button>
+                </p>
+              ) : (
+                <p>{preparing ? copy.aiPreparing : copy.aiHelp}</p>
+              )}
+              {preview && aiPrepared && previewText && <p className="whitespace-pre-wrap rounded-control bg-paper p-3 text-ink">{previewText}</p>}
+            </div>
           ) : savedText && !replacing ? (
             <p className="flex flex-wrap items-baseline gap-x-3 text-sm text-ink-soft">
               {copy.statementSaved}

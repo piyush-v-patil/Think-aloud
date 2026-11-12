@@ -8,6 +8,8 @@ import { Button } from '../ui/Button';
 import { TextArea, TextField } from '../ui/Field';
 import { ExternalLink } from '../ui/ExternalLink';
 import { navigate } from '../state/router';
+import { useStore } from '../state/store';
+import { enqueue, loadPrepared, queueStore, stopQueue } from '../lib/lists/prepare-queue';
 
 /** Weak problems resurface first, then ones not practiced, then the rest. */
 export function sortForPractice(entries: ListEntry[]): ListEntry[] {
@@ -50,6 +52,10 @@ export default function ListScreen() {
   const [status, setStatus] = useState<Status>('any');
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [message, setMessage] = useState<string | null>(null);
+  const queue = useStore(queueStore);
+  useEffect(() => {
+    void loadPrepared();
+  }, []);
 
   const reload = useCallback(async () => {
     const [lists, all] = await Promise.all([loadUserLists(), listEntries()]);
@@ -154,6 +160,15 @@ export default function ListScreen() {
         count={selected.size}
         lists={mine.filter((l) => l.id !== current)}
         canRemove={!!userList}
+        prepareCount={rows.filter((r) => selected.has(r.key) && r.item.slug && !r.builtIn && !queue.prepared.has(r.item.slug)).length}
+        onPrepare={() => {
+          const targets = rows
+            .filter((r) => selected.has(r.key) && r.item.slug && !r.builtIn)
+            .map((r) => ({ slug: r.item.slug!, title: r.item.title, number: r.number, difficulty: r.difficulty, pattern: r.pattern }));
+          const n = enqueue(targets);
+          setMessage(n ? copy.queued(n) : copy.nothingToPrepare);
+          setSelected(new Set());
+        }}
         onCopy={async (target, newName) => {
           const list = newName ? await createList(newName) : mine.find((l) => l.id === target)!;
           const items = rows.filter((r) => selected.has(r.key)).map((r) => r.item);
@@ -173,6 +188,7 @@ export default function ListScreen() {
           {message}
         </p>
       )}
+      <QueueStatus />
 
       {total === 0 ? (
         <p className="text-sm text-ink-soft">{bundled ? common.loading : copy.empty}</p>
@@ -354,12 +370,16 @@ function SelectionBar({
   count,
   lists,
   canRemove,
+  prepareCount,
+  onPrepare,
   onCopy,
   onRemove,
 }: {
   count: number;
   lists: UserList[];
   canRemove: boolean;
+  prepareCount: number;
+  onPrepare: () => void;
   onCopy: (target: string, newName?: string) => Promise<void>;
   onRemove: () => Promise<void>;
 }) {
@@ -388,6 +408,11 @@ function SelectionBar({
       <Button variant="primary" disabled={isNew && !newName.trim()} onClick={() => void onCopy(chosen, isNew ? newName : undefined)}>
         {copy.copy}
       </Button>
+      {prepareCount > 0 && (
+        <Button title={copy.prepareTitle} onClick={onPrepare}>
+          {copy.prepareSelected(prepareCount)}
+        </Button>
+      )}
       {canRemove && (
         <Button variant="quiet" onClick={() => void onRemove()}>
           {copy.removeSelected(count)}
@@ -397,8 +422,43 @@ function SelectionBar({
   );
 }
 
+/** Progress of "Prepare with AI": which problem is being written, and what didn't work. */
+function QueueStatus() {
+  const q = useStore(queueStore);
+  if (!q.current && !q.failed.length) return null;
+  const done = q.total - q.pending.length - (q.current ? 1 : 0);
+  return (
+    <div className="flex flex-col gap-1 border-l-[3px] border-blue py-1 pl-4 text-sm" role="status">
+      {q.current && (
+        <p className="flex flex-wrap items-baseline gap-x-3">
+          <span>{copy.preparingProgress(done + 1, q.total, q.current.title)}</span>
+          <Button variant="quiet" onClick={stopQueue}>
+            {copy.stopPreparing}
+          </Button>
+        </p>
+      )}
+      {q.failed.length > 0 && (
+        <details>
+          <summary className="cursor-pointer text-red">{copy.prepareFailed(q.failed.length)}</summary>
+          <ul className="mt-1 flex flex-col gap-0.5 text-ink-soft">
+            {q.failed.map((f) => (
+              <li key={f.slug}>
+                {f.title}: {f.unknown ? copy.prepareUnknown : f.message}
+              </li>
+            ))}
+          </ul>
+        </details>
+      )}
+    </div>
+  );
+}
+
 function ProblemRow({ row, listId, checked, onCheck, onRemove }: { row: Row; listId: string; checked: boolean; onCheck: (on: boolean) => void; onRemove?: () => Promise<void> }) {
   const e = row.entry;
+  const q = useStore(queueStore);
+  const slug = row.item.slug;
+  const written = !row.builtIn && !!slug && q.prepared.has(slug);
+  const writing = !row.builtIn && !!slug && (q.current?.slug === slug || q.pending.some((t) => t.slug === slug));
   const weak = !!e && isWeak(e);
   const link = row.item.slug ? leetcodeUrl(row.item.slug) : row.item.link;
   return (
@@ -421,7 +481,9 @@ function ProblemRow({ row, listId, checked, onCheck, onRemove }: { row: Row; lis
               {copy.builtIn}
             </span>
           )}
-          {e?.text && !row.builtIn ? ` · ${copy.hasText}` : ''}
+          {written && <span title={copy.writtenTitle}> · {copy.written}</span>}
+          {writing && !written && ` · ${copy.writing}`}
+          {e?.text && !row.builtIn && !written ? ` · ${copy.hasText}` : ''}
         </p>
       </div>
       <div className="flex items-center gap-4">

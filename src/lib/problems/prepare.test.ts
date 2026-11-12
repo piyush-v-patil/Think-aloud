@@ -110,3 +110,31 @@ describe('prepareVariation', () => {
     expect(provider.calls[0].system[1].text).toContain('Writing a variation');
   }, 60_000);
 });
+
+describe('prepareFromLeetCode', () => {
+  it('writes a known LeetCode problem in its own words, checked, with the LeetCode reference', async () => {
+    const { prepareFromLeetCode } = await import('./prepare');
+    const provider = stubProvider([{ ...output({ title: 'Whatever the model called it' }), known: true } as PreparedOutput]);
+    const p = await prepareFromLeetCode(
+      { slug: 'sum-of-evens', number: 9001, title: 'Sum of Evens', difficulty: 'easy', pattern: 'Arrays & Hashing' },
+      { provider, model: 'm', run: runTests, record: () => {} },
+    );
+    expect(p.id).toBe('lc-sum-of-evens');
+    expect(p.source).toBe('leetcode');
+    expect(p.title).toBe('Sum of Evens');
+    expect(p.leetcode).toEqual({ number: 9001, title: 'Sum of Evens', slug: 'sum-of-evens', relation: 'same' });
+    expect(p.tests.map((t) => t.name)).toEqual(['example', 'empty', 'negatives']);
+    expect(provider.calls[0].turns[0].text).toContain('<leetcode_problem>');
+    expect(provider.calls[0].system[1].text).toContain('Writing a known problem from its name');
+    expect(provider.calls[0].system[1].text).toContain('in your own words');
+  }, 60_000);
+
+  it('asks for the statement instead of guessing when the model doesn’t know the problem', async () => {
+    const { prepareFromLeetCode, UnknownProblemError } = await import('./prepare');
+    const provider = stubProvider([{ ...output(), known: false } as PreparedOutput]);
+    await expect(prepareFromLeetCode({ slug: 'obscure-one', number: 4242, title: 'Obscure One' }, { provider, model: 'm', run: runTests, record: () => {} })).rejects.toBeInstanceOf(
+      UnknownProblemError,
+    );
+    expect(provider.calls).toHaveLength(1);
+  }, 60_000);
+});

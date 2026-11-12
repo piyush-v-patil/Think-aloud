@@ -150,10 +150,15 @@ The scoring is built to be trusted:
   copy problems between lists; duplicates are skipped. Progress belongs to
   the problem, so practicing Two Sum from Blind 75 shows in NeetCode 150
   too, and the ones you scored lowest on come up first.
-- **Practice any LeetCode problem.** Pick it from a list and either use the
-  built-in version (26 of the Blind 75 have one, with tests ready) or paste
-  its statement once. The statement stays on your device, your AI turns it
-  into tests, and it's saved for next time.
+- **Practice any LeetCode problem, nothing to paste.** Pick it from a list
+  and use the built-in version (26 of the Blind 75 have one, with tests
+  ready), or let **your AI write it**: from the number and title alone, it
+  writes the same problem in its own words, with its own examples and tests
+  it checks against its own solutions. Select a batch on the Lists page and
+  press **Prepare with AI** to have them ready ahead of time (about a minute
+  each, charged to your AI account once). If your AI isn't sure which
+  problem a title means, it says so instead of guessing, and you can paste
+  the statement instead. Everything stays on your device.
 - **Variations.** Get a fresh twist on a problem you've already done.
 
 ### Your keys, your choice of models
@@ -544,8 +549,13 @@ next.
   text in the transcript but aren't in the recording.
 - The bundled lists come from NeetCode's site and are a snapshot
   (`scripts/build-leetcode-lists.mjs` refreshes them). This repository
-  never contains LeetCode's problem text: to practice a LeetCode problem
-  you paste its statement on your own device.
+  never contains LeetCode's problem text. To practice a LeetCode problem,
+  your AI writes its own version on your device, or you paste the
+  statement there; neither leaves your device except to your AI provider.
+- An AI-written problem is only as faithful as the model's memory of it.
+  Strong models know the Blind 75 and NeetCode lists well, and the tests
+  are checked against the model's own solutions, but compare with
+  "Open on LeetCode" if something looks off.
 - The built-in bank's analyses were written by the maintainers. Run
   `npm run problems:analyze -- --all --force` with your own key to
   regenerate them with the strongest model.

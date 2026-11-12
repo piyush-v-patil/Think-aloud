@@ -9,7 +9,8 @@ import { createProvider, providerReady } from '../lib/ai/factory';
 import { ProviderError } from '../lib/ai/errors';
 import { ai as aiCopy, cost as costCopy } from '../copy/strings';
 import { usageRecord } from '../lib/ai/usage';
-import { preparePasted, prepareVariation, type PrepareStage } from '../lib/problems/prepare';
+import { preparePasted, prepareVariation, UnknownProblemError, type LeetCodeTarget, type PrepareStage } from '../lib/problems/prepare';
+import { problemForPractice } from '../lib/lists/prepare-queue';
 import { CodeRunner } from '../lib/runner/runner';
 import type { Language, UsageRecord } from '../lib/types';
 import { estimateSession, type Estimate } from '../lib/cost/estimate';
@@ -78,11 +79,12 @@ export function SetupScreen() {
         feedbackMode: settings.feedbackMode,
         minutes: settings.sessionMinutes,
         // The bank, and a list problem practiced with its built-in version, need no preparing.
-        needsAnalysis: source !== 'random' && !(source === 'list' && !!selection?.bankId),
+        // An AI-written problem already on this device needs none either.
+        needsAnalysis: source !== 'random' && !(source === 'list' && (!!selection?.bankId || !!selection?.aiPrepared)),
         speech: { liveEngine: chooseLiveEngine(settings), accurateEngine: chooseAccurateEngine(settings), keywordHints: true },
         history,
       }),
-    [provider, models, settings, source, selection?.bankId, history],
+    [provider, models, settings, source, selection?.bankId, selection?.aiPrepared, history],
   );
 
   const pastProblems = useMemo(() => {
@@ -101,7 +103,7 @@ export function SetupScreen() {
       : source === 'paste'
         ? pasted.trim().length > 20
         : source === 'list'
-          ? !!selection && (!!selection.bankId || (selection.text?.trim().length ?? 0) > 20)
+          ? !!selection && (!!selection.bankId || !!selection.aiTarget || (selection.text?.trim().length ?? 0) > 20)
           : !!base);
 
   const [prep, setPrep] = useState<{ stage: PrepareStage; abort: AbortController } | null>(null);
@@ -142,6 +144,7 @@ export function SetupScreen() {
         if (problem) begin(problem, [], entryId);
         return;
       }
+      if (selection.aiTarget) return startWritten(selection.aiTarget, entryId);
     }
     const text = source === 'list' ? (selection?.text ?? '') : pasted;
     const ai = createProvider(settings.provider, settings);
@@ -173,6 +176,25 @@ export function SetupScreen() {
       if (kind !== 'aborted') setError(kind === 'bad-output' ? copy.prepFailed : (aiCopy.errors[kind] ?? copy.prepFailed));
     } finally {
       runner.dispose();
+      setPrep(null);
+    }
+  }
+
+  /** A LeetCode problem in the AI's own words: ready on this device, or written now. */
+  async function startWritten(target: LeetCodeTarget, entryId: string) {
+    const abort = new AbortController();
+    setPrep({ stage: 'reading', abort });
+    try {
+      const problem = await problemForPractice(target, { signal: abort.signal, onStage: (stage) => setPrep({ stage, abort }) });
+      // Preparing is billed once, with the first session that uses it.
+      const { prepUsage = [], ...clean } = problem;
+      if (problem.prepUsage) await saveProblem(clean);
+      begin(clean, prepUsage, entryId);
+    } catch (err) {
+      if (err instanceof UnknownProblemError) return setError(copy.aiUnknown);
+      const kind = err instanceof ProviderError ? err.kind : 'unknown';
+      if (kind !== 'aborted') setError(kind === 'bad-output' ? copy.prepFailed : (aiCopy.errors[kind] ?? copy.prepFailed));
+    } finally {
       setPrep(null);
     }
   }

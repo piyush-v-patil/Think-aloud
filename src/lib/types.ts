@@ -164,7 +164,7 @@ export interface LeetCodeRef {
   relation: 'same' | 'similar';
 }
 
-export type ProblemSource = 'built-in' | 'pasted' | 'variation' | 'custom';
+export type ProblemSource = 'built-in' | 'pasted' | 'variation' | 'custom' | 'leetcode';
 
 export interface Problem {
   schemaVersion: 1;
@@ -184,6 +184,12 @@ export interface Problem {
   source: ProblemSource;
   /** The LeetCode problem this one practices (number, title, link slug); "similar" when it's a variant. */
   leetcode?: LeetCodeRef;
+  /**
+   * What preparing it ahead of time cost (an AI-written LeetCode problem
+   * prepared from the Lists page). Added to the first interview that uses
+   * it, then cleared, so spend tracking counts it once.
+   */
+  prepUsage?: UsageRecord[];
   /** For variations: the problem this one was derived from, and what changed. */
   variationOf?: { problemId: string; change: string };
 }

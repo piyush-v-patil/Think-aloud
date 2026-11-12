@@ -97,7 +97,7 @@ export const problemSchema = z.object({
   starterCode: z.object({ python: z.string(), javascript: z.string(), java: z.string().optional() }),
   tests: z.array(testCaseSchema).min(1),
   analysis: analysisSchema.optional(),
-  source: z.enum(['built-in', 'pasted', 'variation', 'custom']),
+  source: z.enum(['built-in', 'pasted', 'variation', 'custom', 'leetcode']),
   leetcode: z
     .object({
       number: z.number().int().positive(),

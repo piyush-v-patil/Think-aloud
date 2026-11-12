@@ -54,6 +54,38 @@ export async function preparePasted(text: string, opts: PrepareOptions): Promise
   return { problem, cached: false };
 }
 
+/** The model didn't recognize a LeetCode problem by its name, so the candidate should paste it. */
+export class UnknownProblemError extends Error {}
+
+/** A LeetCode problem to write from its name: everything the app knows about it. */
+export interface LeetCodeTarget {
+  slug: string;
+  number?: number;
+  title: string;
+  difficulty?: string;
+  pattern?: string;
+}
+
+/** Where an AI-written LeetCode problem is stored on this device. */
+export function leetcodeProblemId(slug: string): string {
+  return `lc-${slug}`;
+}
+
+/**
+ * Has the model write a well-known LeetCode problem from its number and
+ * title: the same problem, in its own words (never LeetCode's text), with
+ * tests checked against its reference solutions. Stored on this device.
+ */
+export async function prepareFromLeetCode(target: LeetCodeTarget, opts: PrepareOptions): Promise<Problem> {
+  const id = leetcodeProblemId(target.slug);
+  const input = `<leetcode_problem>\n${JSON.stringify(target)}\n</leetcode_problem>`;
+  const schema = preparedOutputSchema.extend({ known: z.boolean().describe('True only if you know this exact problem well') });
+  const problem = await generate(input, `${prompt('prepare-pasted')}\n\n${prompt('from-leetcode')}`, id, 'leetcode', opts, schema);
+  problem.title = target.title;
+  if (target.number) problem.leetcode = { number: target.number, title: target.title, slug: target.slug, relation: 'same' };
+  return problem;
+}
+
 /** Writes a variation of a problem the candidate already practiced. */
 export async function prepareVariation(base: Problem, opts: PrepareOptions): Promise<Problem> {
   const input = `<original_problem>\n${JSON.stringify({ title: base.title, statement: base.statement, signature: base.signature, optimal: base.analysis?.optimal })}\n</original_problem>`;
@@ -68,7 +100,7 @@ async function generate(
   id: string,
   source: Problem['source'],
   opts: PrepareOptions,
-  schema: z.ZodType<PreparedOutput & { change?: string }> = preparedOutputSchema,
+  schema: z.ZodType<PreparedOutput & { change?: string; known?: boolean }> = preparedOutputSchema,
   variationOf?: string,
 ): Promise<Problem> {
   const system = [
@@ -96,6 +128,7 @@ async function generate(
       signal: opts.signal,
     });
     opts.record('analysis', res.model, res.usage);
+    if ((res.data as { known?: boolean }).known === false) throw new UnknownProblemError('The model did not recognize this problem.');
     const problem = preparedToProblem(res.data, id, source);
     if (variationOf) problem.variationOf = { problemId: variationOf, change: (res.data as { change?: string }).change ?? '' };
     opts.onStage?.('checking');
