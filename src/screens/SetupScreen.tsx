@@ -21,6 +21,7 @@ import { useKeys } from '../state/keys';
 import { CostEstimate } from '../ui/CostEstimate';
 import { chooseAccurateEngine, chooseLiveEngine } from '../lib/speech/choose';
 import { Onboarding } from '../ui/Onboarding';
+import { ReadinessPanel } from '../ui/ReadinessPanel';
 import { naturalEngine } from '../lib/voice/natural';
 import { NATURAL_PREFIX } from '../lib/voice/kokoro-config';
 import { updateSettings, useSettings } from '../state/settings';
@@ -303,14 +304,7 @@ export function SetupScreen() {
           />
         </div>
 
-        {!hasKey && (
-          <p className="text-sm">
-            {copy.needKey}{' '}
-            <a href="#/settings" className="text-blue underline underline-offset-4">
-              {copy.addKey}
-            </a>
-          </p>
-        )}
+        <ReadinessPanel />
         {(limit === 'near' || limit === 'over') && (
           <p role="status" className={`text-sm ${limit === 'over' ? 'text-red' : ''}`}>
             {(limit === 'over' ? copy.monthlyLimitReached : copy.monthlyLimitWarning)(formatUsd(money.monthUsd), formatUsd(settings.monthlyLimitUsd!))}

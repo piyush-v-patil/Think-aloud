@@ -30,5 +30,7 @@ export type WorkerMessage =
   | { type: 'ready' }
   | { type: 'loading'; message: string }
   | { type: 'result'; response: RunResponse }
+  /** The runtime couldn't load (a download failed, say). */
+  | { type: 'failed'; message: string }
   /** Java: compiling is done and the code starts running; the time limit restarts. */
   | { type: 'compiled'; id: number };

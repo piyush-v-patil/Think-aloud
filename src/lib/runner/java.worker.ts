@@ -32,6 +32,10 @@ async function load(base: string): Promise<JavaToolchain> {
     fetchBytes('runtime-classlib-teavm.bin'),
   ]);
   const tc = await createTeaVMToolchain({ load: mod.load, compilerWasm, javaApi, classlib });
+  // The compiler's first build is much slower than later ones; do it now,
+  // while the candidate is still on the setup screen, not on their first run.
+  post({ type: 'loading', message: 'Starting Java' });
+  await tc.compile({ 'Warmup.java': 'import java.util.*; public class Warmup { public static void main(String[] a) { List<Integer> l = new ArrayList<>(); l.add(1); System.out.println(l); } }' }, 'Warmup');
   // Everything is loaded; from here on nothing in this worker may use the network or storage.
   lockDownWorker();
   post({ type: 'ready' });
@@ -42,6 +46,7 @@ ctx.onmessage = async (event: MessageEvent<{ init?: string } & Partial<RunReques
   const data = event.data;
   if (data.init) {
     toolchain ??= load(data.init);
+    toolchain.catch((err) => post({ type: 'failed', message: `Java couldn't load: ${err instanceof Error ? err.message : String(err)}` }));
     return;
   }
   const req = data as RunRequest;

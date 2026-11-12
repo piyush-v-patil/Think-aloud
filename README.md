@@ -210,6 +210,11 @@ your computer (start at once) and which are online (can start slowly).
   device, with no name, transcript or code.
 - **Export and import** everything (never keys), or delete it all.
 - **A demo session** you can open without a key.
+- **A "Getting ready" panel** on the setup screen. It starts loading what
+  your choices need (the Python or Java runner, the natural voice) and shows
+  progress, checks the microphone and the AI connection (including whether
+  the Claude Code bridge is running), and says what to do about anything
+  that isn't ready. Loading continues in the background if you start early.
 
 <table>
   <tr>

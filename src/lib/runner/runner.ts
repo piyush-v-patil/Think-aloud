@@ -37,7 +37,7 @@ class LanguageWorker {
           ? new Worker(new URL('./java.worker.ts', import.meta.url), { type: 'module' })
           : new Worker(new URL('./js.worker.ts', import.meta.url), { type: 'module' });
     this.worker = worker;
-    this.readyPromise = new Promise<void>((resolveReady) => {
+    this.readyPromise = new Promise<void>((resolveReady, rejectReady) => {
       worker.onmessage = (event: MessageEvent<WorkerMessage>) => {
         const msg = event.data;
         if (msg.type === 'loading') this.onStatus?.(msg.message);
@@ -46,6 +46,12 @@ class LanguageWorker {
           resolveReady();
         }
         if (msg.type === 'compiled') this.pending.get(msg.id)?.restartTimer?.();
+        if (msg.type === 'failed') {
+          this.onStatus?.(null);
+          rejectReady(new Error(msg.message));
+          // Start afresh next time, so a failed download can be retried.
+          this.restart();
+        }
         if (msg.type === 'result') {
           const p = this.pending.get(msg.response.id);
           if (p) {

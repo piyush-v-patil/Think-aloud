@@ -28,6 +28,7 @@ ctx.onmessage = async (event: MessageEvent<{ init?: string } & Partial<RunReques
   const data = event.data;
   if (data.init) {
     pyodide ??= load(data.init);
+    pyodide.catch((err) => post({ type: 'failed', message: `Python couldn't load: ${err instanceof Error ? err.message : String(err)}` }));
     return;
   }
   const req = data as RunRequest;

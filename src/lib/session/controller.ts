@@ -28,7 +28,7 @@ import { SpeechError } from '../speech/types';
 import type { Voice } from '../voice/types';
 import { takeSentences } from '../voice/browser';
 import { TurnTracker, looksLikeEcho, type Turn } from '../speech/turns';
-import { CodeRunner } from '../runner/runner';
+import { sharedRunner } from '../runner/shared';
 import { hasTests } from '../problems/paste';
 import { starterCodeFor } from '../problems/analyze';
 import { SessionClock } from './clock';
@@ -111,7 +111,8 @@ export class InterviewController {
   readonly deps: ControllerDeps;
   recording: Recording | null = null;
 
-  private runner = new CodeRunner();
+  /** Shared, so a runtime loaded on the setup screen is ready here. */
+  private runner = sharedRunner;
   private interviewer: Interviewer;
   private transcriber: LiveTranscriber | null = null;
   private turns: TurnTracker;
@@ -318,7 +319,8 @@ export class InterviewController {
     this.turns.flush();
     this.snapshot();
     this.recording = (await this.deps.recorder?.stop()) ?? null;
-    this.runner.dispose();
+    // The shared runner stays warm for the next interview.
+    this.runner.onStatus = undefined;
     this.patch({ ended: true, interim: '' });
   }
 

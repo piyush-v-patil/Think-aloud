@@ -118,6 +118,58 @@ export const hireSignalName: Record<HireSignal, string> = {
   'strong-yes': 'Strong yes',
 };
 
+export const ready = {
+  heading: 'Getting ready',
+  allReady: 'Everything is ready.',
+  progress: (done: number, total: number) => `${done} of ${total} ready`,
+  startAnyway: 'You can start now. Anything still loading finishes in the background.',
+  tryAgain: 'Try again',
+  checkAgain: 'Check again',
+  allowNow: 'Allow now',
+  openSettings: 'Open Settings',
+  mb: (n: number) => `${(n / 1_000_000).toFixed(1)} MB`,
+  runner: {
+    label: (language: string) => `${language} runner`,
+    builtIn: 'Ready. JavaScript is built into your browser.',
+    downloading: (language: string, loaded: string, total: string) => `Downloading ${language}: ${loaded} of ${total}. Only the first time; your browser keeps it.`,
+    downloadingUnknown: (language: string) => `Downloading ${language}.`,
+    starting: (language: string) => `Starting ${language}.`,
+    ready: 'Ready.',
+    failed: (message: string) => `Couldn’t load: ${message}`,
+  },
+  voice: {
+    label: 'Interviewer’s voice',
+    browser: (name: string) => `Ready: ${name}.`,
+    browserAuto: 'Ready.',
+    none: 'Your browser can’t speak, so the interviewer’s words appear as text.',
+    naturalLoading: (percent: number) => (percent > 0 && percent < 100 ? `Downloading the natural voice: ${percent}%.` : 'Loading the natural voice and checking this computer’s speed.'),
+    naturalReady: 'Ready: the natural voice.',
+    naturalSlow: 'Using the fast voice: this computer makes the natural voice too slowly to start without a delay.',
+    naturalFailed: 'Using the fast voice: the natural voice couldn’t load.',
+  },
+  mic: {
+    label: 'Microphone',
+    typing: 'Not needed: you’ll type what you would say.',
+    unsupported: 'This browser can’t turn speech into text, so you’ll type. Voice works in Chrome, Edge and Safari.',
+    granted: 'Allowed.',
+    prompt: 'Your browser will ask for it when the interview starts.',
+    denied: 'Blocked for this site. Allow the microphone in your browser’s site settings, then reload the page.',
+    requesting: 'Waiting for your answer in the browser’s prompt.',
+  },
+  ai: {
+    label: 'AI',
+    noKey: 'Add an AI key, or set up Claude Code, in Settings.',
+    keyChecked: (provider: string) => `Ready: your ${provider} key works.`,
+    keySaved: (provider: string) => `${provider} key saved.`,
+    keyFailed: (provider: string) => `Your ${provider} key didn’t pass its last check. Check it in Settings.`,
+    checking: (what: string) => `Checking ${what}.`,
+    reachable: (what: string) => `Ready: ${what} is running.`,
+    unreachable: (what: string) => `Can’t reach ${what}. Make sure it’s running, then check again.`,
+    bridge: 'the Claude Code bridge',
+    endpoint: 'your endpoint',
+  },
+};
+
 export const setup = {
   title: 'Practice thinking out loud.',
   intro:
