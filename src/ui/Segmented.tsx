@@ -12,6 +12,7 @@ export function Segmented<T extends string>({
   help,
   hideLabel = false,
   size = 'md',
+  inline = false,
 }: {
   label: string;
   value: T;
@@ -21,12 +22,25 @@ export function Segmented<T extends string>({
   hideLabel?: boolean;
   /** Legend size: "md" for a top-level question, "sm" inside a section. */
   size?: 'md' | 'sm';
+  /** A compact row: the label sits to the left of the options. */
+  inline?: boolean;
 }) {
   const id = useId();
+  const Group = inline ? 'div' : 'fieldset';
   return (
-    <fieldset className="m-0 border-0 p-0" aria-describedby={help ? `${id}-help` : undefined}>
-      <legend className={hideLabel ? 'sr-only' : `mb-1 font-semibold ${size === 'md' ? 'text-md' : 'text-sm'}`}>{label}</legend>
-      <div className="flex flex-wrap gap-x-6 gap-y-1">
+    <Group
+      className={inline ? 'flex items-start gap-3' : 'm-0 border-0 p-0'}
+      aria-describedby={help ? `${id}-help` : undefined}
+      {...(inline ? { role: 'radiogroup', 'aria-labelledby': `${id}-label` } : {})}
+    >
+      {inline ? (
+        <span id={`${id}-label`} className="w-24 shrink-0 pt-3 text-sm font-semibold sm:w-28">
+          {label}
+        </span>
+      ) : (
+        <legend className={hideLabel ? 'sr-only' : `mb-1 font-semibold ${size === 'md' ? 'text-md' : 'text-sm'}`}>{label}</legend>
+      )}
+      <div className={`flex flex-wrap ${inline ? 'gap-x-5' : 'gap-x-6'} gap-y-1`}>
         {options.map((opt) => {
           const selected = opt.value === value;
           return (
@@ -65,6 +79,6 @@ export function Segmented<T extends string>({
           {help}
         </p>
       )}
-    </fieldset>
+    </Group>
   );
 }

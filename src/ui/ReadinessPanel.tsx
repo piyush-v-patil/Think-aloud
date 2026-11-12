@@ -194,48 +194,57 @@ export function ReadinessPanel() {
   const allDone = doneCount === items.length;
   const loading = items.some((i) => i.state === 'working');
 
+  const problem = items.find((i) => i.state === 'problem');
+  const working = items.find((i) => i.state === 'working');
+  // Details open by themselves only when something needs fixing.
+  const [opened, setOpened] = useState<boolean | null>(null);
+  const open = opened ?? !!problem;
+  const summary = problem ? `${problem.label}: ${problem.text}` : working ? working.text : allDone ? copy.allReady : copy.progress(doneCount, items.length);
+  const summaryState: ItemState = problem ? 'problem' : working ? 'working' : 'ready';
+
   return (
-    <section aria-labelledby="ready-h" className="flex max-w-[640px] flex-col gap-4">
-      <div className="flex flex-col gap-2">
-        <div className="flex items-baseline justify-between gap-4">
-          <h2 id="ready-h" className="text-md font-semibold">
-            {copy.heading}
-          </h2>
-          <p className="text-sm text-ink-soft" aria-live="polite">
-            {allDone ? copy.allReady : copy.progress(doneCount, items.length)}
-          </p>
-        </div>
-        <ProgressBar value={allDone ? 1 : overall} label={copy.heading} />
+    <section aria-label={copy.heading} className="flex flex-col gap-2">
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
+        <StateMark state={summaryState} />
+        <p className={`min-w-0 flex-1 ${problem ? 'text-red' : 'text-ink-soft'}`} aria-live="polite">
+          {summary}
+        </p>
+        <Button variant="quiet" aria-expanded={open} aria-controls="ready-details" onClick={() => setOpened(!open)}>
+          {open ? copy.hideDetails : copy.details}
+        </Button>
       </div>
-      <ul className="m-0 flex list-none flex-col p-0">
-        {items.map((item) => (
-          <li key={item.id} className="flex flex-col gap-1.5 border-t border-smudge py-3 sm:flex-row sm:items-start sm:gap-4">
-            <div className="flex shrink-0 items-center gap-2 sm:w-48">
-              <StateMark state={item.state} />
-              <span className="text-sm font-semibold">{item.label}</span>
-            </div>
-            <div className="flex min-w-0 flex-1 flex-col gap-2">
-              <p className={`text-sm ${item.state === 'problem' ? 'text-red' : 'text-ink-soft'}`}>{item.text}</p>
-              {item.state === 'working' && item.progress !== undefined && <ProgressBar value={item.progress} label={item.label} />}
-              {item.action &&
-                (item.action.href ? (
-                  <div>
-                    <ButtonLink variant="quiet" href={item.action.href}>
-                      {item.action.label}
-                    </ButtonLink>
-                  </div>
-                ) : (
-                  <div>
-                    <Button variant="quiet" onClick={item.action.onClick}>
-                      {item.action.label}
-                    </Button>
-                  </div>
-                ))}
-            </div>
-          </li>
-        ))}
-      </ul>
-      {loading && <p className="text-sm text-ink-soft">{copy.startAnyway}</p>}
+      {!allDone && <ProgressBar value={overall} label={copy.heading} />}
+      {loading && !open && <p className="text-sm text-ink-soft">{copy.startAnyway}</p>}
+      {open && (
+        <ul id="ready-details" className="m-0 flex list-none flex-col p-0">
+          {items.map((item) => (
+            <li key={item.id} className="flex flex-col gap-1.5 border-t border-smudge py-2.5 sm:flex-row sm:items-start sm:gap-4">
+              <div className="flex shrink-0 items-center gap-2 sm:w-44">
+                <StateMark state={item.state} />
+                <span className="text-sm font-semibold">{item.label}</span>
+              </div>
+              <div className="flex min-w-0 flex-1 flex-col gap-1.5">
+                <p className={`text-sm ${item.state === 'problem' ? 'text-red' : 'text-ink-soft'}`}>{item.text}</p>
+                {item.state === 'working' && item.progress !== undefined && <ProgressBar value={item.progress} label={item.label} />}
+                {item.action &&
+                  (item.action.href ? (
+                    <div>
+                      <ButtonLink variant="quiet" href={item.action.href}>
+                        {item.action.label}
+                      </ButtonLink>
+                    </div>
+                  ) : (
+                    <div>
+                      <Button variant="quiet" onClick={item.action.onClick}>
+                        {item.action.label}
+                      </Button>
+                    </div>
+                  ))}
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
     </section>
   );
 }

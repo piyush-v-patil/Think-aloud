@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { variation as varCopy, list as listCopy, setup as copy, quality as qualityCopy, presetName, difficultyName, topicName, personaName, personaHelp, feedbackModeName, feedbackModeHelp, languageName } from '../copy/strings';
+import { variation as varCopy, list as listCopy, setup as copy, quality as qualityCopy, presetName, difficultyName, topicName, personaName, feedbackModeName, feedbackModeHelp, languageName } from '../copy/strings';
 import { BANK, filterBank, loadBankProblem, pickRandom, type BankEntry } from '../lib/problems/bank';
 import { draftFromPaste } from '../lib/problems/paste';
 import { newId } from '../lib/id';
@@ -12,7 +12,7 @@ import { usageRecord } from '../lib/ai/usage';
 import { preparePasted, prepareVariation, type PrepareStage } from '../lib/problems/prepare';
 import { CodeRunner } from '../lib/runner/runner';
 import type { Language, UsageRecord } from '../lib/types';
-import { estimateSession } from '../lib/cost/estimate';
+import { estimateSession, type Estimate } from '../lib/cost/estimate';
 import { listEntries, listSessions, saveProblem, type ListEntry } from '../lib/storage/db';
 import { sortForPractice, isWeak } from './ListScreen';
 import { limitState, spend } from '../lib/history/stats';
@@ -28,7 +28,7 @@ import { updateSettings, useSettings } from '../state/settings';
 import { draftStore } from '../state/draft';
 import { navigate } from '../state/router';
 import { Segmented } from '../ui/Segmented';
-import { Select, TextArea, TextField } from '../ui/Field';
+import { Select, TextArea } from '../ui/Field';
 import { Button, ButtonLink } from '../ui/Button';
 import { Rule } from '../ui/Rule';
 
@@ -162,15 +162,15 @@ export function SetupScreen() {
   }
 
   return (
-    <div className="grid grid-cols-1 gap-12 pt-8 lg:grid-cols-[minmax(0,1fr)_280px]">
-      <div className="flex max-w-[680px] flex-col gap-10">
+    <div className="pt-6">
+      <div className="flex max-w-[760px] flex-col gap-7">
         <div>
-          <h1 className="text-xl font-bold">{copy.title}</h1>
-          <p className="mt-3 text-md text-ink-soft">{copy.intro}</p>
+          <h1 className="text-lg font-bold">{copy.title}</h1>
+          <p className="mt-1 text-sm text-ink-soft">{copy.intro}</p>
         </div>
         {!settings.onboarded && !hasKey && <Onboarding />}
 
-        <section aria-labelledby="problem-heading" className="flex flex-col gap-4">
+        <section aria-labelledby="problem-heading" className="flex flex-col gap-3">
           <h2 id="problem-heading" className="text-md font-semibold">
             {copy.problemHeading}
           </h2>
@@ -219,10 +219,11 @@ export function SetupScreen() {
               <p className="text-sm text-ink-soft">{varCopy.none}</p>
             ))}
           {source === 'list' || source === 'variation' ? null : source === 'random' ? (
-            <div className="flex flex-col gap-4">
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div className="flex flex-col gap-3">
+              <div className="grid grid-cols-2 gap-3 sm:max-w-[460px]">
                 <Select
                   label={copy.difficulty}
+                  hideLabel
                   value={difficulty}
                   onChange={(e) => setDifficulty(e.target.value as Difficulty | 'any')}
                   options={[
@@ -232,19 +233,21 @@ export function SetupScreen() {
                 />
                 <Select
                   label={copy.topic}
+                  hideLabel
                   value={topic}
                   onChange={(e) => setTopic(e.target.value as Topic | 'any')}
                   options={[{ value: 'any', label: copy.anyTopic }, ...TOPICS.map((t) => ({ value: t, label: topicName[t] }))]}
                 />
               </div>
               {current ? (
-                <div className="flex flex-wrap items-baseline justify-between gap-4 border-l-[3px] border-smudge py-1 pl-4">
-                  <div>
-                    <p className="text-md font-semibold">{current.title}</p>
-                    <p className="text-sm text-ink-soft">
-                      {difficultyName[current.difficulty]}, {current.topics.map((t) => topicName[t].toLowerCase()).join(', ')}
-                    </p>
-                  </div>
+                <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1 border-l-[3px] border-smudge py-0.5 pl-4">
+                  <p className="text-sm">
+                    <span className="font-semibold">{current.title}</span>
+                    <span className="text-ink-soft">
+                      {' '}
+                      · {difficultyName[current.difficulty]}, {current.topics.map((t) => topicName[t].toLowerCase()).join(', ')}
+                    </span>
+                  </p>
                   <Button variant="quiet" onClick={() => setPicked(pickRandom(matches, (p) => p.id === current.id))}>
                     {copy.pickAnother}
                   </Button>
@@ -258,52 +261,63 @@ export function SetupScreen() {
               label={copy.pasteLabel}
               help={copy.pasteHelp}
               placeholder={copy.pastePlaceholder}
-              rows={10}
+              rows={6}
               value={pasted}
               onChange={(e) => setPasted(e.target.value)}
             />
           )}
         </section>
 
-        <Rule />
-
-        <Segmented
-          label={copy.interviewerHeading}
-          value={settings.persona}
-          onChange={(persona) => updateSettings({ persona })}
-          options={PERSONAS.map((p) => ({ value: p, label: personaName[p] }))}
-          help={personaHelp[settings.persona]}
-        />
-        <Segmented
-          label={copy.feedbackHeading}
-          value={settings.feedbackMode}
-          onChange={(feedbackMode) => updateSettings({ feedbackMode })}
-          options={FEEDBACK_MODES.map((m) => ({ value: m, label: feedbackModeName[m] }))}
-          help={feedbackModeHelp[settings.feedbackMode]}
-        />
-        <Segmented
-          label={copy.languageHeading}
-          value={settings.language}
-          onChange={(language) => updateSettings({ language })}
-          options={LANGUAGES.map((l) => ({ value: l, label: languageName[l] }))}
-          help={settings.language === 'java' ? copy.javaHelp : undefined}
-        />
-        <QualityPicker />
-        <div className="max-w-[200px]">
-          <TextField
-            label={copy.lengthLabel}
-            type="number"
-            min={10}
-            max={90}
-            step={5}
-            value={settings.sessionMinutes}
-            onChange={(e) => {
-              const n = Number(e.target.value);
-              if (Number.isFinite(n)) updateSettings({ sessionMinutes: Math.min(90, Math.max(10, Math.round(n))) });
-            }}
+        <section aria-labelledby="options-heading" className="flex flex-col">
+          <h2 id="options-heading" className="mb-1 text-md font-semibold">
+            {copy.optionsHeading}
+          </h2>
+          <Segmented
+            inline
+            label={copy.interviewerHeading}
+            value={settings.persona}
+            onChange={(persona) => updateSettings({ persona })}
+            options={PERSONAS.map((p) => ({ value: p, label: personaName[p] }))}
           />
-        </div>
+          <Segmented
+            inline
+            label={copy.feedbackHeading}
+            value={settings.feedbackMode}
+            onChange={(feedbackMode) => updateSettings({ feedbackMode })}
+            options={FEEDBACK_MODES.map((m) => ({ value: m, label: feedbackModeName[m] }))}
+          />
+          <p className="pb-1 text-sm text-ink-soft sm:ml-[7.75rem]">{feedbackModeHelp[settings.feedbackMode]}</p>
+          <Segmented
+            inline
+            label={copy.languageHeading}
+            value={settings.language}
+            onChange={(language) => updateSettings({ language })}
+            options={LANGUAGES.map((l) => ({ value: l, label: languageName[l] }))}
+          />
+          {settings.language === 'java' && <p className="pb-1 text-sm text-ink-soft sm:ml-[7.75rem]">{copy.javaHelp}</p>}
+          <QualityPicker />
+          <div className="flex items-center gap-3">
+            <label htmlFor="session-minutes" className="w-24 shrink-0 text-sm font-semibold sm:w-28">
+              {copy.lengthShort}
+            </label>
+            <input
+              id="session-minutes"
+              type="number"
+              min={10}
+              max={90}
+              step={5}
+              value={settings.sessionMinutes}
+              onChange={(e) => {
+                const n = Number(e.target.value);
+                if (Number.isFinite(n)) updateSettings({ sessionMinutes: Math.min(90, Math.max(10, Math.round(n))) });
+              }}
+              className="min-h-11 w-20 rounded-control border border-ink-soft bg-paper px-3 text-sm"
+            />
+            <span className="text-sm text-ink-soft">{copy.minutes}</span>
+          </div>
+        </section>
 
+        <Rule />
         <ReadinessPanel />
         {(limit === 'near' || limit === 'over') && (
           <p role="status" className={`text-sm ${limit === 'over' ? 'text-red' : ''}`}>
@@ -325,21 +339,43 @@ export function SetupScreen() {
             {error}
           </p>
         )}
-        <div className="flex flex-wrap items-center gap-6">
+        <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
           <Button variant="primary" onClick={start} disabled={!canStart || !!prep}>
             {copy.start}
           </Button>
-          <ButtonLink variant="quiet" href="#/replay/demo">
+          <CostSummary estimate={estimate} subscription={settings.provider === 'claude-code'} />
+          <ButtonLink variant="quiet" href="#/replay/demo" className="sm:ml-auto">
             {copy.tryDemo}
           </ButtonLink>
         </div>
       </div>
+    </div>
+  );
+}
 
-      <aside aria-label={copy.costHeading} className="flex flex-col gap-10 lg:border-l lg:border-smudge lg:pl-8">
-        <div className="lg:sticky lg:top-8">
-          <CostEstimate estimate={estimate} unpricedNote={settings.provider === 'claude-code' ? costCopy.subscription : undefined} />
+/** The cost in one line, with the breakdown a click away. */
+function CostSummary({ estimate, subscription }: { estimate: Estimate; subscription: boolean }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="flex flex-col">
+      <p className="flex flex-wrap items-baseline gap-x-2 text-sm">
+        {estimate.totalUsd !== null ? (
+          <span>
+            <span className="font-semibold">{costCopy.about(formatUsd(estimate.totalUsd))}</span>
+            <span className="text-ink-soft">, {costCopy.estimate}</span>
+          </span>
+        ) : (
+          <span className="text-ink-soft">{subscription ? costCopy.onPlan : costCopy.unpriced}</span>
+        )}
+        <Button variant="quiet" aria-expanded={open} onClick={() => setOpen(!open)}>
+          {open ? copy.hideCostDetails : copy.costDetails}
+        </Button>
+      </p>
+      {open && (
+        <div className="mt-2 w-full max-w-[360px]">
+          <CostEstimate estimate={estimate} unpricedNote={subscription ? costCopy.subscription : undefined} />
         </div>
-      </aside>
+      )}
     </div>
   );
 }
@@ -350,16 +386,16 @@ function QualityPicker() {
   const models = modelsFor(provider, settings.preset, settings.advancedModels);
   const label = (id: string) => provider.models.find((m) => m.id === id)?.label ?? id;
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col">
       <Segmented<PresetId>
+        inline
         label={qualityCopy.heading}
         value={settings.preset}
         onChange={(preset) => updateSettings({ preset })}
         options={(['economy', 'balanced', 'best', 'advanced'] as PresetId[]).map((p) => ({ value: p, label: presetName[p] }))}
-        help={`${qualityCopy.presetHelp[settings.preset]} ${MODEL_ROLES.map((r) => `${qualityCopy.roleName[r]}: ${label(models[r])}.`).join(' ')}`}
       />
-      {settings.preset === 'advanced' && (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+      {settings.preset === 'advanced' ? (
+        <div className="mb-2 grid grid-cols-1 gap-3 sm:ml-[7.75rem] sm:grid-cols-3">
           {MODEL_ROLES.map((role) => (
             <Select
               key={role}
@@ -374,6 +410,8 @@ function QualityPicker() {
             />
           ))}
         </div>
+      ) : (
+        <p className="pb-1 text-sm text-ink-soft sm:ml-[7.75rem]">{MODEL_ROLES.map((r) => `${qualityCopy.roleName[r]}: ${label(models[r])}`).join(' · ')}</p>
       )}
     </div>
   );
