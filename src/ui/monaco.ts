@@ -71,4 +71,16 @@ monaco.editor.defineTheme('board-dark', {
 
 loader.config({ monaco });
 
+// The editor's font is fetched the first time something uses it, which is
+// usually this editor. Monaco measures character widths when an editor is
+// created, so one created before the font arrives puts the cursor between
+// the wrong letters (until it measures again seconds later). Fetch it now
+// and have every editor measure again the moment it's in.
+if (typeof document !== 'undefined' && document.fonts) {
+  const font = "14px 'Atkinson Hyperlegible Mono'";
+  void Promise.all([document.fonts.load(font), document.fonts.load(`600 ${font}`)])
+    .then(() => monaco.editor.remeasureFonts())
+    .catch(() => {});
+}
+
 export { monaco };

@@ -1,9 +1,9 @@
-import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { interview as copy, languageName, phaseName, ai as aiCopy } from '../copy/strings';
 import { useDraft, type InterviewDraft } from '../state/draft';
 import { navigate } from '../state/router';
 import { settingsStore, useSettings, type Settings } from '../state/settings';
-import { useStore } from '../state/store';
+import { sameExcept, useStoreSelect } from '../state/store';
 import { formatClock } from '../lib/time';
 import { PHASES, type SessionConfig } from '../lib/types';
 import { InterviewController, type LiveState } from '../lib/session/controller';
@@ -83,14 +83,19 @@ function Live({ draft, settings }: { draft: InterviewDraft; settings: Settings }
   return <Workspace controller={controller} />;
 }
 
+/** What the workspace shows. The clock and the code change too often to re-render it for: each has its own subscriber. */
+type ShownState = Omit<LiveState, 'elapsedMs' | 'code'>;
+const ignoreClockAndCode = sameExcept<LiveState>(['elapsedMs', 'code']);
+
 function Workspace({ controller }: { controller: InterviewController }) {
-  const state = useStore(controller.store);
+  const state: ShownState = useStoreSelect(controller.store, (s) => s, ignoreClockAndCode);
   const dark = useIsDark();
+  const [initialCode] = useState(() => controller.store.get().code);
+  const setCode = useCallback((v: string) => controller.setCode(v), [controller]);
   const [confirmEnd, setConfirmEnd] = useState(false);
   const [ending, setEnding] = useState(false);
   const [showTranscript, setShowTranscript] = useState(true);
   const { problem, language, draft } = controller;
-  const remaining = draft.minutes * 60_000 - state.elapsedMs;
 
   async function end() {
     setEnding(true);
@@ -98,11 +103,8 @@ function Workspace({ controller }: { controller: InterviewController }) {
     navigate(`/replay/${id}`);
   }
 
-  const { rows, marks } = buildMarkedTranscript({
-    utterances: state.utterances,
-    reactions: state.reactions,
-    freshIds: new Set(state.freshIds),
-  });
+  const { utterances, reactions, freshIds } = state;
+  const { rows, marks } = useMemo(() => buildMarkedTranscript({ utterances, reactions, freshIds: new Set(freshIds) }), [utterances, reactions, freshIds]);
   const mode = draft.feedbackMode;
 
   return (
@@ -114,10 +116,7 @@ function Workspace({ controller }: { controller: InterviewController }) {
         </div>
         <PhaseStrip phase={state.phase} />
         <div className="flex items-center gap-6">
-          <p className="text-sm" title={formatClock(state.elapsedMs)}>
-            <time className="font-mono">{formatClock(Math.abs(remaining))}</time>{' '}
-            <span className={remaining >= 0 ? 'text-ink-soft' : 'text-red'}>{remaining >= 0 ? copy.left : copy.over}</span>
-          </p>
+          <SessionClock controller={controller} />
           <Button variant="secondary" onClick={() => setConfirmEnd(true)}>
             {copy.end}
           </Button>
@@ -129,8 +128,15 @@ function Workspace({ controller }: { controller: InterviewController }) {
           <ImpressionMeter value={impression(state.reactions)} />
         </div>
       )}
-      <div className="grid flex-1 grid-cols-1 lg:min-h-0 lg:grid-cols-[minmax(340px,420px)_minmax(0,1fr)]">
-        <section className="flex flex-col gap-6 border-smudge p-4 sm:p-6 lg:min-h-0 lg:border-r">
+      <div className="grid flex-1 grid-cols-1 lg:min-h-0 lg:grid-cols-[minmax(340px,420px)_minmax(0,1fr)] lg:grid-rows-[minmax(0,1fr)]">
+        <section className="flex flex-col gap-6 border-smudge p-4 sm:p-6 lg:min-h-0 lg:overflow-y-auto lg:border-r">
+          {/* The problem sits here, not above the editor, so the editor keeps its height on laptop screens. */}
+          <details open className="shrink-0 rounded-editor border border-smudge px-4">
+            <summary className="flex min-h-11 cursor-pointer items-center text-sm font-semibold">{copy.problemHeading}</summary>
+            <div className="max-h-[32vh] overflow-y-auto pb-3">
+              <ProblemText problem={problem} />
+            </div>
+          </details>
           <InterviewerPanel controller={controller} state={state} />
           <div className="flex min-h-0 flex-1 flex-col">
             <div className="flex items-center justify-between">
@@ -147,15 +153,10 @@ function Workspace({ controller }: { controller: InterviewController }) {
           </div>
         </section>
 
-        <section aria-label={copy.editorLabel} className="flex min-w-0 flex-col gap-4 p-4 sm:p-6 lg:min-h-0">
-          <details open className="rounded-editor border border-smudge px-4">
-            <summary className="flex min-h-11 cursor-pointer items-center text-sm font-semibold">{copy.problemHeading}</summary>
-            <div className="max-h-[26vh] overflow-y-auto pb-3">
-              <ProblemText problem={problem} />
-            </div>
-          </details>
-          <div className="h-[55vh] min-h-[320px] lg:h-auto lg:min-h-0 lg:flex-1">
-            <CodeEditor value={state.code} language={language} onChange={(v) => controller.setCode(v)} dark={dark} />
+        <section aria-label={copy.editorLabel} className="flex min-w-0 flex-col gap-4 p-4 sm:p-6 lg:min-h-0 lg:overflow-y-auto">
+          {/* At least 300px tall everywhere; on wide screens it takes all the height the results don't. */}
+          <div className="h-[55vh] min-h-[300px] shrink-0 lg:h-auto lg:flex-1">
+            <CodeEditor initialValue={initialCode} language={language} onChange={setCode} dark={dark} />
           </div>
           <div className="flex flex-wrap items-center gap-4">
             <Button variant="primary" onClick={() => void controller.run()} disabled={state.running}>
@@ -163,7 +164,8 @@ function Workspace({ controller }: { controller: InterviewController }) {
             </Button>
             {state.runnerStatus && <p className="text-sm text-ink-soft">{copy.loadingPython}</p>}
           </div>
-          <div className="max-h-[30vh] overflow-y-auto">
+          {/* A fixed height on wide screens, so running the tests never resizes the editor. */}
+          <div className="max-h-[30vh] shrink-0 overflow-y-auto lg:h-[clamp(112px,24vh,260px)] lg:max-h-none">
             <h2 className="sr-only">{copy.testsHeading}</h2>
             <TestOutput run={state.lastRun} hasTests={controller.testable} />
           </div>
@@ -180,6 +182,18 @@ function Workspace({ controller }: { controller: InterviewController }) {
         </div>
       </Dialog>
     </div>
+  );
+}
+
+/** Time left. Re-renders four times a second, on its own. */
+function SessionClock({ controller }: { controller: InterviewController }) {
+  const elapsedMs = useStoreSelect(controller.store, (s) => s.elapsedMs);
+  const remaining = controller.draft.minutes * 60_000 - elapsedMs;
+  return (
+    <p className="text-sm" title={formatClock(elapsedMs)}>
+      <time className="font-mono">{formatClock(Math.abs(remaining))}</time>{' '}
+      <span className={remaining >= 0 ? 'text-ink-soft' : 'text-red'}>{remaining >= 0 ? copy.left : copy.over}</span>
+    </p>
   );
 }
 
@@ -202,7 +216,7 @@ function PhaseStrip({ phase }: { phase: LiveState['phase'] }) {
   );
 }
 
-function InterviewerPanel({ controller, state }: { controller: InterviewController; state: LiveState }) {
+function InterviewerPanel({ controller, state }: { controller: InterviewController; state: ShownState }) {
   const [typed, setTyped] = useState('');
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const micText =
